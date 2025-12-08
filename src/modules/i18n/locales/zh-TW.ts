@@ -14,6 +14,7 @@ export default {
         prev: "上一步",
         yes: "是",
         no: "否",
+        help: "幫助",
     },
     home: {
         title: "選擇你的詞彙包",

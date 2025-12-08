@@ -1,6 +1,7 @@
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";
     import { useI18n } from "vue-i18n";
+    import { openUrl } from "@tauri-apps/plugin-opener";
     import PackageItem from "../components/PackageItem.vue";
     import ScrollContainer from "../components/ScrollContainer.vue";
     import { makeData, shuffle } from "../modules/data/constructor";
@@ -183,6 +184,13 @@
                         v-model="inputDescription" />
                 </section>
                 <div class="modal-action">
+                    <button
+                        class="btn btn-secondary btn-outline"
+                        @click="
+                            openUrl('https://github.com/NEXORA-Studios/Voco/wiki/How-to-prepare-an-CSV-Wordbank-File')
+                        ">
+                        {{ t("common.help") }}
+                    </button>
                     <button class="btn btn-success" :disabled="!createDisabled" @click="createPackage">
                         {{ t("common.save") }}
                     </button>

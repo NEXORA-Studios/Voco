@@ -14,6 +14,7 @@ export default {
         prev: "Previous",
         yes: "Yes",
         no: "No",
+        help: "Help",
     },
     home: {
         title: "Choose Your Vocabulary Package",
