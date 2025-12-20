@@ -1,7 +1,7 @@
 {
     "$schema": "./gen/schemas/config-schema.json",
     "productName": "Voco",
-    "version": "0.1.1",
+    "version": "1.0.0",
     "identifier": "io.github.nexora-studios.voco",
     "build": {
         "beforeDevCommand": "pnpm dev",
@@ -13,12 +13,26 @@
         "windows": [
             {
                 "title": "Voco",
+                "label": "main",
+                "url": "index.html",    
                 "width": 1280,
                 "height": 720,
                 "minWidth": 1280,
                 "minHeight": 720,
                 "decorations": false,
                 "center": true
+            },
+            {
+                "title": "Select Your Data · Voco",
+                "label": "select",
+                "url": "select.html",
+                "width": 1280,
+                "height": 720,
+                "minWidth": 1280,
+                "minHeight": 720,
+                "decorations": false,
+                "center": true,
+                "create": false
             }
         ],
         "security": {

@@ -18,7 +18,16 @@
         "strict": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
-        "noFallthroughCasesInSwitch": true
+        "noFallthroughCasesInSwitch": true,
+
+        /* Path Aliases */
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["src/*"],
+            "@s/*": ["src/shared/*"],
+            "@wM/*": ["src/windows/main/*"],
+            "@wS/*": ["src/windows/select/*"]
+        }
     },
     "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
     "references": [{ "path": "./tsconfig.node.json" }]

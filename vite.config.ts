@@ -30,4 +30,13 @@ export default defineConfig(async () => ({
             ignored: ["**/src-tauri/**"],
         },
     },
+
+    resolve: {
+        alias: {
+            "@": "/src",
+            "@s": "/src/shared",
+            "@wM": "/src/windows/main",
+            "@wS": "/src/windows/select",
+        },
+    },
 }));

@@ -1,17 +1,18 @@
 {
     "$schema": "../gen/schemas/desktop-schema.json",
-    "identifier": "default",
-    "description": "Capability for the main window",
-    "windows": ["main"],
+    "identifier": "select",
+    "description": "Capability for the select window",
+    "windows": ["select"],
     "permissions": [
         "opener:default",
         "core:default",
+        "dialog:default",
+        "dialog:allow-open",
         "core:window:allow-minimize",
         "core:window:allow-toggle-maximize",
         "core:window:allow-is-maximized",
         "core:window:allow-close",
         "core:window:allow-start-dragging",
-        "core:window:allow-set-focus",
         "fs:default",
         "fs:allow-create",
         "fs:allow-read",
@@ -21,7 +22,13 @@
         "fs:allow-remove",
         {
             "identifier": "fs:scope",
-            "allow": [{ "path": "$APPDATA" }, { "path": "$APPDATA/**/*" }]
+            "allow": [
+                { "path": "$APPDATA" },
+                { "path": "$APPDATA/**/*" },
+                { "path": "$HOME" },
+                { "path": "$HOME/**/*" },
+                { "path": "*" }
+            ]
         }
     ]
 }

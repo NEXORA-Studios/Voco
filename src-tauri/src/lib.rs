@@ -1,12 +1,8 @@
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
+pub mod commands;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let mut builder = tauri::Builder::default();
+    let mut builder = tauri::Builder::default().plugin(tauri_plugin_dialog::init());
 
     #[cfg(desktop)]
     {
@@ -21,7 +17,12 @@ pub fn run() {
 
     builder = builder.plugin(tauri_plugin_fs::init());
     builder = builder.plugin(tauri_plugin_opener::init());
-    builder = builder.invoke_handler(tauri::generate_handler![greet]);
+    builder = builder.invoke_handler(tauri::generate_handler![
+        commands::load_xlsx,
+        commands::multi_window_bridge_send,
+        commands::open_select_window,
+        commands::close_select_window,
+    ]);
 
     builder
         .run(tauri::generate_context!())

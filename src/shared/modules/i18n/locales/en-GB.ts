@@ -1,0 +1,113 @@
+export default {
+    /* Window = main */
+    common: {
+        save: "Save",
+        cancel: "Cancel",
+        delete: "Delete",
+        edit: "Edit",
+        add: "Add",
+        search: "Search",
+        refresh: "Reset",
+        confirm: "Confirm",
+        close: "Close",
+        back: "Back",
+        next: "Next",
+        prev: "Previous",
+        yes: "Yes",
+        no: "No",
+        help: "Help",
+    },
+    home: {
+        title: "Choose Your Vocabulary Package",
+        subtitle: "Select a package below to start your learning session.",
+        noPackages: "No Packages...",
+        bundle: "Bundle:",
+        createNew: "Create New Package",
+        createModalTitle: "Create New Package",
+        dataFile: "Data File",
+        bundleName: "Bundle Name",
+        packageName: "Package Name",
+        description: "Description",
+        uploadFile: "Load and Select Data",
+        autoFilled: "Required",
+        optional: "(Optional)",
+        deleteConfirmTitle: "Confirm Delete",
+        deleteConfirm: "Are you sure you want to delete the package",
+        fromBundle: "from bundle",
+        resetConfirmTitle: "Confirm Reset",
+        resetConfirm: "Are you sure you want to reset the package",
+        fromBundleReset: "from bundle",
+        settings: "Settings",
+        noData: "No Data",
+        hasData: "{count} Words",
+    },
+    play: {
+        bundle: "Bundle:",
+        package: "Package:",
+        progress: "Progress:",
+        congratulations: "Congratulations!",
+        completed: "You have completed all the words in this package!",
+        backToHome: "Back to Home",
+        restartWholePackage: "Restart the Whole Package",
+        currentEnglish: "Current English Vocabulary",
+        currentChinese: "Current Chinese Meaning",
+        stop: "Stop",
+        shuffle: "Shuffle",
+        showChinese: "Show Chinese",
+        next: "Next",
+        resetConfirm: "Are you sure you want to reset the package?",
+        unknown: "Unknown",
+    },
+    packageItem: {
+        noDescription: "No Description",
+        progress: "Progress:",
+    },
+    settings: {
+        title: "Settings",
+        home: "Back Home",
+        save: "Save Settings",
+        options: {
+            language: "Language",
+        },
+    },
+    footer: {
+        copyright1: "Copyright © 2025{year} ",
+        copyright2: " Studios - Licensed under the GNU General Public Licence v3.0",
+    },
+    header: {
+        title: "Voco",
+    },
+
+    /* Window = select */
+
+    "+select": {
+        title: "Select Data",
+        selectButton: "Load Data File (Excel)|Loading...",
+        placeHolder: "Please load a data file first",
+        hasNoSelect: "No file selected",
+        hasSelect: "Selected file: {filename}",
+        selectedEnCount: "Selected English Vocabulary: {count}",
+        selectedCnCount: "Selected Chinese Translation: {count}",
+        setEnButton: "Set English List",
+        setCnButton: "Set Chinese List",
+        confirmButton: "Confirm",
+    },
+
+    /* Toast */
+
+    "#toast": {
+        "+main": {
+            "create-package-successful": "Package created successfully",
+            "delete-package-successful": "Package deleted successfully",
+            "reset-package-successful": "Package reset successfully",
+            "save-settings-successful": "Settings saved successfully",
+        },
+        "+select": {
+            "load-success": "Data file loaded successfully",
+            "load-error": "Error loading data file: {error}",
+            "data-count-mismatch": "The number of English and Chinese entries do not match",
+            "en-data-selected": "English vocabulary list set successfully",
+            "cn-data-selected": "Chinese translation list set successfully",
+        },
+    },
+};
