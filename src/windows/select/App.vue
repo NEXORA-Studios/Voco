@@ -407,7 +407,7 @@
                                         <td
                                             @mousedown.prevent="startDragRow(sheetIndexF, rowIndex)"
                                             @mouseenter="dragOverCell(sheetIndexF, rowIndex, 0)"
-                                            class="cursor-pointer">
+                                            class="cursor-pointer font-bold opacity-60">
                                             {{ rowIndex + 1 }}
                                         </td>
                                         <td

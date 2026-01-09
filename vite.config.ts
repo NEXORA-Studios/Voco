@@ -1,8 +1,8 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import tailwindcss from "@tailwindcss/vite";
+import { resolve } from "path";
 
-// @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
 
 // https://vite.dev/config/
@@ -37,6 +37,15 @@ export default defineConfig(async () => ({
             "@s": "/src/shared",
             "@wM": "/src/windows/main",
             "@wS": "/src/windows/select",
+        },
+    },
+
+    build: {
+        rollupOptions: {
+            input: {
+                index: resolve(__dirname, "index.html"),
+                select: resolve(__dirname, "select.html"),
+            },
         },
     },
 }));

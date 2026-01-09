@@ -183,8 +183,8 @@
                         <div
                             class="w-1/3 h-full flex items-center justify-center rounded-sm"
                             :class="{
-                                'bg-error/25 border border-error': selectedData.length == 0,
-                                'bg-success/25 border border-success': selectedData.length > 0,
+                                'bg-error/25 border border-error/50': selectedData.length == 0,
+                                'bg-success/25 border border-success/50': selectedData.length > 0,
                             }">
                             {{
                                 selectedData.length == 0
