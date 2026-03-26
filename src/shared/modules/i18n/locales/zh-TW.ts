@@ -40,6 +40,10 @@ export default {
         settings: "設定",
         noData: "沒有數據",
         hasData: "{count} 個單字",
+        sortMethod: "排序方法",
+        shuffle: "隨機",
+        alphabetical: "字母順",
+        original: "原始",
     },
     play: {
         bundle: "詞彙集：",

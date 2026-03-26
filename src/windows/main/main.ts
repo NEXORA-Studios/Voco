@@ -18,8 +18,8 @@ const APP = createApp(App).use(createPinia()).use(router).use(i18n);
     if (!(await TauriFs.exists("packages"))) {
         await TauriFs.mkdir("packages");
     }
-    if (!(await TauriFs.exists("temp"))) {
-        await TauriFs.mkdir("temp");
+    if (!(await TauriFs.exists("packages-original"))) {
+        await TauriFs.mkdir("packages-original");
     }
     // Initialize Stores
     await usePackageInfoStore().initialize();

@@ -1,5 +1,6 @@
 import { PackageInfo } from "@/shared/types/packageInfo";
 import { convertCsvToJson, convertXlsxToJson, makeUuid } from "./utils";
+import { SortMethod, WordBankItem } from "@/shared/types";
 
 export function shuffle<T>(arr: T[]): T[] {
     // 原地洗牌，但返回 arr 以支持链式使用
@@ -28,11 +29,21 @@ export function makeDataCsv(name: string, description: string, csv: string): [Pa
     ];
 }
 
-export function makeDataXlsx(name: string, description: string, xlsx: [string, string][]): [PackageInfo, any[]] {
+export function makeDataXlsx(
+    name: string,
+    description: string,
+    xlsx: [string, string][],
+    sortMethodInput: SortMethod,
+): [PackageInfo, any[]] {
     const uuid = makeUuid();
 
     const raw = convertXlsxToJson(xlsx);
-    const data = shuffle(raw); // 在这里直接打乱
+    const sortMethod = {
+        shuffle: (raw: WordBankItem[]) => shuffle(raw),
+        alphabetical: (raw: WordBankItem[]) => raw.sort((a, b) => a.english.localeCompare(b.english)),
+        original: (raw: WordBankItem[]) => raw,
+    };
+    const data = sortMethod[sortMethodInput](raw); // 在这里直接排序
 
     return [
         {

@@ -40,6 +40,10 @@ export default {
         settings: "Settings",
         noData: "No Data",
         hasData: "{count} Words",
+        sortMethod: "Sort Method",
+        shuffle: "Shuffle",
+        alphabetical: "Alphabetical",
+        original: "Original",
     },
     play: {
         bundle: "Bundle:",

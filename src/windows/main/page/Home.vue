@@ -5,9 +5,9 @@
     import { PackageItem } from "@wM/components";
     import { ScrollContainer, ToastController } from "@s/components";
     import { makeDataXlsx, shuffle, TauriFsJsonAdapter, TauriFs, usePackageInfoStore } from "@wM/modules";
-    import { PackageInfo, WordBankItem } from "@s/types";
+    import { MultiWindowBridge } from "@s/modules";
+    import { PackageInfo, WordBankItem, SortMethod } from "@s/types";
     import { invoke } from "@tauri-apps/api/core";
-    import { MultiWindowBridge } from "@/shared/modules";
 
     const { t } = useI18n();
 
@@ -25,9 +25,11 @@
     const inputBundleName = ref<string>("");
     const inputPackageName = ref<string>("");
     const inputDescription = ref<string>("");
+    const inputSortMethod = ref<SortMethod>("shuffle");
+    const inputResetSortMethod = ref<SortMethod>("shuffle");
     const selectedData = ref<[string, string][]>([]);
     const createDisabled = computed(
-        () => inputBundleName.value.length > 0 && inputPackageName.value.length > 0 && selectedData.value.length > 0
+        () => inputBundleName.value.length > 0 && inputPackageName.value.length > 0 && selectedData.value.length > 0,
     );
     const selectDataDisabled = ref<boolean>(false);
 
@@ -47,8 +49,17 @@
         const [packageInfo, data] = makeDataXlsx(
             inputBundleName.value + "#" + inputPackageName.value,
             inputDescription.value,
-            selectedData.value
+            selectedData.value,
+            inputSortMethod.value,
         );
+        await TauriFsJsonAdapter.writeJsonFile(`packages/${packageInfo.uuid}.json`, data);
+        const [, dataOriginal] = makeDataXlsx(
+            inputBundleName.value + "#" + inputPackageName.value,
+            inputDescription.value,
+            selectedData.value,
+            "original",
+        );
+        await TauriFsJsonAdapter.writeJsonFile(`packages-original/${packageInfo.uuid}.json`, dataOriginal);
         await TauriFsJsonAdapter.updateJsonFile<{ packages: PackageInfo[] }>("data.json", (oldObj) => {
             (oldObj["packages"] as Record<string, any>[]).push(packageInfo);
             return oldObj;
@@ -77,11 +88,12 @@
         await TauriFsJsonAdapter.updateJsonFile<{ packages: PackageInfo[] }>("data.json", (oldObj) => {
             (oldObj["packages"] as Record<string, any>[]).splice(
                 (oldObj["packages"] as Record<string, any>[]).findIndex((item) => item.uuid === uuid),
-                1
+                1,
             );
             return oldObj;
         });
         await TauriFs.remove(`packages/${uuid}.json`);
+        await TauriFs.remove(`packages-original/${uuid}.json`);
         await usePackageInfoStore().update();
         toastController.value?.addToast({
             type: "success",
@@ -90,7 +102,18 @@
     }
 
     async function resetPackage(uuid: PackageInfo["uuid"]) {
-        await TauriFsJsonAdapter.updateJsonFile<WordBankItem[]>(`packages/${uuid}.json`, (obj) => shuffle(obj));
+        let originalData: WordBankItem[];
+        if (inputResetSortMethod.value === "original") {
+            originalData = await TauriFsJsonAdapter.readJsonFile<WordBankItem[]>(`packages-original/${uuid}.json`);
+        } else {
+        }
+        const shuffleFunc = {
+            shuffle: (raw: WordBankItem[]) => shuffle(raw),
+            alphabetical: (raw: WordBankItem[]) => raw.sort((a, b) => a.english.localeCompare(b.english)),
+        };
+        await TauriFsJsonAdapter.updateJsonFile<WordBankItem[]>(`packages/${uuid}.json`, (obj) =>
+            inputResetSortMethod.value === "original" ? originalData : shuffleFunc[inputResetSortMethod.value](obj),
+        );
         await TauriFsJsonAdapter.updateJsonFile<{ packages: PackageInfo[] }>(`data.json`, (obj) => {
             obj.packages.find((item) => item.uuid === uuid)!.current = 0;
             return obj;
@@ -116,6 +139,7 @@
     async function onPackageItemReset(item: PackageInfo, event: MouseEvent) {
         // 如果按住 Shift 则直接重置
         if (event.shiftKey) {
+            inputResetSortMethod.value = "shuffle";
             await resetPackage(item.uuid);
             return;
         }
@@ -218,6 +242,12 @@
                         :placeholder="t('home.optional')"
                         class="input w-full outline-none"
                         v-model="inputDescription" />
+                    <span class="font-bold">{{ t("home.sortMethod") }}<span class="text-red-500">*</span></span>
+                    <select v-model="inputSortMethod" class="select select-primary w-full outline-none">
+                        <option value="shuffle">{{ t("home.shuffle") }}</option>
+                        <option value="alphabetical">{{ t("home.alphabetical") }}</option>
+                        <option value="original">{{ t("home.original") }}</option>
+                    </select>
                 </section>
                 <div class="modal-action">
                     <!-- <button
@@ -266,6 +296,14 @@
                     <kbd class="kbd -translate-y-px">{{ my_modal_3_packageInfo?.name.split("#")[0] }}</kbd>
                     ?
                 </p>
+                <section class="grid grid-cols-[1fr_3fr] grid-rows-1 gap-x-4 mt-2 items-center">
+                    <span class="font-bold">{{ t("home.sortMethod") }}<span class="text-red-500">*</span></span>
+                    <select v-model="inputResetSortMethod" class="select select-sm select-primary w-full outline-none">
+                        <option value="shuffle">{{ t("home.shuffle") }}</option>
+                        <option value="alphabetical">{{ t("home.alphabetical") }}</option>
+                        <option value="original">{{ t("home.original") }}</option>
+                    </select>
+                </section>
                 <div class="modal-action">
                     <form method="dialog">
                         <button class="btn btn-error mr-2" @click="resetPackage(my_modal_3_packageInfo?.uuid || '')">

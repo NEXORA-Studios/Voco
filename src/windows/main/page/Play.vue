@@ -3,7 +3,7 @@
     import { useI18n } from "vue-i18n";
     import { useRoute } from "vue-router";
     import { usePackageInfoStore, useWordbankStore, TauriFsJsonAdapter, shuffle } from "@wM/modules";
-    import type { PackageInfo, WordBankItem } from "@s/types";
+    import type { PackageInfo, SortMethod, WordBankItem } from "@s/types";
     import { randomChineseString } from "@s/utils/randomChar";
     import { ToastController } from "@/shared/components";
 
@@ -37,6 +37,7 @@
     const inShuffling = ref(false);
     const stopped = ref(false);
     const showChinese = ref(false);
+    const inputResetSortMethod = ref<SortMethod>("shuffle");
 
     let timer: number | null = null;
 
@@ -96,7 +97,17 @@
 
     /* 重新开始整个包 */
     async function onRestartWholePackage() {
-        await TauriFsJsonAdapter.updateJsonFile<WordBankItem[]>(`packages/${uuid.value}.json`, (obj) => shuffle(obj));
+        let originalData: WordBankItem[];
+        if (inputResetSortMethod.value === "original") {
+            originalData = await TauriFsJsonAdapter.readJsonFile<WordBankItem[]>(`packages-original/${uuid.value}.json`);
+        }
+        const shuffleFunc = {
+            shuffle: (raw: WordBankItem[]) => shuffle(raw),
+            alphabetical: (raw: WordBankItem[]) => raw.sort((a, b) => a.english.localeCompare(b.english)),
+        };
+        await TauriFsJsonAdapter.updateJsonFile<WordBankItem[]>(`packages/${uuid.value}.json`, (obj) =>
+            inputResetSortMethod.value === "original" ? originalData : shuffleFunc[inputResetSortMethod.value](obj),
+        );
         await TauriFsJsonAdapter.updateJsonFile<{ packages: PackageInfo[] }>(`data.json`, (obj) => {
             obj.packages.find((item) => item.uuid === uuid.value)!.current = 0;
             return obj;
@@ -206,7 +217,7 @@
         <section class="flex gap-4">
             <div class="flex gap-4" v-if="uiCurrentIndex + 1 == uiTotal">
                 <button class="btn btn-primary" @click="$router.push('/')">{{ t("play.backToHome") }}</button>
-                <button class="btn btn-warning" @click="onRestartWholePackage">
+                <button class="btn btn-warning" @click="onRestartWholePackageBeforeFinish">
                     <i class="icon-[material-symbols--restore-page-outline-rounded] size-6 -ml-2"></i>
                     {{ t("play.restartWholePackage") }}
                 </button>
@@ -226,6 +237,14 @@
             <div class="modal-box">
                 <h3 class="text-lg font-bold mb-4">{{ t("home.resetConfirmTitle") }}</h3>
                 <p class="text-base-content/75">{{ t("play.resetConfirm") }}</p>
+                <section class="grid grid-cols-[1fr_3fr] grid-rows-1 gap-x-4 mt-2 items-center">
+                    <span class="font-bold">{{ t("home.sortMethod") }}<span class="text-red-500">*</span></span>
+                    <select v-model="inputResetSortMethod" class="select select-sm select-primary w-full outline-none">
+                        <option value="shuffle">{{ t("home.shuffle") }}</option>
+                        <option value="alphabetical">{{ t("home.alphabetical") }}</option>
+                        <option value="original">{{ t("home.original") }}</option>
+                    </select>
+                </section>
                 <div class="modal-action">
                     <form method="dialog">
                         <button class="btn btn-error mr-2" @click="onRestartWholePackage()">
