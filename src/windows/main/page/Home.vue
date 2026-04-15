@@ -6,10 +6,12 @@
     import { ScrollContainer, ToastController } from "@s/components";
     import { makeDataXlsx, shuffle, TauriFsJsonAdapter, TauriFs, usePackageInfoStore } from "@wM/modules";
     import { MultiWindowBridge } from "@s/modules";
-    import { PackageInfo, WordBankItem, SortMethod } from "@s/types";
+    import { PackageInfo, WordBankItem, SortMethod, StartMode } from "@s/types";
     import { invoke } from "@tauri-apps/api/core";
+    import { useRouter } from "vue-router";
 
     const { t } = useI18n();
+    const router = useRouter();
 
     const packageInfos = computed(() => usePackageInfoStore().packageInfo);
     const flattenPackageInfo = computed(() => usePackageInfoStore().flattenPackageInfo);
@@ -17,15 +19,18 @@
     const my_modal_1 = ref<HTMLDialogElement>();
     const my_modal_2 = ref<HTMLDialogElement>();
     const my_modal_3 = ref<HTMLDialogElement>();
+    const my_modal_4 = ref<HTMLDialogElement>();
     const toastController = ref<InstanceType<typeof ToastController>>();
 
     const my_modal_2_packageInfo = ref<PackageInfo>();
     const my_modal_3_packageInfo = ref<PackageInfo>();
+    const my_modal_4_packageInfo = ref<PackageInfo>();
 
     const inputBundleName = ref<string>("");
     const inputPackageName = ref<string>("");
     const inputDescription = ref<string>("");
     const inputSortMethod = ref<SortMethod>("shuffle");
+    const inputStartSortMethod = ref<StartMode>("both");
     const inputResetSortMethod = ref<SortMethod>("shuffle");
     const selectedData = ref<[string, string][]>([]);
     const createDisabled = computed(
@@ -125,6 +130,12 @@
         });
     }
 
+    async function startPackage() {
+        const uuid = my_modal_4_packageInfo.value?.uuid;
+        const startMode = inputStartSortMethod.value;
+        router.push(`/play/${uuid}/${startMode}`);
+    }
+
     // 按钮槽函数
     async function onPackageItemDelete(item: PackageInfo, event: MouseEvent) {
         // 如果按住 Shift 则直接删掉
@@ -145,6 +156,11 @@
         }
         my_modal_3_packageInfo.value = item;
         my_modal_3.value?.showModal();
+    }
+
+    async function onPackageItemStart(item: PackageInfo, event: MouseEvent) {
+        my_modal_4_packageInfo.value = item;
+        my_modal_4.value?.showModal();
     }
 
     function onOpenSelectUI() {
@@ -176,7 +192,7 @@
                             <ul class="list bg-base-100 rounded-box shadow-md w-full mt-2">
                                 <PackageItem
                                     :bundle="bundle"
-                                    @play="(item) => $router.push(`/play/${item.uuid}`)"
+                                    @play="(item, event) => onPackageItemStart(item, event)"
                                     @delete="(item, event) => onPackageItemDelete(item, event)"
                                     @reset="(item, event) => onPackageItemReset(item, event)" />
                             </ul>
@@ -311,6 +327,25 @@
                         </button>
                         <button class="btn">{{ t("common.cancel") }}</button>
                     </form>
+                </div>
+            </div>
+        </dialog>
+        <!-- 启动前询问弹窗 -->
+        <dialog ref="my_modal_4" class="modal">
+            <div class="modal-box w-xl! max-w-xl!">
+                <h3 class="text-lg font-bold mb-4">{{ t("home.startModalTitle") }}</h3>
+                <section class="grid grid-cols-[1fr_3fr] grid-rows-1 gap-x-4 gap-y-2 items-center">
+                    <span class="font-bold">{{ t("home.startMode") }}<span class="text-red-500">*</span></span>
+                    <select v-model="inputStartSortMethod" class="select select-primary w-full outline-none">
+                        <option value="both">{{ t("home.both") }}</option>
+                        <option value="english">{{ t("home.english") }}</option>
+                        <option value="chinese">{{ t("home.chinese") }}</option>
+                    </select>
+                </section>
+                <div class="modal-action">
+                    <button class="btn btn-success" @click="startPackage">
+                        {{ t("common.start") }}
+                    </button>
                 </div>
             </div>
         </dialog>

@@ -9,7 +9,7 @@ const router = createRouter({
             component: () => import("../../page/Home.vue"),
         },
         {
-            path: "/play/:uuid",
+            path: "/play/:uuid/:startMode",
             name: "play",
             component: () => import("../../page/Play.vue"),
         },

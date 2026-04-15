@@ -11,7 +11,9 @@
     const toastController = ref<InstanceType<typeof ToastController>>();
 
     const route = useRoute();
-    const uuid = computed(() => route.fullPath.replace("/play/", ""));
+    const pageData = computed(() => route.fullPath.replace("/play/", "").split("/"));
+    const uuid = computed(() => pageData.value[0]);
+    const startMode = computed(() => pageData.value[1] as "both" | "english" | "chinese");
 
     const my_modal_1 = ref<HTMLDialogElement>();
 
@@ -37,6 +39,7 @@
     const inShuffling = ref(false);
     const stopped = ref(false);
     const showChinese = ref(false);
+    const showEnglish = ref(false);
     const inputResetSortMethod = ref<SortMethod>("shuffle");
 
     let timer: number | null = null;
@@ -49,7 +52,6 @@
 
         wbStore.setCurrentData(uuid.value, wordbank.value, packageInfo.value?.current || 0);
 
-        // 当前词 = 已完成数量 + 1
         currentIndex.value = wbStore.alreadyDone + 1;
 
         startShuffle();
@@ -61,17 +63,17 @@
         inShuffling.value = true;
         stopped.value = false;
         showChinese.value = false;
+        showEnglish.value = false;
 
         if (timer) clearInterval(timer);
 
         timer = setInterval(() => {
-            // 随机动画仅用于视觉，不影响真正的 currentIndex
             currentIndex.value = Math.floor(Math.random() * wordbank.value.length);
             paddingWord.value = randomChineseString(10);
         }, 60) as any;
     }
 
-    /* 停止随机：需要强制固定到真正的 current word */
+    /* 停止随机：根据 startMode 决定哪些字段立即可见 */
     function stopShuffle() {
         if (timer) {
             clearInterval(timer);
@@ -81,17 +83,19 @@
         inShuffling.value = false;
         stopped.value = true;
 
-        // ★ 强制指向真正的当前词
         currentIndex.value = wbStore.alreadyDone + 1;
+
+        // In "english" mode: English is immediately visible, Chinese is never shown.
+        // In "chinese" mode: Chinese is immediately visible, English is never shown.
+        // In "both" mode: English is immediately visible, Chinese requires an extra click.
+        showEnglish.value = startMode.value === "english" || startMode.value === "both";
+        showChinese.value = startMode.value === "chinese";
     }
 
-    /* 下一题：调用 store.next() */
+    /* 下一题 */
     async function onNext() {
         packageInfo.value = pkgStore.packageInfo.find((item) => item.uuid === uuid.value) || null;
-
-        // 下一项的 index
         currentIndex.value = wbStore.alreadyDone + 1;
-
         startShuffle();
     }
 
@@ -99,7 +103,9 @@
     async function onRestartWholePackage() {
         let originalData: WordBankItem[];
         if (inputResetSortMethod.value === "original") {
-            originalData = await TauriFsJsonAdapter.readJsonFile<WordBankItem[]>(`packages-original/${uuid.value}.json`);
+            originalData = await TauriFsJsonAdapter.readJsonFile<WordBankItem[]>(
+                `packages-original/${uuid.value}.json`,
+            );
         }
         const shuffleFunc = {
             shuffle: (raw: WordBankItem[]) => shuffle(raw),
@@ -121,7 +127,6 @@
 
     /* 重新开始整个包（未完成整个包时） */
     async function onRestartWholePackageBeforeFinish(event: { shiftKey: boolean }) {
-        // 如果按住 Shift 则直接重启整个包
         if (event.shiftKey) {
             await onRestartWholePackage();
             return;
@@ -129,7 +134,12 @@
         my_modal_1.value?.showModal();
     }
 
-    /* 按钮状态机 */
+    /* 按钮状态机
+     *
+     * both:    stop → showChinese → next → …
+     * english: stop → next → …          (no reveal step, Chinese never shown)
+     * chinese: stop → next → …          (no reveal step, English never shown)
+     */
     async function onSingleButtonClick() {
         if (!inShuffling.value && !stopped.value) {
             startShuffle();
@@ -141,15 +151,20 @@
             return;
         }
 
-        if (stopped.value && !showChinese.value) {
+        // "both" mode needs an extra click to reveal the translation
+        if (stopped.value && startMode.value === "both" && !showChinese.value) {
             await wbStore.next();
             showChinese.value = true;
             return;
         }
 
-        if (stopped.value && showChinese.value) {
+        // All other stopped states → advance to next word
+        if (stopped.value) {
+            // For english/chinese modes, mark progress on the first "next" click
+            if (startMode.value !== "both") {
+                await wbStore.next();
+            }
             onNext();
-            return;
         }
     }
 
@@ -157,7 +172,10 @@
     const buttonLabel = computed(() => {
         if (inShuffling.value) return t("play.stop");
         if (!inShuffling.value && !stopped.value) return t("play.shuffle");
-        if (stopped.value && !showChinese.value) return t("play.showChinese");
+
+        // "both": after stopping, one more click reveals Chinese
+        if (stopped.value && startMode.value === "both" && !showChinese.value) return t("play.showChinese");
+
         return t("play.next");
     });
 </script>
@@ -182,6 +200,7 @@
         </section>
 
         <section class="my-auto">
+            <!-- Completed state -->
             <div class="card w-md bg-base-300 dark:bg-base-200 card-md shadow-sm" v-if="uiCurrentIndex + 1 == uiTotal">
                 <div class="card-body flex flex-row gap-12 justify-center items-center">
                     <img src="/firework.png" alt="firework" class="size-16 ml-4" />
@@ -191,25 +210,36 @@
                     </section>
                 </div>
             </div>
-            <div class="card w-md bg-base-300 dark:bg-base-200 card-md shadow-sm scale-120" v-else>
+
+            <!-- Active card -->
+            <div class="card w-md bg-base-300 dark:bg-base-200 card-md shadow-sm lg:scale-200" v-else>
                 <div class="card-body">
-                    <p class="text-center">{{ t("play.currentEnglish") }}</p>
+                    <!-- English row: visible in "both" and "english" modes -->
+                    <template v-if="startMode === 'both' || startMode === 'english'">
+                        <p class="text-center">{{ t("play.currentWord") }}</p>
+                        <p class="text-center text-2xl font-bold">
+                            {{ currentIndex >= 0 ? wordbank[currentIndex]?.english : t("play.unknown") }}
+                        </p>
+                        <!-- Divider only when both sections are present -->
+                        <div class="divider my-0" v-if="startMode === 'both'"></div>
+                    </template>
 
-                    <p class="text-center text-2xl font-bold">
-                        {{ currentIndex >= 0 ? wordbank[currentIndex]?.english : t("play.unknown") }}
-                    </p>
-
-                    <div class="divider my-0"></div>
-
-                    <p class="text-center">{{ t("play.currentChinese") }}</p>
-
-                    <p class="text-center text-lg" :class="{ 'blur-[6px]': !showChinese }">
-                        {{ showChinese ? wordbank[currentIndex]?.chinese : paddingWord }}
-                    </p>
-                    <!-- <p v-if="showChinese" class="text-center text-lg">
-                        {{ wordbank[currentIndex]?.chinese }}
-                    </p> -->
-                    <!-- <div v-else class="self-center skeleton h-6 w-48 mt-1"></div> -->
+                    <!-- Chinese row: visible in "both" and "chinese" modes -->
+                    <template v-if="startMode === 'both' || startMode === 'chinese'">
+                        <p class="text-center">{{ t("play.currentWord") }}</p>
+                        <p
+                            class="text-center text-lg"
+                            :class="{
+                                'blur-[6px]': startMode === 'both' && !showChinese,
+                                'text-2xl font-bold': startMode === 'chinese',
+                            }">
+                            <!--
+                                both:    blurred placeholder until revealed
+                                chinese: always show real word immediately after stop
+                            -->
+                            {{ startMode === "both" && !showChinese ? paddingWord : wordbank[currentIndex]?.chinese }}
+                        </p>
+                    </template>
                 </div>
             </div>
         </section>
@@ -223,7 +253,7 @@
                 </button>
             </div>
             <div class="flex gap-4" v-else>
-                <button class="btn btn-primary w-36" @click="onSingleButtonClick">
+                <button class="btn btn-primary w-48" @click="onSingleButtonClick">
                     {{ buttonLabel }}
                 </button>
                 <button class="btn btn-error" @click="($event) => onRestartWholePackageBeforeFinish($event)">

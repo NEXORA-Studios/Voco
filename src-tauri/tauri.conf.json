@@ -1,7 +1,7 @@
 {
     "$schema": "./gen/schemas/config-schema.json",
     "productName": "Voco",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "identifier": "io.github.nexora-studios.voco",
     "build": {
         "beforeDevCommand": "pnpm dev",
@@ -19,6 +19,7 @@
                 "height": 720,
                 "minWidth": 1280,
                 "minHeight": 720,
+                "maximized": true,
                 "decorations": false,
                 "center": true
             },
