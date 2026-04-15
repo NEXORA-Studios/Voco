@@ -158,7 +158,7 @@
         my_modal_3.value?.showModal();
     }
 
-    async function onPackageItemStart(item: PackageInfo, event: MouseEvent) {
+    async function onPackageItemStart(item: PackageInfo) {
         my_modal_4_packageInfo.value = item;
         my_modal_4.value?.showModal();
     }
@@ -192,7 +192,7 @@
                             <ul class="list bg-base-100 rounded-box shadow-md w-full mt-2">
                                 <PackageItem
                                     :bundle="bundle"
-                                    @play="(item, event) => onPackageItemStart(item, event)"
+                                    @play="(item) => onPackageItemStart(item)"
                                     @delete="(item, event) => onPackageItemDelete(item, event)"
                                     @reset="(item, event) => onPackageItemReset(item, event)" />
                             </ul>
