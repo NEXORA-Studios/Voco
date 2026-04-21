@@ -17,6 +17,7 @@ export default {
         no: "No",
         help: "Help",
         start: "Start",
+        ok: "OK",
     },
     home: {
         title: "Choose Your Vocabulary Package",
@@ -44,6 +45,7 @@ export default {
         both: "Both Original and Translation",
         fromBundleReset: "from bundle",
         settings: "Settings",
+        randomPick: "Random Picker",
         noData: "No Data",
         hasData: "{count} Words",
         sortMethod: "Sort Method",
@@ -104,6 +106,31 @@ export default {
         confirmButton: "Confirm",
     },
 
+    /* Window = randompick */
+    "+randompick": {
+        title: "Random Picker",
+        presets: "Presets",
+        pick: "Pick",
+        picking: "Picking...",
+        reset: "Reset",
+        "item-count": "{count} items",
+        "no-presets": "No presets created yet",
+        "select-preset": "Select a preset to start",
+        remaining: "Remaining: {count}",
+        "all-picked": "All items have been picked, please reset",
+        "preset-name": "Preset Name",
+        "preset-items": "Items",
+        "name-placeholder": "Enter preset name",
+        "items-placeholder": "Enter items, one per line\nUse ::count to set pick count\nExample:\nApple\nBanana::3\nOrange::5",
+        "items-hint": "One per line, use ::count for pick counts",
+        "create-title": "Create Preset",
+        "edit-title": "Edit Preset",
+        "delete-title": "Delete Preset",
+        "delete-confirm": "Are you sure you want to delete \"{name}\"?",
+        "result-title": "Result",
+        "result-remaining": "Remaining {remaining}/{count}",
+    },
+
     /* Toast */
 
     "#toast": {
@@ -119,6 +146,18 @@ export default {
             "data-count-mismatch": "The number of English and Chinese entries do not match",
             "en-data-selected": "English vocabulary list set successfully",
             "cn-data-selected": "Chinese translation list set successfully",
+        },
+        "+randompick": {
+            "name-required": "Please enter a preset name",
+            "items-required": "Please enter at least one item",
+            "create-success": "Preset created successfully",
+            "update-success": "Preset updated successfully",
+            "delete-success": "Preset deleted successfully",
+            "save-error": "Failed to save preset",
+            "delete-error": "Failed to delete preset",
+            "reset-success": "Preset reset successfully",
+            "reset-error": "Failed to reset preset",
+            "no-available": "No items available to pick",
         },
     },
 };

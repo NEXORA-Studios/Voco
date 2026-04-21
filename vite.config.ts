@@ -37,6 +37,7 @@ export default defineConfig(async () => ({
             "@s": "/src/shared",
             "@wM": "/src/windows/main",
             "@wS": "/src/windows/select",
+            "@wR": "/src/windows/randompick",
         },
     },
 
@@ -45,6 +46,7 @@ export default defineConfig(async () => ({
             input: {
                 index: resolve(__dirname, "index.html"),
                 select: resolve(__dirname, "select.html"),
+                randompick: resolve(__dirname, "randompick.html"),
             },
         },
     },

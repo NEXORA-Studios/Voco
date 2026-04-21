@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import { TauriFs, TauriFsJsonAdapter } from "@wM/modules/tauri/fs";
+import { TauriFs, TauriFsJsonAdapter } from "@/shared/modules/tauri/fs";
 import { PackageInfo } from "@s/types/packageInfo";
 
 export const usePackageInfoStore = defineStore("packageInfo", () => {

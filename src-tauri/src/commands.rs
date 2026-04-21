@@ -45,6 +45,34 @@ pub async fn close_select_window(app: tauri::AppHandle) {
     }
 }
 
+#[tauri::command]
+pub async fn open_randompick_window(app: tauri::AppHandle) {
+    {
+        if let Some(win) = app.get_window("randompick") {
+            let _ = win.set_focus();
+            return;
+        }
+
+        let _webview_window = tauri::WebviewWindowBuilder::from_config(
+            &app,
+            &app.config().app.windows.get(2).unwrap(),
+        )
+        .unwrap()
+        .build()
+        .unwrap();
+    }
+}
+
+#[tauri::command]
+pub async fn close_randompick_window(app: tauri::AppHandle) {
+    if let Some(win) = app.get_window("randompick") {
+        let _ = win.close();
+    }
+    if let Some(win) = app.get_window("main") {
+        let _ = win.set_focus();
+    }
+}
+
 use serde_json::Value;
 use tauri::{AppHandle, Emitter};
 

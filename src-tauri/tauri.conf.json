@@ -34,6 +34,18 @@
                 "decorations": false,
                 "center": true,
                 "create": false
+            },
+            {
+                "title": "Random Pick · Voco",
+                "label": "randompick",
+                "url": "randompick.html",
+                "width": 1280,
+                "height": 720,
+                "minWidth": 1280,
+                "minHeight": 720,
+                "decorations": false,
+                "center": true,
+                "create": false
             }
         ],
         "security": {

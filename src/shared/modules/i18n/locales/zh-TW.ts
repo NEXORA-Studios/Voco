@@ -17,6 +17,7 @@ export default {
         no: "否",
         help: "幫助",
         start: "開始",
+        ok: "確定",
     },
     home: {
         title: "選擇你的詞彙包",
@@ -44,6 +45,7 @@ export default {
         chinese: "僅含義",
         both: "原始詞彙和含義",
         settings: "設定",
+        randomPick: "隨機抽取",
         noData: "沒有數據",
         hasData: "{count} 個單字",
         sortMethod: "排序方法",
@@ -103,6 +105,31 @@ export default {
         confirmButton: "確認",
     },
 
+    /* Window = randompick */
+    "+randompick": {
+        title: "隨機抽取",
+        presets: "預設列表",
+        pick: "抽取",
+        picking: "抽取中...",
+        reset: "重置",
+        "item-count": "{count} 個項目",
+        "no-presets": "還沒有建立預設",
+        "select-preset": "選擇一個預設開始",
+        remaining: "剩餘可抽取: {count} 次",
+        "all-picked": "所有項目已抽完，請重置",
+        "preset-name": "預設名稱",
+        "preset-items": "項目",
+        "name-placeholder": "輸入預設名稱",
+        "items-placeholder": "輸入項目，每行一個\n使用::次數設置可抽取次數\n例如：\n蘋果\n香蕉::3\n橘子::5",
+        "items-hint": "每行一個，使用::次數設置可抽取次數",
+        "create-title": "建立預設",
+        "edit-title": "編輯預設",
+        "delete-title": "刪除預設",
+        "delete-confirm": "確定要刪除 \"{name}\" 嗎？",
+        "result-title": "結果",
+        "result-remaining": "剩餘 {remaining}/{count} 次",
+    },
+
     /* Toast */
     "#toast": {
         "+main": {
@@ -117,6 +144,18 @@ export default {
             "data-count-mismatch": "英文和中文條目數量不匹配",
             "en-data-selected": "英文詞彙列表設定成功",
             "cn-data-selected": "中文含義列表設定成功",
+        },
+        "+randompick": {
+            "name-required": "請輸入預設名稱",
+            "items-required": "請至少輸入一個項目",
+            "create-success": "預設建立成功",
+            "update-success": "預設更新成功",
+            "delete-success": "預設刪除成功",
+            "save-error": "儲存預設失敗",
+            "delete-error": "刪除預設失敗",
+            "reset-success": "預設重置成功",
+            "reset-error": "預設重置失敗",
+            "no-available": "沒有可抽取的項目了",
         },
     },
 };

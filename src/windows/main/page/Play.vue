@@ -212,7 +212,7 @@
             </div>
 
             <!-- Active card -->
-            <div class="card w-md bg-base-300 dark:bg-base-200 card-md shadow-sm lg:scale-200" v-else>
+            <div class="card w-md bg-base-300 dark:bg-base-200 card-md shadow-sm scale-200" v-else>
                 <div class="card-body">
                     <!-- English row: visible in "both" and "english" modes -->
                     <template v-if="startMode === 'both' || startMode === 'english'">

@@ -3,4 +3,4 @@ export { convertCsvToJson, convertXlsxToJson } from "./data/utils";
 export { default as router } from "./router";
 export { usePackageInfoStore } from "./stores/packageInfoStore";
 export { useWordbankStore } from "./stores/wordbankStore";
-export { TauriFs, TauriFsJsonAdapter } from "./tauri/fs";
+export { TauriFs, TauriFsJsonAdapter } from "../../../shared/modules/tauri/fs";

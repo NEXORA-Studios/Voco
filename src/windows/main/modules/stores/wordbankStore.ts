@@ -1,6 +1,6 @@
 import { ref } from "vue";
 import { defineStore } from "pinia";
-import { TauriFsJsonAdapter } from "@wM/modules/tauri/fs";
+import { TauriFsJsonAdapter } from "@/shared/modules/tauri/fs";
 import { usePackageInfoStore } from "./packageInfoStore";
 import { PackageInfo } from "@s/types/packageInfo";
 import { WordBankItem } from "@s/types/wordbank";

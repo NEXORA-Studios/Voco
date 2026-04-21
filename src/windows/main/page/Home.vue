@@ -208,6 +208,10 @@
                 <i class="icon-[material-symbols--add-box-rounded] size-6 -ml-2"></i>
                 <span class="-mr-1 -translate-y-px">{{ t("home.createNew") }}</span>
             </button>
+            <button class="btn btn-secondary btn-outline" @click="invoke('open_randompick_window')">
+                <i class="icon-[material-symbols--casino] size-6 -ml-2"></i>
+                <span class="-mr-1 -translate-y-px">{{ t("home.randomPick") }}</span>
+            </button>
             <button class="btn btn-primary btn-outline" @click="$router.push('/settings')">
                 <i class="icon-[material-symbols--settings-account-box-outline-rounded] size-6 -ml-2"></i>
                 <span class="-mr-1 -translate-y-px">{{ t("home.settings") }}</span>

@@ -17,6 +17,7 @@ export default {
         no: "否",
         help: "帮助",
         start: "开始",
+        ok: "确定",
     },
     home: {
         title: "选择你的词汇包",
@@ -44,6 +45,7 @@ export default {
         chinese: "仅翻译",
         both: "原始词汇和翻译",
         settings: "设置",
+        randomPick: "随机抽取",
         noData: "没有数据",
         hasData: "{count} 个单词",
         sortMethod: "排序方法",
@@ -103,6 +105,31 @@ export default {
         confirmButton: "确认",
     },
 
+    /* Window = randompick */
+    "+randompick": {
+        title: "随机抽取",
+        presets: "预设列表",
+        "item-count": "{count} 个选项",
+        "no-presets": "还没有创建预设",
+        "select-preset": "选择一个预设开始",
+        pick: "抽取",
+        picking: "抽取中...",
+        reset: "重置",
+        remaining: "剩余可抽取: {count} 次",
+        "all-picked": "所有项目已抽完，请重置",
+        "create-title": "创建预设",
+        "edit-title": "编辑预设",
+        "delete-title": "删除预设",
+        "preset-name": "预设名称",
+        "name-placeholder": "输入预设名称",
+        "preset-items": "选项列表",
+        "items-hint": "每行一个选项，使用 ::次数 设置可抽取次数",
+        "items-placeholder": "输入选项，每行一个\n例如:\n选项 A\n选项 B::3\n选项 C::5",
+        "delete-confirm": "确定要删除预设 \"{name}\" 吗？",
+        "result-title": "抽取结果",
+        "result-remaining": "剩余 {remaining}/{count} 次",
+    },
+    
     /* Toast */
     "#toast": {
         "+main": {
@@ -117,6 +144,18 @@ export default {
             "data-count-mismatch": "英文和中文条目数量不匹配",
             "en-data-selected": "英文词汇列表设置成功",
             "cn-data-selected": "中文含义列表设置成功",
+        },
+        "+randompick": {
+            "name-required": "请输入预设名称",
+            "items-required": "请至少输入一个项目",
+            "create-success": "预设创建成功",
+            "update-success": "预设更新成功",
+            "delete-success": "预设删除成功",
+            "save-error": "保存预设失败",
+            "delete-error": "删除预设失败",
+            "reset-success": "预设重置成功",
+            "reset-error": "预设重置失败",
+            "no-available": "没有可抽取的项目了",
         },
     },
 };

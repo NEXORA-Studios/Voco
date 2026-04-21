@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import { TauriFsJsonAdapter } from "@wM/modules/tauri/fs";
+import { TauriFsJsonAdapter } from "@/shared/modules/tauri/fs";
 import { i18n } from "@/shared/modules/i18n";
 
 type Language = "zh-CN" | "zh-TW" | "en-US" | "en-GB";

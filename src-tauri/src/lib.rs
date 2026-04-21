@@ -22,6 +22,8 @@ pub fn run() {
         commands::multi_window_bridge_send,
         commands::open_select_window,
         commands::close_select_window,
+        commands::open_randompick_window,
+        commands::close_randompick_window,
     ]);
 
     builder
