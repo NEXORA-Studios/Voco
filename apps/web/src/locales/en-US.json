@@ -1,0 +1,101 @@
+{
+    "app": {
+        "title": "Voco",
+        "home": "Home",
+        "picker": "Random Picker",
+        "settings": "Settings"
+    },
+    "packages": {
+        "title": "Vocabulary Packages",
+        "new": "New Package",
+        "edit": "Edit",
+        "delete": "Delete",
+        "start": "Start Challenge",
+        "reset": "Reset Order",
+        "bundle": "Bundle",
+        "entries": "entries",
+        "sort": "Sort",
+        "sort_shuffle": "Shuffle",
+        "sort_alphabetical": "Alphabetical",
+        "sort_original": "Original",
+        "confirmDelete": "Are you sure you want to delete this package?",
+        "emptyBundle": "This bundle is now empty. Delete it too?",
+        "noPackages": "No packages yet",
+        "form": {
+            "step1": "Step 1: Basic Info",
+            "confirm": "Step 3: Confirm & Save",
+            "selectBundle": "Select bundle",
+            "name": "Name",
+            "description": "Description",
+            "bundle": "Bundle",
+            "newBundle": "New bundle",
+            "bundleName": "Bundle name",
+            "sortMethod": "Sort method",
+            "save": "Save",
+            "cancel": "Cancel",
+            "next": "Next",
+            "back": "Back"
+        },
+        "import": {
+            "title": "Excel Import",
+            "chooseFile": "Choose file",
+            "sheet": "Sheet",
+            "headerRow": "Header row",
+            "hasHeader": "Has header row",
+            "originalCol": "Original",
+            "translationCol": "Translation",
+            "preview": "Preview",
+            "totalEntries": "{{count}} entries total"
+        },
+        "editor": {
+            "entriesTitle": "Entries",
+            "import": "Import (Append)",
+            "reimport": "Re-import (Replace)",
+            "cleanAll": "Clean All",
+            "confirmReplace": "This will replace all existing entries. Continue?",
+            "confirmCleanAll": "This will remove all entries. Continue?",
+            "confirmImport": "Confirm Import",
+            "confirmReimport": "Confirm Re-import",
+            "cancel": "Cancel",
+            "noEntries": "No entries yet"
+        }
+    },
+    "session": {
+        "title": "Challenge",
+        "start": "Start",
+        "continue": "Continue",
+        "spinning": "Picking...",
+        "stop": "Stop",
+        "next": "Next",
+        "showTranslation": "Show Translation",
+        "remaining": "{{current}} / {{total}} remaining",
+        "done": "Challenge complete!",
+        "restart": "Restart",
+        "back": "Back to Home",
+        "selectMode": "Select Mode",
+        "mode": {
+            "both": "Original + Translation",
+            "original_only": "Original only",
+            "translation_only": "Translation only"
+        }
+    },
+    "picker": {
+        "title": "Random Picker",
+        "newPreset": "New Preset",
+        "editPreset": "Edit Preset",
+        "presetName": "Preset name",
+        "items": "Items",
+        "itemsHint": "One item per line. Use ::N to set pick quota.",
+        "load": "Load",
+        "pick": "Pick",
+        "reset": "Reset Session",
+        "remaining": "{{count}} picks remaining",
+        "selectPreset": "Select a preset from the left panel",
+        "allExhausted": "All items exhausted. Reset to pick again.",
+        "confirmDelete": "Are you sure you want to delete this preset?"
+    },
+    "settings": {
+        "title": "Settings",
+        "language": "Language"
+    }
+}

@@ -1,0 +1,30 @@
+@reference "./globals.css";
+
+@layer base {
+    * {
+        overscroll-behavior: none;
+    }
+
+    ::-webkit-scrollbar {
+        @apply hidden;
+    }
+}
+
+@layer components {
+    li.cn-toast[data-type="info"],
+    li.cn-toast[data-type="info"] [data-description] {
+        @apply text-sky-600! dark:text-sky-500!;
+    }
+    li.cn-toast[data-type="success"],
+    li.cn-toast[data-type="success"] [data-description] {
+        @apply text-green-600! dark:text-green-500!;
+    }
+    li.cn-toast[data-type="warning"],
+    li.cn-toast[data-type="warning"] [data-description] {
+        @apply text-yellow-600! dark:text-yellow-500!;
+    }
+    li.cn-toast[data-type="error"],
+    li.cn-toast[data-type="error"] [data-description] {
+        @apply text-destructive!;
+    }
+}

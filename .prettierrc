@@ -7,7 +7,7 @@
     "bracketSameLine": true,
     "printWidth": 128,
     "plugins": ["prettier-plugin-tailwindcss"],
-    "tailwindStylesheet": "packages/ui/src/styles/globals.css",
+    "tailwindStylesheet": "packages/shadcn-ui/src/styles/globals.css",
     "tailwindFunctions": ["cn", "cva"],
     "overrides": [
         {

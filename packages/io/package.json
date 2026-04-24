@@ -1,0 +1,9 @@
+{
+    "name": "@workspace/io",
+    "version": "0.0.1",
+    "type": "module",
+    "private": true,
+    "scripts": {
+        "format": "cargo fmt --all"
+    }
+}

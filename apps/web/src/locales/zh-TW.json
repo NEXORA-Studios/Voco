@@ -1,0 +1,101 @@
+{
+    "app": {
+        "title": "Voco",
+        "home": "首頁",
+        "picker": "隨機抽取",
+        "settings": "設定"
+    },
+    "packages": {
+        "title": "詞彙包",
+        "new": "新增詞彙包",
+        "edit": "編輯",
+        "delete": "刪除",
+        "start": "開始挑戰",
+        "reset": "重設順序",
+        "bundle": "分類",
+        "entries": "詞條",
+        "sort": "排序方式",
+        "sort_shuffle": "隨機",
+        "sort_alphabetical": "字母順序",
+        "sort_original": "原始順序",
+        "confirmDelete": "確定要刪除這個詞彙包嗎？",
+        "emptyBundle": "該分類已空，是否同時刪除分類？",
+        "noPackages": "暫無詞彙包",
+        "form": {
+            "step1": "第一步：基本資訊",
+            "confirm": "第三步：確認儲存",
+            "selectBundle": "選擇分類",
+            "name": "名稱",
+            "description": "描述",
+            "bundle": "分類",
+            "newBundle": "新增分類",
+            "bundleName": "分類名稱",
+            "sortMethod": "排序方式",
+            "save": "儲存",
+            "cancel": "取消",
+            "next": "下一步",
+            "back": "上一步"
+        },
+        "import": {
+            "title": "Excel 匯入",
+            "chooseFile": "選擇檔案",
+            "sheet": "工作表",
+            "headerRow": "表頭行",
+            "hasHeader": "包含表頭",
+            "originalCol": "原文",
+            "translationCol": "譯文",
+            "preview": "預覽",
+            "totalEntries": "共 {{count}} 個詞條"
+        },
+        "editor": {
+            "entriesTitle": "詞條列表",
+            "import": "匯入（追加）",
+            "reimport": "重新匯入（取代）",
+            "cleanAll": "清空全部",
+            "confirmReplace": "這將取代所有現有詞條，是否繼續？",
+            "confirmCleanAll": "這將刪除所有詞條，是否繼續？",
+            "confirmImport": "確認匯入",
+            "confirmReimport": "確認重新匯入",
+            "cancel": "取消",
+            "noEntries": "暫無詞條"
+        }
+    },
+    "session": {
+        "title": "挑戰模式",
+        "start": "開始",
+        "continue": "繼續",
+        "spinning": "抽取中...",
+        "stop": "停止",
+        "next": "下一個",
+        "showTranslation": "顯示譯文",
+        "remaining": "剩餘 {{current}} / {{total}}",
+        "done": "挑戰完成！",
+        "restart": "重新開始",
+        "back": "返回首頁",
+        "selectMode": "選擇模式",
+        "mode": {
+            "both": "原文 + 譯文",
+            "original_only": "僅原文",
+            "translation_only": "僅譯文"
+        }
+    },
+    "picker": {
+        "title": "隨機抽取",
+        "newPreset": "新增預設",
+        "editPreset": "編輯預設",
+        "presetName": "預設名稱",
+        "items": "項目清單",
+        "itemsHint": "每行一個項目，使用 ::N 設定可抽取次數",
+        "load": "載入",
+        "pick": "抽取",
+        "reset": "重設工作階段",
+        "remaining": "剩餘 {{count}} 次",
+        "selectPreset": "請從左側選擇一個預設",
+        "allExhausted": "所有項目已抽完，請重設工作階段",
+        "confirmDelete": "確定要刪除這個預設嗎？"
+    },
+    "settings": {
+        "title": "設定",
+        "language": "語言"
+    }
+}

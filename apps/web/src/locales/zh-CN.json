@@ -1,0 +1,101 @@
+{
+    "app": {
+        "title": "Voco",
+        "home": "首页",
+        "picker": "随机抽取",
+        "settings": "设置"
+    },
+    "packages": {
+        "title": "词汇包",
+        "new": "新建词汇包",
+        "edit": "编辑",
+        "delete": "删除",
+        "start": "开始挑战",
+        "reset": "重置顺序",
+        "bundle": "分类",
+        "entries": "词条",
+        "sort": "排序方式",
+        "sort_shuffle": "随机",
+        "sort_alphabetical": "字母顺序",
+        "sort_original": "原始顺序",
+        "confirmDelete": "确定要删除这个词汇包吗？",
+        "emptyBundle": "该分类已空，是否同时删除分类？",
+        "noPackages": "暂无词汇包",
+        "form": {
+            "step1": "第一步：基本信息",
+            "confirm": "第三步：确认保存",
+            "selectBundle": "选择分类",
+            "name": "名称",
+            "description": "描述",
+            "bundle": "分类",
+            "newBundle": "新建分类",
+            "bundleName": "分类名称",
+            "sortMethod": "打乱内容时使用的排序方式",
+            "save": "保存",
+            "cancel": "取消",
+            "next": "下一步",
+            "back": "上一步"
+        },
+        "import": {
+            "title": "Excel 导入",
+            "chooseFile": "选择文件",
+            "sheet": "工作表",
+            "headerRow": "表头行",
+            "hasHeader": "包含表头",
+            "originalCol": "原文",
+            "translationCol": "译文",
+            "preview": "预览",
+            "totalEntries": "共 {{count}} 个词条"
+        },
+        "editor": {
+            "entriesTitle": "词条列表",
+            "import": "导入（追加）",
+            "reimport": "重新导入（替换）",
+            "cleanAll": "清空全部",
+            "confirmReplace": "这将替换所有现有词条，是否继续？",
+            "confirmCleanAll": "这将删除所有词条，是否继续？",
+            "confirmImport": "确认导入",
+            "confirmReimport": "确认重新导入",
+            "cancel": "取消",
+            "noEntries": "暂无词条"
+        }
+    },
+    "session": {
+        "title": "挑战模式",
+        "start": "开始",
+        "continue": "继续",
+        "spinning": "抽取中...",
+        "stop": "停止",
+        "next": "下一个",
+        "showTranslation": "显示译文",
+        "remaining": "剩余 {{current}} / {{total}}",
+        "done": "挑战完成！",
+        "restart": "重新开始",
+        "back": "返回首页",
+        "selectMode": "选择模式",
+        "mode": {
+            "both": "原文 + 译文",
+            "original_only": "仅原文",
+            "translation_only": "仅译文"
+        }
+    },
+    "picker": {
+        "title": "随机抽取",
+        "newPreset": "新建预设",
+        "editPreset": "编辑预设",
+        "presetName": "预设名称",
+        "items": "项目列表",
+        "itemsHint": "每行一个项目，使用 ::N 设置可抽取次数",
+        "load": "加载",
+        "pick": "抽取",
+        "reset": "重置会话",
+        "remaining": "剩余 {{count}} 次",
+        "selectPreset": "请从左侧选择一个预设",
+        "allExhausted": "所有项目已抽完，请重置会话",
+        "confirmDelete": "确定要删除这个预设吗？"
+    },
+    "settings": {
+        "title": "设置",
+        "language": "语言"
+    }
+}
