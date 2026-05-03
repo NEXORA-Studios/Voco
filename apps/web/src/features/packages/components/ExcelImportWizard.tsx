@@ -13,15 +13,16 @@ import { SortMethodSelect } from "./SortMethodSelect";
 import { usePackagesStore } from "@/store/packages.store";
 import type { Package, BundleMeta, SortMethod, VocabEntry } from "@/types/global.d.ts";
 
-function slugify(name: string) {
-    let slug = name
-        .trim()
-        .replace(/[\s_]+/g, "-")
-        .replace(/[\\/:*?"<>|]+/g, "");
-    if (!slug) {
-        slug = "pkg-" + Math.random().toString(36).slice(2, 8);
-    }
-    return slug;
+function slugify(/* name: string */) {
+    return "pkg-" + Math.random().toString(36).slice(2, 8);
+    // let slug = name
+    //     .trim()
+    //     .replace(/[\s_]+/g, "-")
+    //     .replace(/[\\/:*?"<>|]+/g, "");
+    // if (!slug) {
+    //     slug = "pkg-" + Math.random().toString(36).slice(2, 8);
+    // }
+    // return slug;
 }
 
 export function ExcelImportWizard() {
@@ -46,7 +47,7 @@ export function ExcelImportWizard() {
         let bundle: BundleMeta | null = null;
 
         if (finalBundleSlug === "__new__") {
-            const bslug = slugify(newBundleName);
+            const bslug = slugify(/* newBundleName */);
             bundle = {
                 version: 1,
                 id: uuidv4(),
@@ -127,14 +128,14 @@ export function ExcelImportWizard() {
                             value={name}
                             onChange={(e) => {
                                 setName(e.target.value);
-                                if (!slug || step === 1) setSlug(slugify(e.target.value));
+                                if (!slug || step === 1) setSlug(slugify(/* e.target.value */));
                             }}
                         />
                     </div>
-                    <div className="flex flex-col gap-2">
+                    {/* <div className="flex flex-col gap-2">
                         <Label>Slug</Label>
                         <Input value={slug} onChange={(e) => setSlug(e.target.value)} placeholder={slugify(name)} />
-                    </div>
+                    </div> */}
                     <div className="flex flex-col gap-2">
                         <Label>{t("packages.form.description")}</Label>
                         <Textarea value={description} onChange={(e) => setDescription(e.target.value)} />

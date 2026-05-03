@@ -1,24 +1,31 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Plus, ChevronDown, ChevronRight } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "@workspace/shadcn-ui/components/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@workspace/shadcn-ui/components/tabs";
 import { usePackagesStore } from "@/store/packages.store";
 import { PackageCard } from "@/features/packages/components/PackageCard";
+import { Card, CardContent } from "@workspace/shadcn-ui/components/card";
+import { Separator } from "@workspace/shadcn-ui/components/separator";
+import { PickerButton } from "@/components/PickerButton";
 
 export function Home() {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const { bundles, packages, loaded, load } = usePackagesStore();
-    const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+    const [activeTab, setActiveTab] = useState<string>("");
 
     useEffect(() => {
         if (!loaded) load();
     }, [loaded, load]);
 
-    const toggleBundle = (slug: string) => {
-        setCollapsed((prev) => ({ ...prev, [slug]: !prev[slug] }));
-    };
+    // Set default active tab when bundles are loaded
+    useEffect(() => {
+        if (bundles.length > 0 && !activeTab) {
+            setActiveTab(bundles[0].slug);
+        }
+    }, [bundles, activeTab]);
 
     const getPackagesForBundle = (bundleSlug: string) => {
         const bundle = bundles.find((b) => b.slug === bundleSlug);
@@ -41,31 +48,41 @@ export function Home() {
             ) : bundles.length === 0 ? (
                 <p className="text-muted-foreground">{t("packages.noPackages")}</p>
             ) : (
-                <div className="flex flex-col gap-4">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                    <Card className="py-1">
+                        <CardContent className="px-1">
+                            <TabsList className="flex-wrap bg-transparent">
+                                {bundles.map((bundle) => {
+                                    const bundlePackages = getPackagesForBundle(bundle.slug);
+                                    return (
+                                        <TabsTrigger
+                                            key={bundle.slug}
+                                            value={bundle.slug}
+                                            className="flex items-center space-x-0.5">
+                                            {bundle.name}
+                                            <span className="text-xs text-muted-foreground">({bundlePackages.length})</span>
+                                        </TabsTrigger>
+                                    );
+                                })}
+                            </TabsList>
+                        </CardContent>
+                    </Card>
+                    <Separator className="mt-2 mb-4" />
                     {bundles.map((bundle) => {
                         const bundlePackages = getPackagesForBundle(bundle.slug);
-                        const isCollapsed = collapsed[bundle.slug];
                         return (
-                            <div key={bundle.slug} className="rounded-lg border">
-                                <button
-                                    className="flex w-full items-center gap-2 px-4 py-3 text-left font-medium hover:bg-muted"
-                                    onClick={() => toggleBundle(bundle.slug)}>
-                                    {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                                    {bundle.name}
-                                    <span className="ml-2 text-xs text-muted-foreground">({bundlePackages.length})</span>
-                                </button>
-                                {!isCollapsed && (
-                                    <div className="grid gap-3 px-4 pb-4 sm:grid-cols-2 lg:grid-cols-3">
-                                        {bundlePackages.map((pkg) => (
-                                            <PackageCard key={pkg.slug} pkg={pkg} />
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
+                            <TabsContent key={bundle.slug} value={bundle.slug}>
+                                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                    {bundlePackages.map((pkg) => (
+                                        <PackageCard key={pkg.slug} pkg={pkg} />
+                                    ))}
+                                </div>
+                            </TabsContent>
                         );
                     })}
-                </div>
+                </Tabs>
             )}
+            <PickerButton />
         </div>
     );
 }

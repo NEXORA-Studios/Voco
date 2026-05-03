@@ -1,10 +1,10 @@
 {
     "$schema": "https://schema.tauri.app/config/2",
     "productName": "Voco",
-    "version": "0.1.0",
+    "version": "2.0.0",
     "identifier": "tech.nexora-studios.voco.desktop",
     "build": {
-        "frontendDist": "../web",
+        "frontendDist": "../web/dist",
         "devUrl": "http://localhost:1420"
     },
     "app": {
@@ -12,10 +12,23 @@
         "windows": [
             {
                 "title": "Voco",
-                "width": 1200,
-                "height": 800,
-                "minWidth": 800,
-                "minHeight": 600
+                "width": 1280,
+                "height": 720,
+                "minWidth": 1280,
+                "minHeight": 720,
+                "maximized": true,
+                "center": true
+            },
+            {
+                "title": "Voco Picker",
+                "label": "picker",
+                "width": 1280,
+                "height": 720,
+                "minWidth": 1280,
+                "minHeight": 720,
+                "center": true,
+                "url": "#/picker",
+                "create": false
             }
         ],
         "security": {
@@ -25,6 +38,38 @@
     "bundle": {
         "active": true,
         "targets": "all",
-        "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"]
+        "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
+
+        "createUpdaterArtifacts": true,
+
+        "category": "Education",
+        "longDescription": "Voco is a desktop application for educational scenarios that helps teachers easily manage vocabulary packages and efficiently question students. It is suitable for classroom and distance teaching.",
+        "copyright": "Copyright 2025~present NEXORA-Studios. All rights reserved.",
+        "publisher": "NEXORA Studios",
+        "windows": {
+            "allowDowngrades": false,
+            "certificateThumbprint": null,
+            "digestAlgorithm": null,
+            "nsis": null,
+            "signCommand": null,
+            "timestampUrl": null,
+            "tsp": false,
+            "webviewInstallMode": {
+                "silent": true,
+                "type": "downloadBootstrapper"
+            },
+            "wix": null
+        }
+    },
+
+    "plugins": {
+        "updater": {
+            "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEIyMjhEQUZGM0U0M0UwQUEKUldTcTRFTSsvOW9vc2o0YTZMKys1a0F6WnVnYUJjNU0yTnJRZDdPVGZwRVNzRHhDaHpxK2FEcjUK",
+            
+            "endpoints": [
+                "https://github.com/NEXORA-Studios/Voco/releases/latest/download/latest.json"
+            ]
+        }
     }
 }
+

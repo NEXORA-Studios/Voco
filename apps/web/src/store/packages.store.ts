@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { Bridge } from "@/lib/bridge";
 import { sortEntries } from "@/lib/sort";
+import { useSessionStore } from "@/store/session.store";
 import type { BundleMeta, Package } from "@/types/global.d.ts";
 
 interface PackagesState {
@@ -60,15 +61,16 @@ export const usePackagesStore = create<PackagesState>((set, get) => ({
     async resetPackageSort(slug, method) {
         const pkg = get().packages.find((p) => p.slug === slug);
         if (!pkg) return;
-        if (method === "original") {
-            alert("Original sort means the current saved order as first imported.");
-            return;
-        }
         const entries = sortEntries(pkg.entries, method);
         const updated: Package = { ...pkg, entries, sort_method: method };
         await Bridge.packages.write(updated);
         set((state) => ({
             packages: state.packages.map((p) => (p.slug === slug ? updated : p)),
         }));
+        // Clear session if it's for this package
+        const sessionPkg = useSessionStore.getState().pkg;
+        if (sessionPkg?.slug === slug || sessionPkg?.id === pkg.id) {
+            useSessionStore.getState().reset();
+        }
     },
 }));

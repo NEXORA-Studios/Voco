@@ -3,9 +3,10 @@ import { createRoot } from "react-dom/client";
 
 import { App } from "./App.tsx";
 import { ThemeProvider } from "@/components/theme-provider.tsx";
-import "@/lib/i18n";
+import { TooltipProvider } from "@workspace/shadcn-ui/components/tooltip";
 import { useSettingsStore } from "@/store/settings.store";
 
+import "@/lib/i18n";
 import "@workspace/shadcn-ui/styles/globals.css";
 import "@workspace/shadcn-ui/styles/app.css";
 
@@ -15,7 +16,9 @@ useSettingsStore.getState().load();
 createRoot(document.getElementById("root")!).render(
     <StrictMode>
         <ThemeProvider>
-            <App />
+            <TooltipProvider>
+                <App />
+            </TooltipProvider>
         </ThemeProvider>
     </StrictMode>
 );

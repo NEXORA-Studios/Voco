@@ -5,7 +5,8 @@
         "build": {
             "dependsOn": ["^build"],
             "inputs": ["$TURBO_DEFAULT$", ".env*", "target/**"],
-            "outputs": ["dist/**"]
+            "outputs": ["dist/**"],
+            "env": ["TAURI_SIGNING_PRIVATE_KEY", "TAURI_SIGNING_PRIVATE_KEY_PASSWORD"]
         },
         "lint": {
             "dependsOn": ["^lint"]
@@ -18,6 +19,7 @@
         },
         "dev": {
             "inputs": ["$TURBO_DEFAULT$", ".env*", "target/**"],
+            "cache": false,
             "persistent": true
         }
     }

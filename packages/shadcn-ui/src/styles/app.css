@@ -5,10 +5,14 @@
         overscroll-behavior: none;
     }
 
+    *:not(.selectable, .selectable *, input, textarea, code, pre) {
+        user-select: none;
+    }
+
     ::-webkit-scrollbar {
         @apply hidden;
     }
-}
+}   
 
 @layer components {
     li.cn-toast[data-type="info"],

@@ -9,8 +9,9 @@ import { usePackagesStore } from "@/store/packages.store";
 import { VocabRoulette } from "@/features/session/components/VocabRoulette";
 import { VocabCard } from "@/features/session/components/VocabCard";
 import { SessionControls } from "@/features/session/components/SessionControls";
+import { PickerButton } from "@/components/PickerButton";
 
-const SPIN_DURATION = 5000;
+const SPIN_DURATION = 2500;
 
 export function Session() {
     const { slug } = useParams<{ slug: string }>();
@@ -18,7 +19,7 @@ export function Session() {
     const navigate = useNavigate();
     const { packages, loaded, load } = usePackagesStore();
     const [searchParams] = useSearchParams();
-    const { pkg, state, init, stop } = useSessionStore();
+    const { pkg, state, init, setMode, stop } = useSessionStore();
 
     useEffect(() => {
         if (!loaded) load();
@@ -34,9 +35,12 @@ export function Session() {
             // Resume if same package and not done; otherwise init fresh
             if (!pkg || pkg.slug !== found.slug || pkg.id !== found.id || state.status === "done") {
                 init(found, mode);
+            } else {
+                // Same package: update mode from URL to respect user's choice
+                setMode(mode);
             }
         }
-    }, [loaded, slug, packages, pkg, init, searchParams, state.status]);
+    }, [loaded, slug, packages, pkg, init, setMode, searchParams, state.status]);
 
     // Auto-stop spinner after 5 seconds
     useEffect(() => {
@@ -71,6 +75,8 @@ export function Session() {
             </div>
 
             <SessionControls />
+
+            <PickerButton />
         </div>
     );
 }

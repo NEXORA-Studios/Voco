@@ -1,6 +1,6 @@
 {
     "name": "@nexora-studios/voco-web",
-    "version": "0.0.1",
+    "version": "2.0.0",
     "type": "module",
     "private": true,
     "scripts": {
@@ -13,6 +13,7 @@
     },
     "dependencies": {
         "@tauri-apps/api": "^2.5.0",
+        "@tauri-apps/plugin-updater": "^2.10.1",
         "@workspace/shadcn-ui": "workspace:*",
         "i18next": "^24.2.3",
         "lucide-react": "^1.8.0",

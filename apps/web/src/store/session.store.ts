@@ -15,6 +15,7 @@ interface SessionStore {
     remaining: number[];
     state: SessionState;
     init: (pkg: Package, mode: SessionMode) => void;
+    setMode: (mode: SessionMode) => void;
     spin: () => void;
     stop: () => void;
     reveal: () => void;
@@ -33,6 +34,10 @@ export const useSessionStore = create<SessionStore>()(
             init(pkg, mode) {
                 const remaining = pkg.entries.map((_, i) => i);
                 set({ pkg, mode, remaining, state: { status: "idle" } });
+            },
+
+            setMode(mode) {
+                set({ mode });
             },
 
             spin() {

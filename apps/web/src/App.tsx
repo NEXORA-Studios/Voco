@@ -1,6 +1,6 @@
 import { HashRouter, Routes, Route, useLocation, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { BookOpen, Dices, Settings, Menu, X } from "lucide-react";
+import { BookOpen, Settings, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@workspace/shadcn-ui/components/button";
 import { Home } from "@/routes/home";
@@ -17,11 +17,10 @@ function Sidebar() {
 
     const links = [
         { to: "/", icon: BookOpen, label: t("app.home") },
-        { to: "/picker", icon: Dices, label: t("app.picker") },
         { to: "/settings", icon: Settings, label: t("app.settings") },
     ];
 
-    if (location.pathname.startsWith("/session")) return null;
+    if (location.pathname.startsWith("/session") || location.pathname.startsWith("/picker")) return null;
 
     return (
         <div>
@@ -34,7 +33,7 @@ function Sidebar() {
                 }`}>
                 <div className="flex h-full flex-col p-4">
                     <div className="mb-6 flex items-center gap-2 px-2">
-                        <BookOpen className="h-6 w-6" />
+                        <img src="/logo.png" alt={t("app.title")} className="size-8" />
                         <span className="text-lg font-bold">{t("app.title")}</span>
                     </div>
                     <nav className="flex flex-col gap-1">
@@ -60,12 +59,12 @@ function Sidebar() {
 
 function Layout() {
     const location = useLocation();
-    const isSession = location.pathname.startsWith("/session");
+    const noSidebar = location.pathname.startsWith("/session") || location.pathname.startsWith("/picker");
 
     return (
-        <div className={`${isSession ? "h-svh overflow-hidden" : "min-h-svh"} ${isSession ? "" : "lg:pl-64"}`}>
+        <div className={`${noSidebar ? "h-svh overflow-hidden" : "min-h-svh"} ${noSidebar ? "" : "lg:pl-64"}`}>
             <Sidebar />
-            <main className={`p-6 ${isSession ? "p-0" : ""}`}>
+            <main className={`p-6 ${noSidebar ? "p-0" : ""}`}>
                 <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/packages/new" element={<PackageNew />} />

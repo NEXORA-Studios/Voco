@@ -30,4 +30,7 @@ export const Bridge = {
     fs: {
         readFileBytes: (path: string) => invoke<number[]>("read_file_bytes", { path }),
     },
+    window: {
+        openPicker: () => invoke<void>("open_picker_window"),
+    },
 };

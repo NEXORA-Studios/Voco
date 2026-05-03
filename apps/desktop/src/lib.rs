@@ -167,6 +167,24 @@ async fn read_file_bytes(path: String) -> Result<Vec<u8>, String> {
     std::fs::read(&path).map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+async fn open_picker_window(app: tauri::AppHandle) {
+    {
+        if let Some(win) = app.get_window("picker") {
+            let _ = win.set_focus();
+            return;
+        }
+
+        let _webview_window = tauri::WebviewWindowBuilder::from_config(
+            &app,
+            &app.config().app.windows.get(1).unwrap(),
+        )
+        .unwrap()
+        .build()
+        .unwrap();
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -175,6 +193,12 @@ pub fn run() {
         .setup(|app| {
             let base_path = app.path().app_data_dir()?;
             app.manage(VocoStore::new(base_path));
+
+            #[cfg(desktop)]
+            let _ = app
+                .handle()
+                .plugin(tauri_plugin_updater::Builder::new().build());
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -194,6 +218,7 @@ pub fn run() {
             delete_preset,
             open_file_dialog,
             read_file_bytes,
+            open_picker_window,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

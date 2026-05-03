@@ -13,7 +13,7 @@ export function Picker() {
     }, [loaded, load]);
 
     return (
-        <div className="flex h-full flex-col gap-6 lg:flex-row">
+        <div className="flex h-[calc(100vh-3rem)] flex-col gap-6 lg:flex-row">
             <div className="w-full lg:w-80">
                 <PresetList />
             </div>
