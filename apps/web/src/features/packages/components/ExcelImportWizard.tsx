@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { v4 as uuidv4 } from "uuid";
+import { parse, v4 as uuidv4 } from "uuid";
 import { Button } from "@workspace/shadcn-ui/components/button";
 import { Input } from "@workspace/shadcn-ui/components/input";
 import { Textarea } from "@workspace/shadcn-ui/components/textarea";
@@ -12,6 +12,7 @@ import { ExcelSheetPicker } from "./ExcelSheetPicker";
 import { SortMethodSelect } from "./SortMethodSelect";
 import { usePackagesStore } from "@/store/packages.store";
 import type { Package, BundleMeta, SortMethod, VocabEntry } from "@/types/global.d.ts";
+import { cn } from "@workspace/shadcn-ui/lib/utils";
 
 function slugify(/* name: string */) {
     return "pkg-" + Math.random().toString(36).slice(2, 8);
@@ -23,6 +24,17 @@ function slugify(/* name: string */) {
     //     slug = "pkg-" + Math.random().toString(36).slice(2, 8);
     // }
     // return slug;
+}
+
+function wrapCellContent(cell: any, key: any) {
+    const parsedSource = String(cell);
+    const isCellEmpty = parsedSource.length == 0;
+
+    return (
+        <td key={key} className={cn("px-2 py-1", isCellEmpty && "opacity-50")}>
+            {isCellEmpty ? "(empty)" : parsedSource}
+        </td>
+    );
 }
 
 export function ExcelImportWizard() {
@@ -242,11 +254,7 @@ export function ExcelImportWizard() {
                                         <tbody>
                                             {excel.sheetData.slice(0, 8).map((row, ri) => (
                                                 <tr key={ri} className="border-b">
-                                                    {row.map((cell, ci) => (
-                                                        <td key={ci} className="px-2 py-1">
-                                                            {String(cell ?? "")}
-                                                        </td>
-                                                    ))}
+                                                    {row.map((cell, ci) => wrapCellContent(cell, ci))}
                                                 </tr>
                                             ))}
                                         </tbody>
@@ -296,3 +304,4 @@ export function ExcelImportWizard() {
         </div>
     );
 }
+

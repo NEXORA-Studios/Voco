@@ -6,7 +6,7 @@
     }
 
     *:not(.selectable, .selectable *, input, textarea, code, pre) {
-        user-select: none;
+        @apply select-none;
     }
 
     ::-webkit-scrollbar {

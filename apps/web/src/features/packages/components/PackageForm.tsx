@@ -102,10 +102,10 @@ export function PackageForm({ initialPackage, onSaved, mode }: Props) {
                 <Input value={name} onChange={(e) => setName(e.target.value)} />
             </div>
 
-            <div className="flex flex-col gap-2">
+            {/* <div className="flex flex-col gap-2">
                 <Label>Slug</Label>
                 <Input value={slug} onChange={(e) => setSlug(e.target.value)} />
-            </div>
+            </div> */}
 
             <div className="flex flex-col gap-2">
                 <Label>{t("packages.form.description")}</Label>
