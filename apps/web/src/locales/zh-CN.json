@@ -42,10 +42,13 @@
             "sheet": "工作表",
             "headerRow": "表头行",
             "hasHeader": "包含表头",
-            "originalCol": "原文",
-            "translationCol": "译文",
+            "noHeader": "无表头",
+            "noHeaderDesc": "从第 1 行开始读取数据",
+            "originalCol": "原文列",
+            "translationCol": "译文列",
             "preview": "预览",
-            "totalEntries": "共 {{count}} 个词条"
+            "totalEntries": "共 {{count}} 个词条",
+            "headerRowHint": "选择包含列标题的行，或选择“无表头”从第一行开始读取数据。合并的单元格会被自动忽略。"
         },
         "editor": {
             "entriesTitle": "词条列表",

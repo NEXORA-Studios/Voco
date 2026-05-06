@@ -42,10 +42,13 @@
             "sheet": "Sheet",
             "headerRow": "Header row",
             "hasHeader": "Has header row",
-            "originalCol": "Original",
-            "translationCol": "Translation",
+            "noHeader": "No Header",
+            "noHeaderDesc": "Read data from row 1",
+            "originalCol": "Original Column",
+            "translationCol": "Translation Column",
             "preview": "Preview",
-            "totalEntries": "{{count}} entries total"
+            "totalEntries": "{{count}} entries total",
+            "headerRowHint": "Select the row containing column titles, or select \"No Header\" to start reading data from the first row. Merged cells will be automatically ignored."
         },
         "editor": {
             "entriesTitle": "Entries",

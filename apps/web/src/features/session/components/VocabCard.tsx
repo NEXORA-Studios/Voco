@@ -22,9 +22,7 @@ export function VocabCard() {
             ) : (
                 <>
                     <div className="text-[5vw] font-bold tracking-tight">{entry.original}</div>
-                    {state.status === "revealed" && (
-                        <div className="text-[2vw] text-muted-foreground">{entry.translation}</div>
-                    )}
+                    {state.status === "revealed" && <div className="text-[2vw] text-muted-foreground">{entry.translation}</div>}
                 </>
             )}
             {isSingleMode && showAlternative && (
@@ -33,11 +31,7 @@ export function VocabCard() {
                 </div>
             )}
             {isSingleMode && state.status === "paused" && (
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowAlternative(!showAlternative)}
-                >
+                <Button variant="ghost" size="sm" onClick={() => setShowAlternative(!showAlternative)}>
                     {showAlternative
                         ? t("session.hideAlternative")
                         : mode === "translation_only"

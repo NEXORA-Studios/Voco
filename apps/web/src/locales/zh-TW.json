@@ -42,10 +42,13 @@
             "sheet": "工作表",
             "headerRow": "表頭行",
             "hasHeader": "包含表頭",
-            "originalCol": "原文",
-            "translationCol": "譯文",
+            "noHeader": "無表頭",
+            "noHeaderDesc": "從第 1 列開始讀取資料",
+            "originalCol": "原文列",
+            "translationCol": "譯文列",
             "preview": "預覽",
-            "totalEntries": "共 {{count}} 個詞條"
+            "totalEntries": "共 {{count}} 個詞條",
+            "headerRowHint": "選擇包含欄位標題的列，或選擇「無表頭」從第一列開始讀取資料。合併的儲存格會被自動忽略。"
         },
         "editor": {
             "entriesTitle": "詞條列表",
