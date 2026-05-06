@@ -20,10 +20,13 @@ export function Home() {
         if (!loaded) load();
     }, [loaded, load]);
 
-    // Set default active tab when bundles are loaded
+    // Set default active tab when bundles are loaded or current tab becomes invalid
     useEffect(() => {
-        if (bundles.length > 0 && !activeTab) {
-            setActiveTab(bundles[0].slug);
+        if (bundles.length > 0) {
+            const currentBundleExists = bundles.some((b) => b.slug === activeTab);
+            if (!activeTab || !currentBundleExists) {
+                setActiveTab(bundles[0].slug);
+            }
         }
     }, [bundles, activeTab]);
 
@@ -60,7 +63,7 @@ export function Home() {
                                             value={bundle.slug}
                                             className="flex items-center space-x-0.5">
                                             {bundle.name}
-                                            <span className="text-xs text-muted-foreground">({bundlePackages.length})</span>
+                                            <span className="text-xs text-muted-foreground translate-y-[1.5px]">({bundlePackages.length})</span>
                                         </TabsTrigger>
                                     );
                                 })}

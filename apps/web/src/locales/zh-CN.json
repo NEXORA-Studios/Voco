@@ -68,6 +68,8 @@
         "stop": "停止",
         "next": "下一个",
         "showTranslation": "显示译文",
+        "showOriginal": "显示原文",
+        "hideAlternative": "隐藏",
         "remaining": "剩余 {{current}} / {{total}}",
         "done": "挑战完成！",
         "restart": "重新开始",

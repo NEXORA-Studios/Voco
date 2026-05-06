@@ -4,7 +4,7 @@ import { useSessionStore } from "@/store/session.store";
 
 export function VocabRoulette() {
     const { t } = useTranslation();
-    const { pkg, remaining } = useSessionStore();
+    const { pkg, remaining, mode } = useSessionStore();
     const [display, setDisplay] = useState("");
 
     useEffect(() => {
@@ -12,10 +12,11 @@ export function VocabRoulette() {
         const interval = setInterval(() => {
             const idx = Math.floor(Math.random() * remaining.length);
             const entry = pkg.entries[remaining[idx]];
-            setDisplay(entry?.original ?? "");
+            const text = mode === "translation_only" ? entry?.translation : entry?.original;
+            setDisplay(text ?? "");
         }, 80);
         return () => clearInterval(interval);
-    }, [pkg, remaining]);
+    }, [pkg, remaining, mode]);
 
     return (
         <div className="flex flex-col items-center gap-4">

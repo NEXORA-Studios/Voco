@@ -68,6 +68,8 @@
         "stop": "Stop",
         "next": "Next",
         "showTranslation": "Show Translation",
+        "showOriginal": "Show Original",
+        "hideAlternative": "Hide",
         "remaining": "{{current}} / {{total}} remaining",
         "done": "Challenge complete!",
         "restart": "Restart",
