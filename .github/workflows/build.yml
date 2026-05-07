@@ -1,0 +1,260 @@
+name: Build Voco
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: 'Version to build (e.g., 1.3.0)'
+        required: true
+        type: string
+      upload-artifacts:
+        description: 'Upload build artifacts to GitHub Actions'
+        required: false
+        type: boolean
+        default: true
+      artifact-retention-days:
+        description: 'Artifact retention days'
+        required: false
+        type: number
+        default: 30
+    outputs:
+      artifact-id:
+        description: 'The ID of the uploaded artifact'
+        value: ${{ jobs.build.outputs.artifact-id }}
+
+jobs:
+  build:
+    name: Build ${{ matrix.platform.name }}
+    runs-on: ${{ matrix.platform.os }}
+    outputs:
+      artifact-id: ${{ steps.upload-artifacts.outputs.artifact-id }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          # Windows x64
+          - name: Windows x64
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+            arch: x64
+            ext: exe,msi
+          # macOS x64 (Intel)
+          - name: macOS x64
+            os: macos-latest
+            target: x86_64-apple-darwin
+            arch: x64
+            ext: dmg,app.tar.gz
+          # macOS aarch64 (Apple Silicon)
+          - name: macOS aarch64
+            os: macos-latest
+            target: aarch64-apple-darwin
+            arch: aarch64
+            ext: dmg,app.tar.gz
+          # Linux x64
+          - name: Linux x64
+            os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            arch: amd64
+            ext: deb,AppImage,rpm
+          # Linux aarch64
+          - name: Linux aarch64
+            os: ubuntu-22.04
+            target: aarch64-unknown-linux-gnu
+            arch: aarch64
+            ext: deb,AppImage,rpm
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10.33.4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-action@stable
+        with:
+          targets: ${{ matrix.platform.target }}
+
+      - name: Install dependencies (Ubuntu only)
+        if: matrix.platform.os == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Install ARM64 cross-compilation tools (Ubuntu aarch64 only)
+        if: matrix.platform.target == 'aarch64-unknown-linux-gnu'
+        run: |
+          sudo apt-get install -y gcc-aarch64-linux-gnu
+          echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
+
+      - name: Setup Apple API Key (macOS only)
+        if: matrix.platform.os == 'macos-latest'
+        run: |
+          mkdir -p ~/.appstoreconnect/private_keys
+          echo "${{ secrets.APPLE_API_KEY_CONTENT }}" > ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APPLE_API_KEY }}.p8
+          echo "APPLE_API_KEY_PATH=$HOME/.appstoreconnect/private_keys/AuthKey_${{ secrets.APPLE_API_KEY }}.p8" >> $GITHUB_ENV
+          echo "APPLE_API_KEY=${{ secrets.APPLE_API_KEY }}" >> $GITHUB_ENV
+          echo "APPLE_API_ISSUER=${{ secrets.APPLE_API_ISSUER }}" >> $GITHUB_ENV
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.platform.target }}
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Update version in tauri.conf.json
+        shell: pwsh
+        run: |
+          $configPath = "apps/desktop/tauri.conf.json"
+          $config = Get-Content $configPath -Raw | ConvertFrom-Json
+          $config.version = "${{ inputs.version }}"
+          $config | ConvertTo-Json -Depth 10 | Set-Content $configPath
+
+      - name: Build frontend
+        run: pnpm turbo build --filter=web
+
+      - name: Install Tauri CLI
+        run: cargo install tauri-cli --locked
+
+      - name: Build Tauri app
+        working-directory: apps/desktop
+        shell: bash
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_API_KEY: ${{ env.APPLE_API_KEY }}
+          APPLE_API_ISSUER: ${{ env.APPLE_API_ISSUER }}
+          APPLE_API_KEY_PATH: ${{ env.APPLE_API_KEY_PATH }}
+        run: |
+          # Use CARGO_TARGET_DIR to ensure consistent output path structure
+          export CARGO_TARGET_DIR="../../target/${{ matrix.platform.target }}"
+          cargo tauri build --target ${{ matrix.platform.target }}
+
+      - name: Collect build artifacts (Windows)
+        if: matrix.platform.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          $artifactsDir = "artifacts/${{ matrix.platform.arch }}"
+          New-Item -ItemType Directory -Force -Path $artifactsDir
+
+          $srcDir = "target/${{ matrix.platform.target }}/release/bundle"
+
+          # Copy MSI
+          $msiFiles = Get-ChildItem -Path "$srcDir/msi" -Filter "*.msi" -ErrorAction SilentlyContinue
+          foreach ($file in $msiFiles) {
+            Copy-Item $file.FullName "$artifactsDir/Voco_${{ inputs.version }}_${{ matrix.platform.arch }}_en-US.msi"
+          }
+
+          # Copy NSIS installer
+          $nsisFiles = Get-ChildItem -Path "$srcDir/nsis" -Filter "*.exe" -ErrorAction SilentlyContinue
+          foreach ($file in $nsisFiles) {
+            Copy-Item $file.FullName "$artifactsDir/Voco_${{ inputs.version }}_${{ matrix.platform.arch }}-setup.exe"
+          }
+
+          # List artifacts
+          Get-ChildItem -Path $artifactsDir
+
+      - name: Collect build artifacts (macOS)
+        if: matrix.platform.os == 'macos-latest'
+        run: |
+          artifactsDir="artifacts/${{ matrix.platform.arch }}"
+          mkdir -p "$artifactsDir"
+
+          srcDir="target/${{ matrix.platform.target }}/release/bundle"
+
+          # Copy DMG
+          if [ -d "$srcDir/dmg" ]; then
+            for file in "$srcDir/dmg"/*.dmg; do
+              [ -f "$file" ] && cp "$file" "$artifactsDir/Voco_${{ inputs.version }}_${{ matrix.platform.arch }}.dmg"
+            done
+          fi
+
+          # Copy app.tar.gz
+          if [ -d "$srcDir/macos" ]; then
+            for file in "$srcDir/macos"/*.app.tar.gz; do
+              [ -f "$file" ] && cp "$file" "$artifactsDir/Voco_${{ inputs.version }}_${{ matrix.platform.arch }}.app.tar.gz"
+            done
+          fi
+
+          # List artifacts
+          ls -la "$artifactsDir"
+
+      - name: Collect build artifacts (Linux)
+        if: matrix.platform.os == 'ubuntu-22.04'
+        run: |
+          artifactsDir="artifacts/${{ matrix.platform.arch }}"
+          mkdir -p "$artifactsDir"
+
+          srcDir="target/${{ matrix.platform.target }}/release/bundle"
+
+          # Copy .deb
+          if [ -d "$srcDir/deb" ]; then
+            for file in "$srcDir/deb"/*.deb; do
+              [ -f "$file" ] && cp "$file" "$artifactsDir/Voco_${{ inputs.version }}_${{ matrix.platform.arch }}.deb"
+            done
+          fi
+
+          # Copy .rpm
+          if [ -d "$srcDir/rpm" ]; then
+            for file in "$srcDir/rpm"/*.rpm; do
+              [ -f "$file" ] && cp "$file" "$artifactsDir/Voco-${{ inputs.version }}-1.${{ matrix.platform.arch }}.rpm"
+            done
+          fi
+
+          # Copy AppImage
+          if [ -d "$srcDir/appimage" ]; then
+            for file in "$srcDir/appimage"/*.AppImage; do
+              [ -f "$file" ] && cp "$file" "$artifactsDir/Voco_${{ inputs.version }}_${{ matrix.platform.arch }}.AppImage"
+            done
+          fi
+
+          # List artifacts
+          ls -la "$artifactsDir"
+
+      - name: Generate checksums
+        shell: pwsh
+        run: |
+          $artifactsDir = "artifacts/${{ matrix.platform.arch }}"
+          $checksumsFile = "$artifactsDir/checksums.txt"
+
+          if ($IsWindows -or $env:OS -eq "Windows_NT") {
+            Get-ChildItem -Path $artifactsDir -File | Where-Object { $_.Name -ne "checksums.txt" } | ForEach-Object {
+              $hash = Get-FileHash $_.FullName -Algorithm SHA256
+              "$($hash.Hash.ToLower())  $($_.Name)" | Out-File -Append -FilePath $checksumsFile
+            }
+          } else {
+            cd "$artifactsDir"
+            sha256sum * > checksums.txt 2>/dev/null || true
+            cd -
+          }
+
+          Get-Content "$artifactsDir/checksums.txt" -ErrorAction SilentlyContinue
+
+      - name: Upload artifacts
+        if: inputs.upload-artifacts
+        id: upload-artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: voco-${{ matrix.platform.arch }}-${{ matrix.platform.os }}
+          path: artifacts/${{ matrix.platform.arch }}/
+          retention-days: ${{ inputs.artifact-retention-days }}
+          if-no-files-found: error
