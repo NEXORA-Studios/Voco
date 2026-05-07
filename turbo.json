@@ -5,12 +5,16 @@
         "build": {
             "dependsOn": ["^build"],
             "inputs": ["$TURBO_DEFAULT$", ".env*", "target/**"],
-            "outputs": ["apps/web/dist/**"]
-        },
-        "tauri:build": {
-            "dependsOn": ["build"],
             "outputs": ["target/release/bundle/**"],
-            "env": ["TAURI_SIGNING_PRIVATE_KEY", "TAURI_SIGNING_PRIVATE_KEY_PASSWORD"]
+            "env": [
+                "TAURI_SIGNING_PRIVATE_KEY",
+                "TAURI_SIGNING_PRIVATE_KEY_PASSWORD",
+                "APPLE_CERTIFICATE",
+                "APPLE_CERTIFICATE_PASSWORD",
+                "APPLE_API_KEY",
+                "APPLE_API_ISSUER",
+                "APPLE_API_KEY_PATH"
+            ]
         },
         "lint": {
             "dependsOn": ["^lint"]
@@ -21,10 +25,14 @@
         "typecheck": {
             "dependsOn": ["^typecheck"]
         },
+        "w:dev": {
+            "inputs": ["$TURBO_DEFAULT$", ".env*"],
+            "cache": false
+        },
         "dev": {
+            "dependsOn": ["w:dev"],
             "inputs": ["$TURBO_DEFAULT$", ".env*", "target/**"],
-            "cache": false,
-            "persistent": true
+            "cache": false
         }
     }
 }

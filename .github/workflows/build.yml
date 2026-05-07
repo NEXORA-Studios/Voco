@@ -127,15 +127,8 @@ jobs:
           $config.version = "${{ inputs.version }}"
           $config | ConvertTo-Json -Depth 10 | Set-Content $configPath
 
-      - name: Build frontend
-        run: pnpm turbo build --filter=web
-
-      - name: Install Tauri CLI
-        run: cargo install tauri-cli --locked
-
-      - name: Build Tauri app
-        working-directory: apps/desktop
-        shell: bash
+      - name: Build application
+        run: pnpm turbo build --ui stream
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
@@ -144,10 +137,7 @@ jobs:
           APPLE_API_KEY: ${{ env.APPLE_API_KEY }}
           APPLE_API_ISSUER: ${{ env.APPLE_API_ISSUER }}
           APPLE_API_KEY_PATH: ${{ env.APPLE_API_KEY_PATH }}
-        run: |
-          # Use CARGO_TARGET_DIR to ensure consistent output path structure
-          export CARGO_TARGET_DIR="../../target/${{ matrix.platform.target }}"
-          cargo tauri build --target ${{ matrix.platform.target }}
+          CARGO_TARGET_DIR: "target/${{ matrix.platform.target }}"
 
       - name: Collect build artifacts (Windows)
         if: matrix.platform.os == 'windows-latest'
