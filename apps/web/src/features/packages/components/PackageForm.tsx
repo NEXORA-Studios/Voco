@@ -32,7 +32,7 @@ export function PackageForm({ initialPackage, onSaved, mode }: Props) {
     const { bundles, updatePackage } = usePackagesStore();
 
     const [name, setName] = useState(initialPackage?.name ?? "");
-    const [slug, setSlug] = useState(initialPackage?.slug ?? "");
+    const [slug, _] = useState(initialPackage?.slug ?? "");
     const [description, setDescription] = useState(initialPackage?.description ?? "");
     const [bundleSlug, setBundleSlug] = useState(initialPackage?.bundle_slug ?? "");
     const [newBundleName, setNewBundleName] = useState("");

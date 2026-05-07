@@ -12,7 +12,7 @@ import {
     isMergedCell,
     getMergeSpan,
     type SheetDataResult,
-    type MergeCell,
+    // type MergeCell,
 } from "@/lib/excel";
 
 export interface HeaderRowOption {

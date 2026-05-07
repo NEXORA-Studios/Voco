@@ -5,7 +5,7 @@
     "private": true,
     "scripts": {
         "dev": "tauri dev",
-        "build": "tauri build",
+        "tauri:build": "tauri build",
         "format": "cargo fmt --all"
     },
     "devDependencies": {

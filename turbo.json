@@ -5,7 +5,11 @@
         "build": {
             "dependsOn": ["^build"],
             "inputs": ["$TURBO_DEFAULT$", ".env*", "target/**"],
-            "outputs": ["dist/**"],
+            "outputs": ["apps/web/dist/**"]
+        },
+        "tauri:build": {
+            "dependsOn": ["build"],
+            "outputs": ["target/release/bundle/**"],
             "env": ["TAURI_SIGNING_PRIVATE_KEY", "TAURI_SIGNING_PRIVATE_KEY_PASSWORD"]
         },
         "lint": {
@@ -24,3 +28,4 @@
         }
     }
 }
+
