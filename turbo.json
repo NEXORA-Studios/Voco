@@ -27,6 +27,7 @@
         },
         "w:dev": {
             "inputs": ["$TURBO_DEFAULT$", ".env*"],
+            "outputs": ["dist/**"],
             "cache": false
         },
         "dev": {
