@@ -133,7 +133,9 @@ jobs:
           CHANNEL="${{ steps.parse-version.outputs.channel }}"
           VERSION_CODE="${{ steps.parse-version.outputs.version_code }}"
           BUILD_TIME=$(date -u +"%Y/%m/%d %H:%M:%S")
-          CHANGELOG='${{ steps.changelog.outputs.changelog }}'
+
+          # Read changelog from file (safer than using output variable)
+          CHANGELOG=$(cat CHANGELOG.md)
 
           # Determine badge color based on channel
           case "$CHANNEL" in
@@ -144,48 +146,57 @@ jobs:
             *) CHANNEL_COLOR="95a5a6" ;;
           esac
 
-          # Generate release body
-          cat > release_body.md << EOF
-          ## 🎯 ${CODENAME}
+          # Generate release body using heredoc with quoted delimiter
+          cat > release_body.md << 'BODYEOF'
+          ## 🎯 ${{ inputs.codename }}
 
           > Dive into the abyss. Explore new possibilities.
           > 潜入深渊，探索无限可能。
 
           ## ⭐ What's new / 新内容
 
-          ${CHANGELOG}
+          CHANGELOG_PLACEHOLDER
 
           ## 💾 构建信息 / Build Infos
 
-          ![](https://img.shields.io/badge/发行通道%20/%20Channel-${CHANNEL// /%20}-${CHANNEL_COLOR}.svg) ![](https://img.shields.io/badge/版本号%20/%20Version-${VERSION_CODE}-00cec9.svg) ![](https://img.shields.io/badge/构建时间%20/%20Time-${BUILD_TIME// /%20}-e67e22.svg)
+          ![](https://img.shields.io/badge/发行通道%20/%20Channel-CHANNEL_PLACEHOLDER-CHANNEL_COLOR_PLACEHOLDER.svg) ![](https://img.shields.io/badge/版本号%20/%20Version-VERSION_CODE_PLACEHOLDER-00cec9.svg) ![](https://img.shields.io/badge/构建时间%20/%20Time-BUILD_TIME_PLACEHOLDER-e67e22.svg)
 
           ## ⏬ 下载信息 / Downloads
 
           | 架构 / Architectures | Windows | macOS | Linux |
           | -------------------- | ------- | ----- | ----- |
-          | x86-64 (64-bit) | [![](https://img.shields.io/badge/Setup-x64-2d7d9a.svg?logo=windows)](https://github.com/${{ github.repository }}/releases/download/v${VERSION}/Voco_${VERSION}_x64-setup.exe) [![](https://img.shields.io/badge/Portable-x64-67b7d1.svg?logo=windows)](https://github.com/${{ github.repository }}/releases/download/v${VERSION}/Voco_${VERSION}_x64.app.tar.gz) | [![](https://img.shields.io/badge/DMG-Intel%20X64-%2300A9E0.svg?logo=apple)](https://github.com/${{ github.repository }}/releases/download/v${VERSION}/Voco_${VERSION}_x64.dmg) [![](https://img.shields.io/badge/.tar.gz-Intel%20X64-%2300A9E0.svg?logo=apple)](https://github.com/${{ github.repository }}/releases/download/v${VERSION}/Voco_${VERSION}_x64.app.tar.gz) | [![](https://img.shields.io/badge/AppImage-x64-f84e29.svg?logo=linux)](https://github.com/${{ github.repository }}/releases/download/v${VERSION}/Voco_${VERSION}_amd64.AppImage) [![](https://img.shields.io/badge/DebPackage-x64-FF9966.svg?logo=debian)](https://github.com/${{ github.repository }}/releases/download/v${VERSION}/Voco_${VERSION}_amd64.deb) [![](https://img.shields.io/badge/RpmPackage-x64-F1B42F.svg?logo=redhat)](https://github.com/${{ github.repository }}/releases/download/v${VERSION}/Voco-${VERSION}-1.x86_64.rpm) |
-          | AArch64 (ARM64) | ![](https://img.shields.io/badge/Not%20Supported-c23616.svg) | [![](https://img.shields.io/badge/DMG-Apple%20Silicon-%23000000.svg?logo=apple)](https://github.com/${{ github.repository }}/releases/download/v${VERSION}/Voco_${VERSION}_aarch64.dmg) [![](https://img.shields.io/badge/.tar.gz-Apple%20Silicon-%23000000.svg?logo=apple)](https://github.com/${{ github.repository }}/releases/download/v${VERSION}/Voco_${VERSION}_aarch64.app.tar.gz) | [![](https://img.shields.io/badge/AppImage-aarch64-f84e29.svg?logo=linux)](https://github.com/${{ github.repository }}/releases/download/v${VERSION}/Voco_${VERSION}_aarch64.AppImage) [![](https://img.shields.io/badge/DebPackage-aarch64-FF9966.svg?logo=debian)](https://github.com/${{ github.repository }}/releases/download/v${VERSION}/Voco_${VERSION}_aarch64.deb) [![](https://img.shields.io/badge/RpmPackage-aarch64-F1B42F.svg?logo=redhat)](https://github.com/${{ github.repository }}/releases/download/v${VERSION}/Voco-${VERSION}-1.aarch64.rpm) |
+          | x86-64 (64-bit) | [![](https://img.shields.io/badge/Setup-x64-2d7d9a.svg?logo=windows)](https://github.com/${{ github.repository }}/releases/download/v${{ inputs.version }}/Voco_${{ inputs.version }}_x64-setup.exe) [![](https://img.shields.io/badge/Portable-x64-67b7d1.svg?logo=windows)](https://github.com/${{ github.repository }}/releases/download/v${{ inputs.version }}/Voco_${{ inputs.version }}_x64.app.tar.gz) | [![](https://img.shields.io/badge/DMG-Intel%20X64-%2300A9E0.svg?logo=apple)](https://github.com/${{ github.repository }}/releases/download/v${{ inputs.version }}/Voco_${{ inputs.version }}_x64.dmg) [![](https://img.shields.io/badge/.tar.gz-Intel%20X64-%2300A9E0.svg?logo=apple)](https://github.com/${{ github.repository }}/releases/download/v${{ inputs.version }}/Voco_${{ inputs.version }}_x64.app.tar.gz) | [![](https://img.shields.io/badge/AppImage-x64-f84e29.svg?logo=linux)](https://github.com/${{ github.repository }}/releases/download/v${{ inputs.version }}/Voco_${{ inputs.version }}_amd64.AppImage) [![](https://img.shields.io/badge/DebPackage-x64-FF9966.svg?logo=debian)](https://github.com/${{ github.repository }}/releases/download/v${{ inputs.version }}/Voco_${{ inputs.version }}_amd64.deb) [![](https://img.shields.io/badge/RpmPackage-x64-F1B42F.svg?logo=redhat)](https://github.com/${{ github.repository }}/releases/download/v${{ inputs.version }}/Voco-${{ inputs.version }}-1.x86_64.rpm) |
+          | AArch64 (ARM64) | ![](https://img.shields.io/badge/Not%20Supported-c23616.svg) | [![](https://img.shields.io/badge/DMG-Apple%20Silicon-%23000000.svg?logo=apple)](https://github.com/${{ github.repository }}/releases/download/v${{ inputs.version }}/Voco_${{ inputs.version }}_aarch64.dmg) [![](https://img.shields.io/badge/.tar.gz-Apple%20Silicon-%23000000.svg?logo=apple)](https://github.com/${{ github.repository }}/releases/download/v${{ inputs.version }}/Voco_${{ inputs.version }}_aarch64.app.tar.gz) | [![](https://img.shields.io/badge/AppImage-aarch64-f84e29.svg?logo=linux)](https://github.com/${{ github.repository }}/releases/download/v${{ inputs.version }}/Voco_${{ inputs.version }}_aarch64.AppImage) [![](https://img.shields.io/badge/DebPackage-aarch64-FF9966.svg?logo=debian)](https://github.com/${{ github.repository }}/releases/download/v${{ inputs.version }}/Voco_${{ inputs.version }}_aarch64.deb) [![](https://img.shields.io/badge/RpmPackage-aarch64-F1B42F.svg?logo=redhat)](https://github.com/${{ github.repository }}/releases/download/v${{ inputs.version }}/Voco-${{ inputs.version }}-1.aarch64.rpm) |
 
           ## 🔐 校验信息 / Checksums
 
           | 文件 / File | SHA256 |
           | ----------- | ------ |
-          | Voco_${VERSION}_x64-setup.exe | \`待生成\` |
-          | Voco_${VERSION}_x64.app.tar.gz | \`待生成\` |
-          | Voco_${VERSION}_x64.dmg | \`待生成\` |
-          | Voco_${VERSION}_amd64.AppImage | \`待生成\` |
-          | Voco_${VERSION}_amd64.deb | \`待生成\` |
-          | Voco-${VERSION}-1.x86_64.rpm | \`待生成\` |
-          | Voco_${VERSION}_aarch64.app.tar.gz | \`待生成\` |
-          | Voco_${VERSION}_aarch64.dmg | \`待生成\` |
-          | Voco_${VERSION}_aarch64.AppImage | \`待生成\` |
-          | Voco_${VERSION}_aarch64.deb | \`待生成\` |
-          | Voco-${VERSION}-1.aarch64.rpm | \`待生成\` |
+          | Voco_${{ inputs.version }}_x64-setup.exe | \`待生成\` |
+          | Voco_${{ inputs.version }}_x64.app.tar.gz | \`待生成\` |
+          | Voco_${{ inputs.version }}_x64.dmg | \`待生成\` |
+          | Voco_${{ inputs.version }}_amd64.AppImage | \`待生成\` |
+          | Voco_${{ inputs.version }}_amd64.deb | \`待生成\` |
+          | Voco-${{ inputs.version }}-1.x86_64.rpm | \`待生成\` |
+          | Voco_${{ inputs.version }}_aarch64.app.tar.gz | \`待生成\` |
+          | Voco_${{ inputs.version }}_aarch64.dmg | \`待生成\` |
+          | Voco_${{ inputs.version }}_aarch64.AppImage | \`待生成\` |
+          | Voco_${{ inputs.version }}_aarch64.deb | \`待生成\` |
+          | Voco-${{ inputs.version }}-1.aarch64.rpm | \`待生成\` |
 
           ---
 
-          **Full Changelog**: https://github.com/${{ github.repository }}/compare/v$(git describe --tags --abbrev=0 --exclude="v${VERSION}" 2>/dev/null || echo "HEAD")...v${VERSION}
-          EOF
+          **Full Changelog**: https://github.com/${{ github.repository }}/compare/v$(git describe --tags --abbrev=0 --exclude="v${{ inputs.version }}" 2>/dev/null || echo "HEAD")...v${{ inputs.version }}
+          BODYEOF
+
+          # Replace placeholders with actual values using sed
+          # Escape special characters in changelog for sed
+          ESCAPED_CHANGELOG=$(echo "$CHANGELOG" | sed 's/[&/\]/\\&/g')
+          sed -i "s/CHANGELOG_PLACEHOLDER/$ESCAPED_CHANGELOG/g" release_body.md
+          sed -i "s/CHANNEL_PLACEHOLDER/${CHANNEL// /%20}/g" release_body.md
+          sed -i "s/CHANNEL_COLOR_PLACEHOLDER/$CHANNEL_COLOR/g" release_body.md
+          sed -i "s/VERSION_CODE_PLACEHOLDER/$VERSION_CODE/g" release_body.md
+          sed -i "s/BUILD_TIME_PLACEHOLDER/${BUILD_TIME// /%20}/g" release_body.md
 
           echo "Generated release body:"
           cat release_body.md
