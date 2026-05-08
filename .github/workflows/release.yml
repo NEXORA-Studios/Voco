@@ -7,11 +7,26 @@ on:
         description: 'Version to build (e.g., 2.0.0 or 2.0.0-rc1)'
         required: true
         type: string
-      codename:
-        description: 'Release codename (e.g., Abyssal Descent · 深渊下潜)'
+      codename_en:
+        description: 'Release codename (English)'
         required: false
         type: string
-        default: 'Abyssal Descent · 深渊下潜'
+        default: 'Abyssal Descent'
+      codename_zh:
+        description: '发行代号 (中文)'
+        required: false
+        type: string
+        default: '深渊下潜'
+      tagline_en:
+        description: 'Release tagline (English)'
+        required: false
+        type: string
+        default: 'Dive into the abyss. Explore new possibilities.'
+      tagline_zh:
+        description: '发行标语 (中文)'
+        required: false
+        type: string
+        default: '潜入深渊，探索无限可能。'
 
 jobs:
   generate-release-body:
@@ -19,7 +34,10 @@ jobs:
     uses: ./.github/workflows/reusable-release-body.yml
     with:
       version: ${{ github.event.inputs.version }}
-      codename: ${{ github.event.inputs.codename }}
+      codename_en: ${{ github.event.inputs.codename_en }}
+      codename_zh: ${{ github.event.inputs.codename_zh }}
+      tagline_en: ${{ github.event.inputs.tagline_en }}
+      tagline_zh: ${{ github.event.inputs.tagline_zh }}
 
   build:
     name: Build
@@ -65,8 +83,8 @@ jobs:
         id: checksums
         run: |
           cd release-assets
-          echo "| 文件 / File | SHA256 |" > ../checksums_table.md
-          echo "| ----------- | ------ |" >> ../checksums_table.md
+          echo "| File | SHA256 |" > ../checksums_table.md
+          echo "| ---- | ------ |" >> ../checksums_table.md
 
           for file in *; do
             if [ -f "$file" ] && [[ "$file" != *.sig ]]; then
