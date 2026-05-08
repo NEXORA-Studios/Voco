@@ -1,6 +1,12 @@
 import { invoke } from "@tauri-apps/api/core";
 import type { Settings, BundleMeta, Package, Preset } from "@/types/global.d.ts";
 
+export interface UpdateInfo {
+    available: boolean;
+    version?: string;
+    body?: string;
+}
+
 export const Bridge = {
     settings: {
         read: () => invoke<Settings>("read_settings"),
@@ -32,5 +38,9 @@ export const Bridge = {
     },
     window: {
         openPicker: () => invoke<void>("open_picker_window"),
+    },
+    updater: {
+        check: () => invoke<UpdateInfo>("check_update"),
+        install: () => invoke<void>("install_update"),
     },
 };

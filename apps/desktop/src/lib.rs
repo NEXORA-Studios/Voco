@@ -185,11 +185,66 @@ async fn open_picker_window(app: tauri::AppHandle) {
     }
 }
 
+#[derive(serde::Serialize)]
+struct UpdateInfo {
+    available: bool,
+    version: Option<String>,
+    body: Option<String>,
+}
+
+#[tauri::command]
+async fn check_update(app: tauri::AppHandle) -> Result<UpdateInfo, String> {
+    #[cfg(desktop)]
+    {
+        use tauri_plugin_updater::UpdaterExt;
+        let updater = app.updater().map_err(|e| e.to_string())?;
+        match updater.check().await {
+            Ok(Some(update)) => Ok(UpdateInfo {
+                available: true,
+                version: Some(update.version.clone()),
+                body: update.body.clone(),
+            }),
+            Ok(None) => Ok(UpdateInfo {
+                available: false,
+                version: None,
+                body: None,
+            }),
+            Err(e) => Err(e.to_string()),
+        }
+    }
+    #[cfg(not(desktop))]
+    {
+        Ok(UpdateInfo {
+            available: false,
+            version: None,
+            body: None,
+        })
+    }
+}
+
+#[tauri::command]
+async fn install_update(app: tauri::AppHandle) -> Result<(), String> {
+    #[cfg(desktop)]
+    {
+        use tauri_plugin_updater::UpdaterExt;
+        let updater = app.updater().map_err(|e| e.to_string())?;
+        if let Some(update) = updater.check().await.map_err(|e| e.to_string())? {
+            update.download_and_install(|_, _| {}, || {}).await.map_err(|e| e.to_string())?;
+        }
+        Ok(())
+    }
+    #[cfg(not(desktop))]
+    {
+        Ok(())
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             let base_path = app.path().app_data_dir()?;
             app.manage(VocoStore::new(base_path));
@@ -219,6 +274,8 @@ pub fn run() {
             open_file_dialog,
             read_file_bytes,
             open_picker_window,
+            check_update,
+            install_update,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

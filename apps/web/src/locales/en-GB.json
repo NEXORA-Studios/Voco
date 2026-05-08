@@ -101,6 +101,22 @@
     },
     "settings": {
         "title": "Settings",
-        "language": "Language"
+        "language": "Language",
+        "about": "About",
+        "version": "Version",
+        "checkUpdate": "Check for Updates",
+        "checking": "Checking...",
+        "updateAvailable": "Update Available",
+        "updateNotAvailable": "You're up to date",
+        "updateError": "Failed to check for updates",
+        "currentVersion": "Current Version",
+        "latestVersion": "Latest Version",
+        "updateBody": "What's New",
+        "installUpdate": "Update Now",
+        "installing": "Updating",
+        "later": "Later",
+        "newVersionAvailable": "New Version Available",
+        "releaseNotes": "Release Notes",
+        "updateTo": "Update to"
     }
 }
