@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { v4 as uuidv4 } from "uuid";
 import { Button } from "@workspace/shadcn-ui/components/button";
@@ -13,7 +13,7 @@ import { SortMethodSelect } from "./SortMethodSelect";
 import { usePackagesStore } from "@/store/packages.store";
 import type { Package, BundleMeta, SortMethod, VocabEntry } from "@/types/global.d.ts";
 import { cn } from "@workspace/shadcn-ui/lib/utils";
-import { Check } from "lucide-react";
+import { Check, Upload, FileSpreadsheet } from "lucide-react";
 
 function slugify(/* name: string */) {
     return "pkg-" + Math.random().toString(36).slice(2, 8);
@@ -32,6 +32,8 @@ export function ExcelImportWizard() {
     const [bundleSlug, setBundleSlug] = useState("");
     const [newBundleName, setNewBundleName] = useState("");
     const [sortMethod, setSortMethod] = useState<SortMethod>("shuffle");
+    const [isDragging, setIsDragging] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleSave = async () => {
         if (!name.trim() || !slug.trim() || excel.mappedEntries.length === 0) return;
@@ -130,12 +132,12 @@ export function ExcelImportWizard() {
         );
     };
 
-    // 获取所有表头行选项（包括"无表头"）
+    // 获取所有表头行选项（包括"从头开始"）
     const allHeaderOptions = [
         {
             index: -1,
-            label: t("packages.import.noHeader") || "无表头",
-            preview: t("packages.import.noHeaderDesc") || "从第 1 行开始读取数据",
+            label: t("packages.import.noHeader") || "从头开始",
+            preview: t("packages.import.noHeaderDesc") || "从第 1 行开始读取数据（合并单元格会被忽略）",
         },
         ...excel.headerRowOptions,
     ];
@@ -145,6 +147,73 @@ export function ExcelImportWizard() {
         value: index,
         label: letter,
     }));
+
+    // 处理拖放事件
+    const handleDragEnter = useCallback((e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(true);
+    }, []);
+
+    const handleDragLeave = useCallback((e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        // 只有当离开整个区域时才取消拖拽状态
+        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+        const x = e.clientX;
+        const y = e.clientY;
+        if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+            setIsDragging(false);
+        }
+    }, []);
+
+    const handleDragOver = useCallback((e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+    }, []);
+
+    const handleDrop = useCallback(async (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+
+        const files = e.dataTransfer.files;
+        if (files.length === 0) return;
+
+        const file = files[0];
+        // 检查文件类型
+        const validExtensions = [".xlsx", ".xls"];
+        const fileName = file.name.toLowerCase();
+        const isValid = validExtensions.some(ext => fileName.endsWith(ext));
+
+        if (!isValid) {
+            // 可以在这里添加错误提示
+            console.warn("Invalid file type. Please upload an Excel file.");
+            return;
+        }
+
+        // 读取文件并解析
+        const arrayBuffer = await file.arrayBuffer();
+        const bytes = new Uint8Array(arrayBuffer);
+        excel.loadFromBytes(bytes, file.name);
+    }, [excel]);
+
+    // 处理点击选择文件
+    const handleClick = useCallback(() => {
+        fileInputRef.current?.click();
+    }, []);
+
+    const handleFileInputChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const arrayBuffer = await file.arrayBuffer();
+        const bytes = new Uint8Array(arrayBuffer);
+        excel.loadFromBytes(bytes, file.name);
+
+        // 重置 input 以便可以再次选择同一文件
+        e.target.value = "";
+    }, [excel]);
 
     return (
         <div className="flex flex-col gap-6">
@@ -201,11 +270,66 @@ export function ExcelImportWizard() {
             )}
 
             {step === 2 && (
-                <div className="flex flex-col gap-4 rounded-lg border p-4">
+                <div className="flex flex-col gap-4">
                     <h2 className="text-lg font-semibold">{t("packages.import.title")}</h2>
 
                     {!excel.workbook ? (
-                        <Button onClick={excel.loadFile}>{t("packages.import.chooseFile")}</Button>
+                        <>
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept=".xlsx,.xls"
+                                onChange={handleFileInputChange}
+                                className="hidden"
+                            />
+                            <div
+                                onClick={handleClick}
+                                onDragEnter={handleDragEnter}
+                                onDragLeave={handleDragLeave}
+                                onDragOver={handleDragOver}
+                                onDrop={handleDrop}
+                                className={cn(
+                                    "relative flex min-h-[400px] cursor-pointer flex-col items-center justify-center gap-6 rounded-xl border-2 border-dashed p-12 transition-all duration-200",
+                                    isDragging
+                                        ? "scale-[1.02] border-primary bg-primary/5"
+                                        : "border-muted-foreground/25 bg-muted/50 hover:border-muted-foreground/50 hover:bg-muted"
+                                )}>
+                                <div
+                                    className={cn(
+                                        "flex h-20 w-20 items-center justify-center rounded-full transition-all duration-200",
+                                        isDragging ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground"
+                                    )}>
+                                    {isDragging ? (
+                                        <Upload className="h-10 w-10" />
+                                    ) : (
+                                        <FileSpreadsheet className="h-10 w-10" />
+                                    )}
+                                </div>
+                                <div className="text-center">
+                                    <p className="text-lg font-medium">
+                                        {isDragging
+                                            ? t("packages.import.dropHere") || "松开以导入文件"
+                                            : t("packages.import.dragDropTitle") || "拖放 Excel 文件到此处"}
+                                    </p>
+                                    <p className="mt-2 text-sm text-muted-foreground">
+                                        {t("packages.import.dragDropDesc") || "或将文件拖放到此区域，或点击选择文件"}
+                                    </p>
+                                    <p className="mt-1 text-xs text-muted-foreground/60">
+                                        {t("packages.import.supportedFormats") || "支持 .xlsx, .xls 格式"}
+                                    </p>
+                                </div>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="mt-2"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleClick();
+                                    }}>
+                                    {t("packages.import.chooseFile") || "选择文件"}
+                                </Button>
+                            </div>
+                        </>
                     ) : (
                         <>
                             {excel.workbook.SheetNames.length > 1 && (
@@ -231,8 +355,11 @@ export function ExcelImportWizard() {
                                                     ? "border-primary bg-primary/10 text-primary"
                                                     : "border-border bg-background hover:bg-muted"
                                             )}>
-                                            <span className="font-medium">{option.label}</span>
-                                            <span className="text-muted-foreground">({option.preview})</span>
+                                            <span className="font-medium">
+                                                {option.index === -1
+                                                    ? option.label
+                                                    : `${option.label}（${option.preview}）`}
+                                            </span>
                                             {excel.headerRowIndex === option.index && <Check className="h-4 w-4" />}
                                         </button>
                                     ))}

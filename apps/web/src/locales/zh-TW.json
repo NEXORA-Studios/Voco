@@ -37,18 +37,22 @@
             "back": "上一步"
         },
         "import": {
-            "title": "Excel 匯入",
+            "title": "第二步：Excel 匯入",
             "chooseFile": "選擇檔案",
             "sheet": "工作表",
-            "headerRow": "表頭行",
+            "headerRow": "從第幾行開始讀取",
             "hasHeader": "包含表頭",
-            "noHeader": "無表頭",
-            "noHeaderDesc": "從第 1 列開始讀取資料",
+            "noHeader": "從頭開始",
+            "noHeaderDesc": "從第 1 列開始讀取",
             "originalCol": "原文列",
             "translationCol": "譯文列",
             "preview": "預覽",
             "totalEntries": "共 {{count}} 個詞條",
-            "headerRowHint": "選擇包含欄位標題的列，或選擇「無表頭」從第一列開始讀取資料。合併的儲存格會被自動忽略。"
+            "headerRowHint": "選擇從第幾列開始讀取資料。合併的儲存格會被自動忽略。",
+            "dragDropTitle": "拖放 Excel 檔案到此處",
+            "dragDropDesc": "或將檔案拖放到此區域，或點擊選擇檔案",
+            "supportedFormats": "支援 .xlsx, .xls 格式",
+            "dropHere": "鬆開以匯入檔案"
         },
         "editor": {
             "entriesTitle": "詞條列表",

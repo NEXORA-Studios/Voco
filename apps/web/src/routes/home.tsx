@@ -63,7 +63,7 @@ export function Home() {
                                             value={bundle.slug}
                                             className="flex items-center space-x-0.5">
                                             {bundle.name}
-                                            <span className="translate-y-[1.5px] text-xs text-muted-foreground">
+                                            <span className="text-xs text-muted-foreground">
                                                 ({bundlePackages.length})
                                             </span>
                                         </TabsTrigger>

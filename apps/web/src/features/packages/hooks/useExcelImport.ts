@@ -46,27 +46,30 @@ export function useExcelImport() {
         return getColumnLetters(maxColCount);
     }, [maxColCount]);
 
-    // 计算可用的表头行选项（包括"无表头"选项）
+    // 计算可用的表头行选项（不包括第一行，因为第一行等同于"从头开始"）
     const headerRowOptions = useMemo<HeaderRowOption[]>(() => {
         if (sheetData.length === 0) return [];
 
         const candidates = detectHeaderRows(sheetData, 5);
 
-        const options: HeaderRowOption[] = candidates.map((idx) => {
-            const row = sheetData[idx];
-            const previewCells =
-                row
-                    ?.slice(0, 3)
-                    .map((c) => String(c ?? "").trim())
-                    .filter((s) => s.length > 0)
-                    .slice(0, 2) ?? [];
+        // 过滤掉第一行（idx === 0），因为第一行等同于"从头开始"
+        const options: HeaderRowOption[] = candidates
+            .filter((idx) => idx > 0)
+            .map((idx) => {
+                const row = sheetData[idx];
+                const previewCells =
+                    row
+                        ?.slice(0, 3)
+                        .map((c) => String(c ?? "").trim())
+                        .filter((s) => s.length > 0)
+                        .slice(0, 2) ?? [];
 
-            return {
-                index: idx,
-                label: `第 ${idx + 1} 行`,
-                preview: previewCells.join(", ") || "(空行)",
-            };
-        });
+                return {
+                    index: idx,
+                    label: `第 ${idx + 1} 行`,
+                    preview: previewCells.join(", ") || "(空行)",
+                };
+            });
 
         return options;
     }, [sheetData]);
@@ -84,11 +87,8 @@ export function useExcelImport() {
         return columnLetters;
     }, [sheetData, headerRowIndex, hasHeader, columnLetters]);
 
-    const loadFile = useCallback(async () => {
-        const path = await Bridge.dialog.openFile([{ name: "Excel", extensions: ["xlsx", "xls"] }]);
-        if (!path) return;
-        const bytes = await Bridge.fs.readFileBytes(path);
-        const wb = parseWorkbook(new Uint8Array(bytes));
+    const loadFromBytes = useCallback(async (bytes: Uint8Array, _fileName?: string) => {
+        const wb = parseWorkbook(bytes);
         setWorkbook(wb);
         const names = getSheetNames(wb);
         const first = names[0] ?? "";
@@ -98,10 +98,19 @@ export function useExcelImport() {
         setSheetResult(result);
 
         // 自动检测表头行，默认选择第一个候选
+        // 如果第一行是候选（idx === 0），则使用 -1（从头开始），因为第一行等同于"从头开始"
         const candidates = detectHeaderRows(result.data, 5);
-        const defaultHeaderIndex = candidates.length > 0 ? candidates[0] : -1;
+        const firstCandidate = candidates.length > 0 ? candidates[0] : -1;
+        const defaultHeaderIndex = firstCandidate === 0 ? -1 : firstCandidate;
         setHeaderRowIndex(defaultHeaderIndex);
     }, []);
+
+    const loadFile = useCallback(async () => {
+        const path = await Bridge.dialog.openFile([{ name: "Excel", extensions: ["xlsx", "xls"] }]);
+        if (!path) return;
+        const bytes = await Bridge.fs.readFileBytes(path);
+        await loadFromBytes(new Uint8Array(bytes), path);
+    }, [loadFromBytes]);
 
     const selectSheet = useCallback(
         (name: string) => {
@@ -111,8 +120,10 @@ export function useExcelImport() {
             setSheetResult(result);
 
             // 重新检测表头行
+            // 如果第一行是候选（idx === 0），则使用 -1（从头开始）
             const candidates = detectHeaderRows(result.data, 5);
-            const defaultHeaderIndex = candidates.length > 0 ? candidates[0] : -1;
+            const firstCandidate = candidates.length > 0 ? candidates[0] : -1;
+            const defaultHeaderIndex = firstCandidate === 0 ? -1 : firstCandidate;
             setHeaderRowIndex(defaultHeaderIndex);
         },
         [workbook]
@@ -150,6 +161,7 @@ export function useExcelImport() {
         originalCol,
         translationCol,
         loadFile,
+        loadFromBytes,
         selectSheet,
         updateHeaderRowIndex,
         setOriginalCol,

@@ -37,18 +37,22 @@
             "back": "Back"
         },
         "import": {
-            "title": "Excel Import",
+            "title": "Step 2: Excel Import",
             "chooseFile": "Choose file",
             "sheet": "Sheet",
-            "headerRow": "Header row",
+            "headerRow": "Start from row",
             "hasHeader": "Has header row",
-            "noHeader": "No Header",
+            "noHeader": "From beginning",
             "noHeaderDesc": "Read data from row 1",
             "originalCol": "Original Column",
             "translationCol": "Translation Column",
             "preview": "Preview",
             "totalEntries": "{{count}} entries total",
-            "headerRowHint": "Select the row containing column titles, or select \"No Header\" to start reading data from the first row. Merged cells will be automatically ignored."
+            "headerRowHint": "Select which row to start reading data from. Merged cells will be automatically ignored.",
+            "dragDropTitle": "Drop Excel file here",
+            "dragDropDesc": "Drag and drop an Excel file here, or click to select",
+            "supportedFormats": "Supports .xlsx, .xls formats",
+            "dropHere": "Release to import file"
         },
         "editor": {
             "entriesTitle": "Entries",

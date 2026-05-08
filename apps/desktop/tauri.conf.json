@@ -17,7 +17,8 @@
                 "minWidth": 1280,
                 "minHeight": 720,
                 "maximized": true,
-                "center": true
+                "center": true,
+                "dragDropEnabled": false
             },
             {
                 "title": "Voco Picker",

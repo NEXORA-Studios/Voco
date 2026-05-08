@@ -37,18 +37,22 @@
             "back": "上一步"
         },
         "import": {
-            "title": "Excel 导入",
+            "title": "第二步：Excel 导入",
             "chooseFile": "选择文件",
             "sheet": "工作表",
-            "headerRow": "表头行",
+            "headerRow": "从第几行开始读取",
             "hasHeader": "包含表头",
-            "noHeader": "无表头",
-            "noHeaderDesc": "从第 1 行开始读取数据",
+            "noHeader": "从头开始",
+            "noHeaderDesc": "从第 1 行开始读取",
             "originalCol": "原文列",
             "translationCol": "译文列",
             "preview": "预览",
             "totalEntries": "共 {{count}} 个词条",
-            "headerRowHint": "选择包含列标题的行，或选择“无表头”从第一行开始读取数据。合并的单元格会被自动忽略。"
+            "headerRowHint": "选择从第几行开始读取数据。合并的单元格会被自动忽略。",
+            "dragDropTitle": "拖放 Excel 文件到此处",
+            "dragDropDesc": "或将文件拖放到此区域，或点击选择文件",
+            "supportedFormats": "支持 .xlsx, .xls 格式",
+            "dropHere": "松开以导入文件"
         },
         "editor": {
             "entriesTitle": "词条列表",
