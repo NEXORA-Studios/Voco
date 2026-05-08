@@ -37,7 +37,7 @@
     },
     "bundle": {
         "active": true,
-        "targets": "all",
+        "targets": ["app", "dmg", "nsis", "deb", "rpm", "appimage"],
         "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
 
         "createUpdaterArtifacts": true,
@@ -46,21 +46,6 @@
         "longDescription": "Voco is a desktop application for educational scenarios that helps teachers easily manage vocabulary packages and efficiently question students. It is suitable for classroom and distance teaching.",
         "copyright": "Copyright 2025~present NEXORA-Studios. All rights reserved.",
         "publisher": "NEXORA Studios",
-
-        "windows": {
-            "allowDowngrades": false,
-            "certificateThumbprint": null,
-            "digestAlgorithm": null,
-            "nsis": null,
-            "signCommand": null,
-            "timestampUrl": null,
-            "tsp": false,
-            "webviewInstallMode": {
-                "silent": true,
-                "type": "downloadBootstrapper"
-            },
-            "wix": null
-        },
 
         "macOS": {
             "hardenedRuntime": true,
