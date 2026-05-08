@@ -16,13 +16,13 @@ export function VocabCard() {
     return (
         <div className="flex flex-col items-center gap-4">
             {mode === "translation_only" ? (
-                <div className="text-[5vw] font-bold tracking-tight">{entry.translation}</div>
+                <div className="text-[7vw] font-bold tracking-tight">{entry.translation}</div>
             ) : mode === "original_only" ? (
-                <div className="text-[5vw] font-bold tracking-tight">{entry.original}</div>
+                <div className="text-[7vw] font-bold tracking-tight">{entry.original}</div>
             ) : (
                 <>
-                    <div className="text-[5vw] font-bold tracking-tight">{entry.original}</div>
-                    {state.status === "revealed" && <div className="text-[2vw] text-muted-foreground">{entry.translation}</div>}
+                    <div className="text-[7vw] font-bold tracking-tight">{entry.original}</div>
+                    {state.status === "revealed" && <div className="text-[3vw] text-muted-foreground">{entry.translation}</div>}
                 </>
             )}
             {isSingleMode && showAlternative && (
