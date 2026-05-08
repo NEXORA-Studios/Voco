@@ -148,14 +148,30 @@ jobs:
 
       - name: Update release body with checksums
         run: |
-          RELEASE_BODY='${{ needs.generate-release-body.outputs.release_body }}'
-          CHECKSUMS_TABLE=$(cat checksums_table.md)
+          # Use Python to safely replace the checksum table
+          python3 << 'PYTHON_SCRIPT'
+          import re
 
-          # Replace the checksum table placeholder
-          echo "$RELEASE_BODY" | sed '/## 🔐 校验信息/,/---/{/## 🔐 校验信息/!{/---/!d}}' | sed "s/## 🔐 校验信息.*/## 🔐 校验信息 \/ Checksums\n\n$CHECKSUMS_TABLE/" > final_release_body.md
+          # Read release body
+          with open('release_body.md', 'r', encoding='utf-8') as f:
+              release_body = f.read()
 
-          echo "Final release body:"
-          cat final_release_body.md
+          # Read checksums table
+          with open('checksums_table.md', 'r', encoding='utf-8') as f:
+              checksums_table = f.read()
+
+          # Replace the checksum section
+          pattern = r'(## 🔐 校验信息 / Checksums\n\n).*?(\n---)'
+          replacement = r'\1' + checksums_table + r'\2'
+          final_body = re.sub(pattern, replacement, release_body, flags=re.DOTALL)
+
+          # Write final release body
+          with open('final_release_body.md', 'w', encoding='utf-8') as f:
+              f.write(final_body)
+
+          print("Final release body:")
+          print(final_body)
+          PYTHON_SCRIPT
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
