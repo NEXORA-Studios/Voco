@@ -56,7 +56,7 @@ export function PickerDisplay() {
             </CardHeader>
             <CardContent className="flex flex-1 flex-col items-center justify-center gap-4 overflow-auto">
                 <div
-                    className={`flex h-48 w-full max-w-md items-center justify-center rounded-md text-4xl font-bold transition-colors ${
+                    className={`flex h-48 w-full max-w-md items-center justify-center rounded-md px-16 text-6xl font-bold transition-colors ${
                         pickedLabel === display && !spinning ? "bg-primary/10" : "bg-muted"
                     }`}>
                     {display || "-"}
