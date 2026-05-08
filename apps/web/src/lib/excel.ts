@@ -112,11 +112,9 @@ export function mapEntries(
     data: unknown[][],
     originalCol: number,
     translationCol: number,
-    hasHeader: boolean,
     headerRowIndex: number
 ): MappedEntry[] {
     // 从 headerRowIndex 开始读取数据（包括 headerRowIndex 这一行）
-    // hasHeader 仅用于标识性目的，不再用于跳过行
     const start = headerRowIndex >= 0 ? headerRowIndex : 0;
     const entries: MappedEntry[] = [];
     for (let i = start; i < data.length; i++) {

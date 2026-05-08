@@ -135,8 +135,8 @@ export function useExcelImport() {
 
     const mappedEntries = useMemo(() => {
         if (sheetData.length === 0) return [];
-        return mapEntries(sheetData, originalCol, translationCol, hasHeader, headerRowIndex);
-    }, [sheetData, originalCol, translationCol, hasHeader, headerRowIndex]);
+        return mapEntries(sheetData, originalCol, translationCol, headerRowIndex);
+    }, [sheetData, originalCol, translationCol, headerRowIndex]);
 
     const reset = useCallback(() => {
         setWorkbook(null);
