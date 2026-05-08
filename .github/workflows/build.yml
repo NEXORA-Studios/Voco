@@ -137,7 +137,6 @@ jobs:
           APPLE_API_KEY: ${{ env.APPLE_API_KEY }}
           APPLE_API_ISSUER: ${{ env.APPLE_API_ISSUER }}
           APPLE_API_KEY_PATH: ${{ env.APPLE_API_KEY_PATH }}
-          CARGO_TARGET_DIR: "target/${{ matrix.platform.target }}"
 
       - name: Collect build artifacts (Windows)
         if: matrix.platform.os == 'windows-latest'
@@ -146,7 +145,7 @@ jobs:
           $artifactsDir = "artifacts/${{ matrix.platform.arch }}"
           New-Item -ItemType Directory -Force -Path $artifactsDir
 
-          $srcDir = "target/${{ matrix.platform.target }}/release/bundle"
+          $srcDir = "target/release/bundle"
 
           # Copy MSI
           $msiFiles = Get-ChildItem -Path "$srcDir/msi" -Filter "*.msi" -ErrorAction SilentlyContinue
@@ -169,7 +168,7 @@ jobs:
           artifactsDir="artifacts/${{ matrix.platform.arch }}"
           mkdir -p "$artifactsDir"
 
-          srcDir="target/${{ matrix.platform.target }}/release/bundle"
+          srcDir="target/release/bundle"
 
           # Copy DMG
           if [ -d "$srcDir/dmg" ]; then
@@ -194,7 +193,7 @@ jobs:
           artifactsDir="artifacts/${{ matrix.platform.arch }}"
           mkdir -p "$artifactsDir"
 
-          srcDir="target/${{ matrix.platform.target }}/release/bundle"
+          srcDir="target/release/bundle"
 
           # Copy .deb
           if [ -d "$srcDir/deb" ]; then
