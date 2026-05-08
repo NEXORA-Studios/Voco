@@ -37,8 +37,6 @@ def main():
 > Dive into the abyss. Explore new possibilities.
 > 潜入深渊，探索无限可能。
 
-## ⭐ What's new / 新内容
-
 {changelog}
 
 ## 💾 构建信息 / Build Infos

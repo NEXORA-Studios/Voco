@@ -3,7 +3,7 @@
 
 [changelog]
 header = """
-## 📝 更新记录 / What's Changed
+## ⭐ What's new / 新内容
 """
 body = """
 {% for group, commits in commits | group_by(attribute="group") %}
