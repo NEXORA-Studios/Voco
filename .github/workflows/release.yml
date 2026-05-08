@@ -56,6 +56,80 @@ jobs:
       - name: Display structure of downloaded files
         run: ls -R artifacts
 
+      - name: Generate latest.json
+        id: generate-updater
+        run: |
+          VERSION="${{ needs.extract-version.outputs.version }}"
+          PUB_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          
+          # Initialize JSON structure
+          cat > latest.json << EOF
+          {
+            "version": "v${VERSION}",
+            "notes": "See the full release notes at https://github.com/${{ github.repository }}/releases/tag/v${VERSION}",
+            "pub_date": "${PUB_DATE}",
+            "platforms": {
+          EOF
+          
+          FIRST_PLATFORM=true
+          
+          # Function to add platform entry
+          add_platform() {
+            local platform_key=$1
+            local file_path=$2
+            local sig_path="${file_path}.sig"
+            
+            if [ -f "$file_path" ]; then
+              local url="https://github.com/${{ github.repository }}/releases/download/v${VERSION}/$(basename "$file_path")"
+              local signature=""
+              
+              if [ -f "$sig_path" ]; then
+                signature=$(cat "$sig_path" | tr -d '\n')
+              fi
+              
+              if [ "$FIRST_PLATFORM" = true ]; then
+                FIRST_PLATFORM=false
+              else
+                echo "," >> latest.json
+              fi
+              
+              cat >> latest.json << EOF
+              "${platform_key}": {
+                "url": "${url}",
+                "signature": "${signature}"
+              }
+          EOF
+            fi
+          }
+          
+          # Windows x86_64 - NSIS
+          add_platform "windows-x86_64" "artifacts/voco-x64-windows-latest/Voco_${VERSION}_x64-setup.exe"
+          
+          # macOS x86_64
+          add_platform "darwin-x86_64" "artifacts/voco-x64-macos-latest/Voco_${VERSION}_x64.app.tar.gz"
+          
+          # macOS aarch64
+          add_platform "darwin-aarch64" "artifacts/voco-aarch64-macos-latest/Voco_${VERSION}_aarch64.app.tar.gz"
+          
+          # Linux x86_64 - AppImage
+          add_platform "linux-x86_64" "artifacts/voco-amd64-ubuntu-22.04/Voco_${VERSION}_amd64.AppImage"
+          
+          # Linux aarch64 - AppImage
+          add_platform "linux-aarch64" "artifacts/voco-aarch64-ubuntu-22.04/Voco_${VERSION}_aarch64.AppImage"
+          
+          # Close JSON structure
+          cat >> latest.json << EOF
+          
+            }
+          }
+          EOF
+          
+          echo "Generated latest.json:"
+          cat latest.json
+          
+          # Copy latest.json to all artifact directories for upload
+          cp latest.json artifacts/
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:

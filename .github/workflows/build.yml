@@ -147,16 +147,26 @@ jobs:
 
           $srcDir = "target/release/bundle"
 
-          # Copy MSI
+          # Copy MSI and its signature
           $msiFiles = Get-ChildItem -Path "$srcDir/msi" -Filter "*.msi" -ErrorAction SilentlyContinue
           foreach ($file in $msiFiles) {
             Copy-Item $file.FullName "$artifactsDir/Voco_${{ inputs.version }}_${{ matrix.platform.arch }}_en-US.msi"
+            # Copy signature file if exists
+            $sigFile = "$srcDir/msi/$($file.BaseName).msi.sig"
+            if (Test-Path $sigFile) {
+              Copy-Item $sigFile "$artifactsDir/Voco_${{ inputs.version }}_${{ matrix.platform.arch }}_en-US.msi.sig"
+            }
           }
 
-          # Copy NSIS installer
+          # Copy NSIS installer and its signature
           $nsisFiles = Get-ChildItem -Path "$srcDir/nsis" -Filter "*.exe" -ErrorAction SilentlyContinue
           foreach ($file in $nsisFiles) {
             Copy-Item $file.FullName "$artifactsDir/Voco_${{ inputs.version }}_${{ matrix.platform.arch }}-setup.exe"
+            # Copy signature file if exists
+            $sigFile = "$srcDir/nsis/$($file.BaseName).exe.sig"
+            if (Test-Path $sigFile) {
+              Copy-Item $sigFile "$artifactsDir/Voco_${{ inputs.version }}_${{ matrix.platform.arch }}-setup.exe.sig"
+            }
           }
 
           # List artifacts
@@ -177,10 +187,17 @@ jobs:
             done
           fi
 
-          # Copy app.tar.gz
+          # Copy app.tar.gz and its signature
           if [ -d "$srcDir/macos" ]; then
             for file in "$srcDir/macos"/*.app.tar.gz; do
-              [ -f "$file" ] && cp "$file" "$artifactsDir/Voco_${{ inputs.version }}_${{ matrix.platform.arch }}.app.tar.gz"
+              if [ -f "$file" ]; then
+                cp "$file" "$artifactsDir/Voco_${{ inputs.version }}_${{ matrix.platform.arch }}.app.tar.gz"
+                # Copy signature file if exists
+                sigFile="${file}.sig"
+                if [ -f "$sigFile" ]; then
+                  cp "$sigFile" "$artifactsDir/Voco_${{ inputs.version }}_${{ matrix.platform.arch }}.app.tar.gz.sig"
+                fi
+              fi
             done
           fi
 
@@ -209,34 +226,22 @@ jobs:
             done
           fi
 
-          # Copy AppImage
+          # Copy AppImage and its signature
           if [ -d "$srcDir/appimage" ]; then
             for file in "$srcDir/appimage"/*.AppImage; do
-              [ -f "$file" ] && cp "$file" "$artifactsDir/Voco_${{ inputs.version }}_${{ matrix.platform.arch }}.AppImage"
+              if [ -f "$file" ]; then
+                cp "$file" "$artifactsDir/Voco_${{ inputs.version }}_${{ matrix.platform.arch }}.AppImage"
+                # Copy signature file if exists
+                sigFile="${file}.sig"
+                if [ -f "$sigFile" ]; then
+                  cp "$sigFile" "$artifactsDir/Voco_${{ inputs.version }}_${{ matrix.platform.arch }}.AppImage.sig"
+                fi
+              fi
             done
           fi
 
           # List artifacts
           ls -la "$artifactsDir"
-
-      - name: Generate checksums
-        shell: pwsh
-        run: |
-          $artifactsDir = "artifacts/${{ matrix.platform.arch }}"
-          $checksumsFile = "$artifactsDir/checksums.txt"
-
-          if ($IsWindows -or $env:OS -eq "Windows_NT") {
-            Get-ChildItem -Path $artifactsDir -File | Where-Object { $_.Name -ne "checksums.txt" } | ForEach-Object {
-              $hash = Get-FileHash $_.FullName -Algorithm SHA256
-              "$($hash.Hash.ToLower())  $($_.Name)" | Out-File -Append -FilePath $checksumsFile
-            }
-          } else {
-            cd "$artifactsDir"
-            sha256sum * > checksums.txt 2>/dev/null || true
-            cd -
-          }
-
-          Get-Content "$artifactsDir/checksums.txt" -ErrorAction SilentlyContinue
 
       - name: Upload artifacts
         if: inputs.upload-artifacts
