@@ -52,6 +52,7 @@ def main():
 
 ## 🔐 校验信息 / Checksums
 
+<!-- CHECKSUMS_PLACEHOLDER_START -->
 | 文件 / File | SHA256 |
 | ----------- | ------ |
 | Voco_{version}_x64-setup.exe | `待生成` |
@@ -65,6 +66,7 @@ def main():
 | Voco_{version}_aarch64.AppImage | `待生成` |
 | Voco_{version}_aarch64.deb | `待生成` |
 | Voco-{version}-1.aarch64.rpm | `待生成` |
+<!-- CHECKSUMS_PLACEHOLDER_END -->
 
 ---
 

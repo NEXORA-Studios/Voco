@@ -45,6 +45,12 @@ jobs:
           pattern: voco-*
           merge-multiple: false
 
+      - name: Download release body artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: release-body
+          path: .
+
       - name: Display structure of downloaded files
         run: ls -R artifacts
 
@@ -160,10 +166,9 @@ jobs:
           with open('checksums_table.md', 'r', encoding='utf-8') as f:
               checksums_table = f.read()
 
-          # Replace the checksum section
-          pattern = r'(## 🔐 校验信息 / Checksums\n\n).*?(\n---)'
-          replacement = r'\1' + checksums_table + r'\2'
-          final_body = re.sub(pattern, replacement, release_body, flags=re.DOTALL)
+          # Replace the placeholder section
+          pattern = r'<!-- CHECKSUMS_PLACEHOLDER_START -->.*?<!-- CHECKSUMS_PLACEHOLDER_END -->'
+          final_body = re.sub(pattern, checksums_table, release_body, flags=re.DOTALL)
 
           # Write final release body
           with open('final_release_body.md', 'w', encoding='utf-8') as f:

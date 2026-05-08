@@ -159,3 +159,9 @@ jobs:
           echo "release_body<<EOF" >> $GITHUB_OUTPUT
           echo "$RELEASE_BODY" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Upload release body as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-body
+          path: release_body.md
