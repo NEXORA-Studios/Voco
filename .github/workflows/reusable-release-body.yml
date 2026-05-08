@@ -132,6 +132,8 @@ jobs:
           CODENAME="${{ inputs.codename }}"
           CHANNEL="${{ steps.parse-version.outputs.channel }}"
           VERSION_CODE="${{ steps.parse-version.outputs.version_code }}"
+          USERNAME="NEXORA-Studios"
+          REPO="Voco"
           BUILD_TIME=$(date -u +"%Y/%m/%d %H:%M:%S")
 
           # Determine badge color based on channel
@@ -152,6 +154,7 @@ jobs:
             "$BUILD_TIME" \
             "$CHANNEL_COLOR" \
             CHANGELOG.md \
+            "$USERNAME/$REPO" \
             release_body.md
 
           # Store release body in output
