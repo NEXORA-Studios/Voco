@@ -1,0 +1,197 @@
+name: Generate Release Body
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: 'Version to build (e.g., 2.0.0 or 2.0.0-rc1)'
+        required: true
+        type: string
+      codename:
+        description: 'Release codename'
+        required: false
+        type: string
+        default: 'Abyssal Descent · 深渊下潜'
+    outputs:
+      release_title:
+        description: 'Generated release title'
+        value: ${{ jobs.generate.outputs.release_title }}
+      release_body:
+        description: 'Generated release body'
+        value: ${{ jobs.generate.outputs.release_body }}
+      is_prerelease:
+        description: 'Whether this is a prerelease'
+        value: ${{ jobs.generate.outputs.is_prerelease }}
+      channel:
+        description: 'Release channel'
+        value: ${{ jobs.generate.outputs.channel }}
+      version_code:
+        description: 'Version code (e.g., E2-D00.R00)'
+        value: ${{ jobs.generate.outputs.version_code }}
+
+jobs:
+  generate:
+    name: Generate Release Info
+    runs-on: ubuntu-latest
+    outputs:
+      release_title: ${{ steps.parse-version.outputs.release_title }}
+      release_body: ${{ steps.generate-body.outputs.release_body }}
+      is_prerelease: ${{ steps.parse-version.outputs.is_prerelease }}
+      channel: ${{ steps.parse-version.outputs.channel }}
+      version_code: ${{ steps.parse-version.outputs.version_code }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Parse version and generate metadata
+        id: parse-version
+        run: |
+          VERSION="${{ inputs.version }}"
+          echo "version=$VERSION"
+
+          # Parse version components
+          # Check if it's a pre-release (contains -rc, -beta, -alpha, etc.)
+          if [[ "$VERSION" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)-(.+)$ ]]; then
+            MAJOR="${BASH_REMATCH[1]}"
+            MINOR="${BASH_REMATCH[2]}"
+            PATCH="${BASH_REMATCH[3]}"
+            PRERELEASE="${BASH_REMATCH[4]}"
+            IS_PRERELEASE="true"
+
+            # Parse rc number if present
+            if [[ "$PRERELEASE" =~ ^rc([0-9]+)$ ]]; then
+              RC_NUM="${BASH_REMATCH[1]}"
+              RELEASE_TITLE="Voco ${MAJOR}.${MINOR}.${PATCH} Release Candidate ${RC_NUM}"
+              CHANNEL="Release Candidate"
+            elif [[ "$PRERELEASE" =~ ^beta([0-9]+)$ ]]; then
+              BETA_NUM="${BASH_REMATCH[1]}"
+              RELEASE_TITLE="Voco ${MAJOR}.${MINOR}.${PATCH} Beta ${BETA_NUM}"
+              CHANNEL="Beta"
+            elif [[ "$PRERELEASE" =~ ^alpha([0-9]+)$ ]]; then
+              ALPHA_NUM="${BASH_REMATCH[1]}"
+              RELEASE_TITLE="Voco ${MAJOR}.${MINOR}.${PATCH} Alpha ${ALPHA_NUM}"
+              CHANNEL="Alpha"
+            else
+              RELEASE_TITLE="Voco ${MAJOR}.${MINOR}.${PATCH} ${PRERELEASE}"
+              CHANNEL="Pre-release"
+            fi
+          else
+            # Stable release
+            MAJOR=$(echo "$VERSION" | cut -d. -f1)
+            MINOR=$(echo "$VERSION" | cut -d. -f2)
+            PATCH=$(echo "$VERSION" | cut -d. -f3)
+            IS_PRERELEASE="false"
+            RELEASE_TITLE="Voco ${VERSION}"
+            CHANNEL="Release"
+          fi
+
+          # Generate version code (e.g., E2-D00.R00 for 2.0.0)
+          VERSION_CODE="E${MAJOR}-D$(printf "%02d" $MINOR)$(printf "%02d" $PATCH).R00"
+
+          echo "release_title=$RELEASE_TITLE" >> $GITHUB_OUTPUT
+          echo "is_prerelease=$IS_PRERELEASE" >> $GITHUB_OUTPUT
+          echo "channel=$CHANNEL" >> $GITHUB_OUTPUT
+          echo "version_code=$VERSION_CODE" >> $GITHUB_OUTPUT
+
+          echo "Release title: $RELEASE_TITLE"
+          echo "Channel: $CHANNEL"
+          echo "Version code: $VERSION_CODE"
+          echo "Is prerelease: $IS_PRERELEASE"
+
+      - name: Install git-cliff
+        uses: taiki-e/install-action@git-cliff
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          VERSION="${{ inputs.version }}"
+
+          # Generate changelog using git-cliff
+          # If the tag doesn't exist yet, use --unreleased
+          if git rev-parse "v${VERSION}" >/dev/null 2>&1; then
+            git-cliff --config cliff.toml --tag "v${VERSION}" --output CHANGELOG.md
+          else
+            git-cliff --config cliff.toml --unreleased --tag "v${VERSION}" --output CHANGELOG.md
+          fi
+
+          echo "Generated changelog:"
+          cat CHANGELOG.md
+
+          # Store changelog in output (escape newlines)
+          CHANGELOG_CONTENT=$(cat CHANGELOG.md)
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG_CONTENT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Generate release body
+        id: generate-body
+        run: |
+          VERSION="${{ inputs.version }}"
+          CODENAME="${{ inputs.codename }}"
+          CHANNEL="${{ steps.parse-version.outputs.channel }}"
+          VERSION_CODE="${{ steps.parse-version.outputs.version_code }}"
+          BUILD_TIME=$(date -u +"%Y/%m/%d %H:%M:%S")
+          CHANGELOG='${{ steps.changelog.outputs.changelog }}'
+
+          # Determine badge color based on channel
+          case "$CHANNEL" in
+            "Release") CHANNEL_COLOR="27ae60" ;;
+            "Release Candidate") CHANNEL_COLOR="f39c12" ;;
+            "Beta") CHANNEL_COLOR="e67e22" ;;
+            "Alpha") CHANNEL_COLOR="e74c3c" ;;
+            *) CHANNEL_COLOR="95a5a6" ;;
+          esac
+
+          # Generate release body
+          cat > release_body.md << EOF
+          ## 🎯 ${CODENAME}
+
+          > Dive into the abyss. Explore new possibilities.
+          > 潜入深渊，探索无限可能。
+
+          ## ⭐ What's new / 新内容
+
+          ${CHANGELOG}
+
+          ## 💾 构建信息 / Build Infos
+
+          ![](https://img.shields.io/badge/发行通道%20/%20Channel-${CHANNEL// /%20}-${CHANNEL_COLOR}.svg) ![](https://img.shields.io/badge/版本号%20/%20Version-${VERSION_CODE}-00cec9.svg) ![](https://img.shields.io/badge/构建时间%20/%20Time-${BUILD_TIME// /%20}-e67e22.svg)
+
+          ## ⏬ 下载信息 / Downloads
+
+          | 架构 / Architectures | Windows | macOS | Linux |
+          | -------------------- | ------- | ----- | ----- |
+          | x86-64 (64-bit) | [![](https://img.shields.io/badge/Setup-x64-2d7d9a.svg?logo=windows)](https://github.com/${{ github.repository }}/releases/download/v${VERSION}/Voco_${VERSION}_x64-setup.exe) [![](https://img.shields.io/badge/Portable-x64-67b7d1.svg?logo=windows)](https://github.com/${{ github.repository }}/releases/download/v${VERSION}/Voco_${VERSION}_x64.app.tar.gz) | [![](https://img.shields.io/badge/DMG-Intel%20X64-%2300A9E0.svg?logo=apple)](https://github.com/${{ github.repository }}/releases/download/v${VERSION}/Voco_${VERSION}_x64.dmg) [![](https://img.shields.io/badge/.tar.gz-Intel%20X64-%2300A9E0.svg?logo=apple)](https://github.com/${{ github.repository }}/releases/download/v${VERSION}/Voco_${VERSION}_x64.app.tar.gz) | [![](https://img.shields.io/badge/AppImage-x64-f84e29.svg?logo=linux)](https://github.com/${{ github.repository }}/releases/download/v${VERSION}/Voco_${VERSION}_amd64.AppImage) [![](https://img.shields.io/badge/DebPackage-x64-FF9966.svg?logo=debian)](https://github.com/${{ github.repository }}/releases/download/v${VERSION}/Voco_${VERSION}_amd64.deb) [![](https://img.shields.io/badge/RpmPackage-x64-F1B42F.svg?logo=redhat)](https://github.com/${{ github.repository }}/releases/download/v${VERSION}/Voco-${VERSION}-1.x86_64.rpm) |
+          | AArch64 (ARM64) | ![](https://img.shields.io/badge/Not%20Supported-c23616.svg) | [![](https://img.shields.io/badge/DMG-Apple%20Silicon-%23000000.svg?logo=apple)](https://github.com/${{ github.repository }}/releases/download/v${VERSION}/Voco_${VERSION}_aarch64.dmg) [![](https://img.shields.io/badge/.tar.gz-Apple%20Silicon-%23000000.svg?logo=apple)](https://github.com/${{ github.repository }}/releases/download/v${VERSION}/Voco_${VERSION}_aarch64.app.tar.gz) | [![](https://img.shields.io/badge/AppImage-aarch64-f84e29.svg?logo=linux)](https://github.com/${{ github.repository }}/releases/download/v${VERSION}/Voco_${VERSION}_aarch64.AppImage) [![](https://img.shields.io/badge/DebPackage-aarch64-FF9966.svg?logo=debian)](https://github.com/${{ github.repository }}/releases/download/v${VERSION}/Voco_${VERSION}_aarch64.deb) [![](https://img.shields.io/badge/RpmPackage-aarch64-F1B42F.svg?logo=redhat)](https://github.com/${{ github.repository }}/releases/download/v${VERSION}/Voco-${VERSION}-1.aarch64.rpm) |
+
+          ## 🔐 校验信息 / Checksums
+
+          | 文件 / File | SHA256 |
+          | ----------- | ------ |
+          | Voco_${VERSION}_x64-setup.exe | \`待生成\` |
+          | Voco_${VERSION}_x64.app.tar.gz | \`待生成\` |
+          | Voco_${VERSION}_x64.dmg | \`待生成\` |
+          | Voco_${VERSION}_amd64.AppImage | \`待生成\` |
+          | Voco_${VERSION}_amd64.deb | \`待生成\` |
+          | Voco-${VERSION}-1.x86_64.rpm | \`待生成\` |
+          | Voco_${VERSION}_aarch64.app.tar.gz | \`待生成\` |
+          | Voco_${VERSION}_aarch64.dmg | \`待生成\` |
+          | Voco_${VERSION}_aarch64.AppImage | \`待生成\` |
+          | Voco_${VERSION}_aarch64.deb | \`待生成\` |
+          | Voco-${VERSION}-1.aarch64.rpm | \`待生成\` |
+
+          ---
+
+          **Full Changelog**: https://github.com/${{ github.repository }}/compare/v$(git describe --tags --abbrev=0 --exclude="v${VERSION}" 2>/dev/null || echo "HEAD")...v${VERSION}
+          EOF
+
+          echo "Generated release body:"
+          cat release_body.md
+
+          # Store release body in output
+          RELEASE_BODY=$(cat release_body.md)
+          echo "release_body<<EOF" >> $GITHUB_OUTPUT
+          echo "$RELEASE_BODY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT

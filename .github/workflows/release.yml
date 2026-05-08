@@ -4,41 +4,36 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to build (e.g., 1.3.0)'
+        description: 'Version to build (e.g., 2.0.0 or 2.0.0-rc1)'
         required: true
         type: string
+      codename:
+        description: 'Release codename (e.g., Abyssal Descent · 深渊下潜)'
+        required: false
+        type: string
+        default: 'Abyssal Descent · 深渊下潜'
 
 jobs:
-  extract-version:
-    name: Extract Version
-    runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.get-version.outputs.version }}
-    steps:
-      - name: Get version from tag or input
-        id: get-version
-        run: |
-          if [ "${{ github.event_name }}" == "push" ]; then
-            VERSION=${GITHUB_REF#refs/tags/v}
-          else
-            VERSION=${{ github.event.inputs.version }}
-          fi
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Building version: $VERSION"
+  generate-release-body:
+    name: Generate Release Body
+    uses: ./.github/workflows/reusable-release-body.yml
+    with:
+      version: ${{ github.event.inputs.version }}
+      codename: ${{ github.event.inputs.codename }}
 
   build:
     name: Build
-    needs: extract-version
-    uses: ./.github/workflows/build.yml
+    needs: generate-release-body
+    uses: ./.github/workflows/reusable-build.yml
     with:
-      version: ${{ needs.extract-version.outputs.version }}
+      version: ${{ github.event.inputs.version }}
       upload-artifacts: true
       artifact-retention-days: 30
     secrets: inherit
 
   release:
     name: Create Release
-    needs: [extract-version, build]
+    needs: [generate-release-body, build]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -53,12 +48,36 @@ jobs:
       - name: Display structure of downloaded files
         run: ls -R artifacts
 
+      - name: Collect all files for release
+        run: |
+          mkdir -p release-assets
+          find artifacts -type f \( -name "*.exe" -o -name "*.deb" -o -name "*.rpm" -o -name "*.dmg" -o -name "*.AppImage" -o -name "*.tar.gz" -o -name "*.sig" \) -exec cp {} release-assets/ \;
+          echo "Files to be released:"
+          ls -la release-assets/
+
+      - name: Generate checksums
+        id: checksums
+        run: |
+          cd release-assets
+          echo "| 文件 / File | SHA256 |" > ../checksums_table.md
+          echo "| ----------- | ------ |" >> ../checksums_table.md
+
+          for file in *; do
+            if [ -f "$file" ] && [[ "$file" != *.sig ]]; then
+              HASH=$(sha256sum "$file" | cut -d' ' -f1)
+              echo "| $file | \`$HASH\` |" >> ../checksums_table.md
+            fi
+          done
+
+          echo "Generated checksums table:"
+          cat ../checksums_table.md
+
       - name: Generate latest.json
         id: generate-updater
         run: |
-          VERSION="${{ needs.extract-version.outputs.version }}"
+          VERSION="${{ github.event.inputs.version }}"
           PUB_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-          
+
           # Initialize JSON structure
           cat > latest.json << EOF
           {
@@ -67,29 +86,29 @@ jobs:
             "pub_date": "${PUB_DATE}",
             "platforms": {
           EOF
-          
+
           FIRST_PLATFORM=true
-          
+
           # Function to add platform entry
           add_platform() {
             local platform_key=$1
             local file_path=$2
             local sig_path="${file_path}.sig"
-            
+
             if [ -f "$file_path" ]; then
               local url="https://github.com/${{ github.repository }}/releases/download/v${VERSION}/$(basename "$file_path")"
               local signature=""
-              
+
               if [ -f "$sig_path" ]; then
                 signature=$(cat "$sig_path" | tr -d '\n')
               fi
-              
+
               if [ "$FIRST_PLATFORM" = true ]; then
                 FIRST_PLATFORM=false
               else
                 echo "," >> latest.json
               fi
-              
+
               cat >> latest.json << EOF
               "${platform_key}": {
                 "url": "${url}",
@@ -98,43 +117,54 @@ jobs:
           EOF
             fi
           }
-          
+
           # Windows x86_64 - NSIS
-          add_platform "windows-x86_64" "artifacts/voco-x64-windows-latest/Voco_${VERSION}_x64-setup.exe"
-          
+          add_platform "windows-x86_64" "release-assets/Voco_${VERSION}_x64-setup.exe"
+
           # macOS x86_64
-          add_platform "darwin-x86_64" "artifacts/voco-x64-macos-latest/Voco_${VERSION}_x64.app.tar.gz"
-          
+          add_platform "darwin-x86_64" "release-assets/Voco_${VERSION}_x64.app.tar.gz"
+
           # macOS aarch64
-          add_platform "darwin-aarch64" "artifacts/voco-aarch64-macos-latest/Voco_${VERSION}_aarch64.app.tar.gz"
-          
+          add_platform "darwin-aarch64" "release-assets/Voco_${VERSION}_aarch64.app.tar.gz"
+
           # Linux x86_64 - AppImage
-          add_platform "linux-x86_64" "artifacts/voco-amd64-ubuntu-22.04/Voco_${VERSION}_amd64.AppImage"
-          
+          add_platform "linux-x86_64" "release-assets/Voco_${VERSION}_amd64.AppImage"
+
           # Linux aarch64 - AppImage
-          add_platform "linux-aarch64" "artifacts/voco-aarch64-ubuntu-22.04/Voco_${VERSION}_aarch64.AppImage"
-          
+          add_platform "linux-aarch64" "release-assets/Voco_${VERSION}_aarch64.AppImage"
+
           # Close JSON structure
           cat >> latest.json << EOF
-          
+
             }
           }
           EOF
-          
+
           echo "Generated latest.json:"
           cat latest.json
-          
-          # Copy latest.json to all artifact directories for upload
-          cp latest.json artifacts/
+
+          # Copy latest.json to release-assets
+          cp latest.json release-assets/
+
+      - name: Update release body with checksums
+        run: |
+          RELEASE_BODY='${{ needs.generate-release-body.outputs.release_body }}'
+          CHECKSUMS_TABLE=$(cat checksums_table.md)
+
+          # Replace the checksum table placeholder
+          echo "$RELEASE_BODY" | sed '/## 🔐 校验信息/,/---/{/## 🔐 校验信息/!{/---/!d}}' | sed "s/## 🔐 校验信息.*/## 🔐 校验信息 \/ Checksums\n\n$CHECKSUMS_TABLE/" > final_release_body.md
+
+          echo "Final release body:"
+          cat final_release_body.md
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${{ needs.extract-version.outputs.version }}
-          name: Voco ${{ needs.extract-version.outputs.version }}
+          tag_name: v${{ github.event.inputs.version }}
+          name: ${{ needs.generate-release-body.outputs.release_title }}
+          body_path: final_release_body.md
           draft: true
-          prerelease: false
-          files: |
-            artifacts/**/*
+          prerelease: ${{ needs.generate-release-body.outputs.is_prerelease }}
+          files: release-assets/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,53 @@
+# git-cliff configuration file
+# https://git-cliff.org/docs/configuration/
+
+[changelog]
+header = """
+## 📝 更新记录 / What's Changed
+"""
+body = """
+{% for group, commits in commits | group_by(attribute="group") %}
+### {{ group | striptags | trim | upper_first }}
+
+{% for commit in commits %}
+- {{ commit.message | upper_first }}{% if commit.remote.username %} by @{{ commit.remote.username }}{% endif %}
+{% endfor %}
+{% endfor %}
+"""
+trim = true
+footer = """
+{% if previous.version %}
+**Full Changelog**: {{ self::remote_url() }}/compare/{{ previous.version }}...{{ version }}
+{% endif %}
+"""
+postprocessors = [
+    { pattern = '<REPO>', replace = "https://github.com/NEXORA-Studios/Voco" },
+]
+
+[git]
+conventional_commits = true
+filter_unconventional = false
+split_commits = false
+commit_preprocessors = [
+    { pattern = "\\(\\[([^\\]]+)\\]\\(\\/[^\\)]+\\)\\)", replace = "${1}" },
+]
+commit_parsers = [
+    { message = "^feat", group = "✨ Features / 新功能" },
+    { message = "^fix", group = "🐛 Bug Fixes / 问题修复" },
+    { message = "^imp", group = "🚀 Improvements / 优化" },
+    { message = "^doc", group = "📚 Documentation / 文档" },
+    { message = "^perf", group = "⚡ Performance / 性能优化" },
+    { message = "^refactor", group = "♻️ Refactor / 重构" },
+    { message = "^style", group = "💄 Styling / 样式" },
+    { message = "^test", group = "🧪 Testing / 测试" },
+    { message = "^chore\\(release\\):", skip = true },
+    { message = "^chore", group = "🔧 Miscellaneous / 其他" },
+    { body = ".*security", group = "🛡️ Security / 安全" },
+]
+protect_breaking_commits = false
+filter_commits = false
+tag_pattern = "v[0-9].*"
+skip_tags = ""
+ignore_tags = ""
+topo_order = false
+sort_commits = "oldest"
