@@ -39,8 +39,6 @@ def main():
 > {tagline_en}
 > {tagline_zh}
 
-## ⭐ What's New / 新内容
-
 {changelog}
 
 ## 💾 Build Info / 构建信息
@@ -51,8 +49,8 @@ def main():
 
 | Architecture | Windows | macOS | Linux |
 | ------------ | ------- | ----- | ----- |
-| x86-64 | [Setup](https://github.com/{username_and_repo}/releases/download/v{version}/Voco_{version}_x64-setup.exe) / [Portable](https://github.com/{username_and_repo}/releases/download/v{version}/Voco_{version}_x64.app.tar.gz) | [DMG](https://github.com/{username_and_repo}/releases/download/v{version}/Voco_{version}_x64.dmg) / [tar.gz](https://github.com/{username_and_repo}/releases/download/v{version}/Voco_{version}_x64.app.tar.gz) | [AppImage](https://github.com/{username_and_repo}/releases/download/v{version}/Voco_{version}_amd64.AppImage) / [Deb](https://github.com/{username_and_repo}/releases/download/v{version}/Voco_{version}_amd64.deb) / [RPM](https://github.com/{username_and_repo}/releases/download/v{version}/Voco-{version}-1.x86_64.rpm) |
-| ARM64 | N/A | [DMG](https://github.com/{username_and_repo}/releases/download/v{version}/Voco_{version}_aarch64.dmg) / [tar.gz](https://github.com/{username_and_repo}/releases/download/v{version}/Voco_{version}_aarch64.app.tar.gz) | [AppImage](https://github.com/{username_and_repo}/releases/download/v{version}/Voco_{version}_aarch64.AppImage) / [Deb](https://github.com/{username_and_repo}/releases/download/v{version}/Voco_{version}_aarch64.deb) / [RPM](https://github.com/{username_and_repo}/releases/download/v{version}/Voco-{version}-1.aarch64.rpm) |
+| x86-64 | [![Setup.exe](https://img.shields.io/badge/Setup.exe-2d7d9a.svg?style=for-the-badge)](https://github.com/{username_and_repo}/releases/download/v{version}/Voco_{version}_x64-setup.exe) | [![DMG](https://img.shields.io/badge/dmg-00A9E0.svg?logo=apple&style=for-the-badge)](https://github.com/{username_and_repo}/releases/download/v{version}/Voco_{version}_x64.dmg) [![TAR.GZ](https://img.shields.io/badge/tar.gz-00A9E0.svg?logo=apple&style=for-the-badge)](https://github.com/{username_and_repo}/releases/download/v{version}/Voco_{version}_x64.app.tar.gz) | [![AppImage](https://img.shields.io/badge/AppImage-f84e29.svg?logo=linux&style=for-the-badge)](https://github.com/{username_and_repo}/releases/download/v{version}/Voco_{version}_amd64.AppImage) [![Deb](https://img.shields.io/badge/DebPackage-FF9966.svg?logo=debian&style=for-the-badge)](https://github.com/{username_and_repo}/releases/download/v{version}/Voco_{version}_amd64.deb) [![Rpm](https://img.shields.io/badge/RpmPackage-F1B42F.svg?logo=redhat&style=for-the-badge)](https://github.com/{username_and_repo}/releases/download/v{version}/Voco-{version}-1.x86_64.rpm) |
+| ARM64 | ![](https://img.shields.io/badge/N/A-c23616.svg?style=for-the-badge) | [![DMG](https://img.shields.io/badge/dmg-000000.svg?logo=apple&style=for-the-badge)](https://github.com/{username_and_repo}/releases/download/v{version}/Voco_{version}_aarch64.dmg) [![TAR.GZ](https://img.shields.io/badge/tar.gz-000000.svg?logo=apple&style=for-the-badge)](https://github.com/{username_and_repo}/releases/download/v{version}/Voco_{version}_aarch64.app.tar.gz) | [![AppImage](https://img.shields.io/badge/AppImage-f84e29.svg?logo=linux&style=for-the-badge)](https://github.com/{username_and_repo}/releases/download/v{version}/Voco_{version}_aarch64.AppImage) [![Deb](https://img.shields.io/badge/DebPackage-FF9966.svg?logo=debian&style=for-the-badge)](https://github.com/{username_and_repo}/releases/download/v{version}/Voco_{version}_aarch64.deb) [![Rpm](https://img.shields.io/badge/RpmPackage-F1B42F.svg?logo=redhat&style=for-the-badge)](https://github.com/{username_and_repo}/releases/download/v{version}/Voco-{version}-1.aarch64.rpm) |
 
 ## 🔐 Checksums / 校验信息
 
@@ -73,8 +71,6 @@ def main():
 <!-- CHECKSUMS_PLACEHOLDER_END -->
 
 ---
-
-**Full Changelog**: https://github.com/{username_and_repo}/releases/tag/v{version}
 """
 
     # Write to file
