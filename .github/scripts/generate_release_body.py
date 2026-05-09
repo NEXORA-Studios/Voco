@@ -9,7 +9,9 @@ import sys
 
 def main():
     if len(sys.argv) != 13:
-        print("Usage: python generate_release_body.py <version> <codename_en> <codename_zh> <tagline_en> <tagline_zh> <channel> <version_code> <build_time> <channel_color> <changelog_file> <username_and_repo> <output_file>")
+        print(
+            "Usage: python generate_release_body.py <version> <codename_en> <codename_zh> <tagline_en> <tagline_zh> <channel> <version_code> <build_time> <channel_color> <changelog_file> <username_and_repo> <output_file>"
+        )
         sys.exit(1)
 
     version = sys.argv[1]
@@ -26,12 +28,12 @@ def main():
     output_file = sys.argv[12]
 
     # Read changelog
-    with open(changelog_file, 'r', encoding='utf-8') as f:
+    with open(changelog_file, "r", encoding="utf-8") as f:
         changelog = f.read()
 
     # URL encode spaces
-    channel_encoded = channel.replace(' ', '%20')
-    build_time_encoded = build_time.replace(' ', '%20')
+    channel_encoded = channel.replace(" ", "%20")
+    build_time_encoded = build_time.replace(" ", "%20")
 
     # Generate release body
     body = f"""## 🎯 {codename_en} · {codename_zh}
@@ -43,7 +45,7 @@ def main():
 
 ## 💾 Build Info / 构建信息
 
-![](https://img.shields.io/badge/Channel-{channel_encoded}-{channel_color}.svg) ![](https://img.shields.io/badge/Version-{version_code}-00cec9.svg) ![](https://img.shields.io/badge/Build-{build_time_encoded}-e67e22.svg)
+![Channel:{channel_encoded}](https://img.shields.io/badge/Channel-{channel_encoded}-{channel_color}.svg?style=for-the-badge) ![Version:{version_code}](https://img.shields.io/badge/Version-{version_code}-00cec9.svg?style=for-the-badge) ![Timestamp:{build_time_encoded}](https://img.shields.io/badge/Timestamp-{build_time_encoded}-e67e22.svg?style=for-the-badge)
 
 ## ⏬ Downloads / 下载
 
@@ -74,11 +76,11 @@ def main():
 """
 
     # Write to file
-    with open(output_file, 'w', encoding='utf-8') as f:
+    with open(output_file, "w", encoding="utf-8") as f:
         f.write(body)
 
     print(body)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

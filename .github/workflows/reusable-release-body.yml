@@ -103,7 +103,7 @@ jobs:
           fi
 
           # Generate version code (e.g., E2-D00.R00 for 2.0.0)
-          VERSION_CODE="E${MAJOR}--D$(printf "%02d" $MINOR)$(printf "%02d" $PATCH).R00"
+          VERSION_CODE="E${MAJOR}--D$(printf "%02d" $MINOR).R$(printf "%02d" $PATCH)"
 
           echo "release_title=$RELEASE_TITLE" >> $GITHUB_OUTPUT
           echo "is_prerelease=$IS_PRERELEASE" >> $GITHUB_OUTPUT
