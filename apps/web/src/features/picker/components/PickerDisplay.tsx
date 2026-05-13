@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@workspace/shadcn-ui/components/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@workspace/shadcn-ui/components/card";
 import { usePickerStore } from "@/store/picker.store";
+
+const SPIN_DURATION = 3000; // 滚动持续 3 秒后自动停止
 
 export function PickerDisplay() {
     const { t } = useTranslation();
@@ -13,23 +15,60 @@ export function PickerDisplay() {
 
     const eligible = activePreset ? activePreset.items.filter((item) => (session?.remaining[item.label] ?? 0) > 0) : [];
 
+    // 使用 ref 存储 eligible 和 spinning，避免 effect 重新创建
+    const eligibleRef = useRef(eligible);
+    const spinningRef = useRef(spinning);
+
+    useEffect(() => {
+        eligibleRef.current = eligible;
+    }, [eligible]);
+
+    useEffect(() => {
+        spinningRef.current = spinning;
+    }, [spinning]);
+
+    // 滚动动画效果
     useEffect(() => {
         if (!spinning || eligible.length === 0) return;
+
         const interval = setInterval(() => {
-            const idx = Math.floor(Math.random() * eligible.length);
-            setDisplay(eligible[idx].label);
+            const currentEligible = eligibleRef.current;
+            if (currentEligible.length > 0) {
+                const idx = Math.floor(Math.random() * currentEligible.length);
+                setDisplay(currentEligible[idx].label);
+            }
         }, 60);
-        return () => clearInterval(interval);
-    }, [spinning, eligible]);
+
+        // 3 秒后自动停止
+        const timeout = setTimeout(() => {
+            if (spinningRef.current) {
+                handleStop();
+            }
+        }, SPIN_DURATION);
+
+        return () => {
+            clearInterval(interval);
+            clearTimeout(timeout);
+        };
+    }, [spinning]);
+
+    const handleStop = () => {
+        const currentEligible = eligibleRef.current;
+        if (currentEligible.length === 0) {
+            setSpinning(false);
+            return;
+        }
+        setSpinning(false);
+        const idx = Math.floor(Math.random() * currentEligible.length);
+        const chosen = currentEligible[idx];
+        setDisplay(chosen.label);
+        setPickedLabel(chosen.label);
+        pick(chosen.label);
+    };
 
     const handlePick = () => {
         if (spinning) {
-            setSpinning(false);
-            const idx = Math.floor(Math.random() * eligible.length);
-            const chosen = eligible[idx];
-            setDisplay(chosen.label);
-            setPickedLabel(chosen.label);
-            pick(chosen.label);
+            handleStop();
         } else {
             setPickedLabel(null);
             setSpinning(true);
