@@ -121,6 +121,9 @@
         "later": "稍后",
         "newVersionAvailable": "发现新版本",
         "releaseNotes": "发布说明",
-        "updateTo": "更新至"
+        "updateTo": "更新至",
+        "updateReady": "更新已就绪",
+        "restartNow": "立即重启",
+        "restartToApply": "请重启应用以完成更新"
     }
 }

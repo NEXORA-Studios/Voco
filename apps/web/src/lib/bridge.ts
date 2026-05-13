@@ -43,4 +43,7 @@ export const Bridge = {
         check: () => invoke<UpdateInfo>("check_update"),
         install: () => invoke<void>("install_update"),
     },
+    app: {
+        restart: () => invoke<void>("restart_app"),
+    },
 };

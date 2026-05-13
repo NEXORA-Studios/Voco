@@ -172,48 +172,54 @@ export function ExcelImportWizard() {
         e.stopPropagation();
     }, []);
 
-    const handleDrop = useCallback(async (e: React.DragEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDragging(false);
+    const handleDrop = useCallback(
+        async (e: React.DragEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsDragging(false);
 
-        const files = e.dataTransfer.files;
-        if (files.length === 0) return;
+            const files = e.dataTransfer.files;
+            if (files.length === 0) return;
 
-        const file = files[0];
-        // 检查文件类型
-        const validExtensions = [".xlsx", ".xls"];
-        const fileName = file.name.toLowerCase();
-        const isValid = validExtensions.some(ext => fileName.endsWith(ext));
+            const file = files[0];
+            // 检查文件类型
+            const validExtensions = [".xlsx", ".xls"];
+            const fileName = file.name.toLowerCase();
+            const isValid = validExtensions.some((ext) => fileName.endsWith(ext));
 
-        if (!isValid) {
-            // 可以在这里添加错误提示
-            console.warn("Invalid file type. Please upload an Excel file.");
-            return;
-        }
+            if (!isValid) {
+                // 可以在这里添加错误提示
+                console.warn("Invalid file type. Please upload an Excel file.");
+                return;
+            }
 
-        // 读取文件并解析
-        const arrayBuffer = await file.arrayBuffer();
-        const bytes = new Uint8Array(arrayBuffer);
-        excel.loadFromBytes(bytes, file.name);
-    }, [excel]);
+            // 读取文件并解析
+            const arrayBuffer = await file.arrayBuffer();
+            const bytes = new Uint8Array(arrayBuffer);
+            excel.loadFromBytes(bytes, file.name);
+        },
+        [excel]
+    );
 
     // 处理点击选择文件
     const handleClick = useCallback(() => {
         fileInputRef.current?.click();
     }, []);
 
-    const handleFileInputChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+    const handleFileInputChange = useCallback(
+        async (e: React.ChangeEvent<HTMLInputElement>) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
 
-        const arrayBuffer = await file.arrayBuffer();
-        const bytes = new Uint8Array(arrayBuffer);
-        excel.loadFromBytes(bytes, file.name);
+            const arrayBuffer = await file.arrayBuffer();
+            const bytes = new Uint8Array(arrayBuffer);
+            excel.loadFromBytes(bytes, file.name);
 
-        // 重置 input 以便可以再次选择同一文件
-        e.target.value = "";
-    }, [excel]);
+            // 重置 input 以便可以再次选择同一文件
+            e.target.value = "";
+        },
+        [excel]
+    );
 
     return (
         <div className="flex flex-col gap-6">
@@ -297,13 +303,11 @@ export function ExcelImportWizard() {
                                 <div
                                     className={cn(
                                         "flex h-20 w-20 items-center justify-center rounded-full transition-all duration-200",
-                                        isDragging ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground"
+                                        isDragging
+                                            ? "bg-primary text-primary-foreground"
+                                            : "bg-background text-muted-foreground"
                                     )}>
-                                    {isDragging ? (
-                                        <Upload className="h-10 w-10" />
-                                    ) : (
-                                        <FileSpreadsheet className="h-10 w-10" />
-                                    )}
+                                    {isDragging ? <Upload className="h-10 w-10" /> : <FileSpreadsheet className="h-10 w-10" />}
                                 </div>
                                 <div className="text-center">
                                     <p className="text-lg font-medium">
@@ -356,9 +360,7 @@ export function ExcelImportWizard() {
                                                     : "border-border bg-background hover:bg-muted"
                                             )}>
                                             <span className="font-medium">
-                                                {option.index === -1
-                                                    ? option.label
-                                                    : `${option.label}（${option.preview}）`}
+                                                {option.index === -1 ? option.label : `${option.label}（${option.preview}）`}
                                             </span>
                                             {excel.headerRowIndex === option.index && <Check className="h-4 w-4" />}
                                         </button>

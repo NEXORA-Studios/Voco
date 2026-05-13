@@ -229,7 +229,10 @@ async fn install_update(app: tauri::AppHandle) -> Result<(), String> {
         use tauri_plugin_updater::UpdaterExt;
         let updater = app.updater().map_err(|e| e.to_string())?;
         if let Some(update) = updater.check().await.map_err(|e| e.to_string())? {
-            update.download_and_install(|_, _| {}, || {}).await.map_err(|e| e.to_string())?;
+            update
+                .download_and_install(|_, _| {}, || {})
+                .await
+                .map_err(|e| e.to_string())?;
         }
         Ok(())
     }
@@ -237,6 +240,11 @@ async fn install_update(app: tauri::AppHandle) -> Result<(), String> {
     {
         Ok(())
     }
+}
+
+#[tauri::command]
+fn restart_app(app: tauri::AppHandle) {
+    app.restart();
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -276,6 +284,7 @@ pub fn run() {
             open_picker_window,
             check_update,
             install_update,
+            restart_app,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

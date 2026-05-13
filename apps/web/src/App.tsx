@@ -18,13 +18,9 @@ function Sidebar() {
     const [open, setOpen] = useState(false);
     const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null);
 
-    const mainLinks = [
-        { to: "/", icon: BookOpen, label: t("app.home") },
-    ];
+    const mainLinks = [{ to: "/", icon: BookOpen, label: t("app.home") }];
 
-    const bottomLinks = [
-        { to: "/settings", icon: Settings, label: t("app.settings") },
-    ];
+    const bottomLinks = [{ to: "/settings", icon: Settings, label: t("app.settings") }];
 
     useEffect(() => {
         // 静默检查更新（启动时）
@@ -72,12 +68,7 @@ function Sidebar() {
                             </Link>
                         ))}
                     </nav>
-                    {updateInfo && (
-                        <UpdateNotification
-                            updateInfo={updateInfo}
-                            onDismiss={() => setUpdateInfo(null)}
-                        />
-                    )}
+                    {updateInfo && <UpdateNotification updateInfo={updateInfo} onDismiss={() => setUpdateInfo(null)} />}
                     <nav className="flex flex-col gap-1 border-t pt-4">
                         {bottomLinks.map((link) => (
                             <Link

@@ -121,6 +121,9 @@
         "later": "Later",
         "newVersionAvailable": "New Version Available",
         "releaseNotes": "Release Notes",
-        "updateTo": "Update to"
+        "updateTo": "Update to",
+        "updateReady": "Update Ready",
+        "restartNow": "Restart Now",
+        "restartToApply": "Please restart the app to apply the update"
     }
 }
