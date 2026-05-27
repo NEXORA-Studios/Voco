@@ -16,7 +16,6 @@
         "noUnusedParameters": true,
         "noFallthroughCasesInSwitch": true,
         "noUncheckedSideEffectImports": false,
-        "baseUrl": ".",
         "types": ["vite/client"],
         "paths": {
             "@/*": ["./src/*"],
