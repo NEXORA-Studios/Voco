@@ -45,9 +45,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Install Vercel CLI locally
-        run: pnpm add -D vercel
-
       - name: Build Website
         run: pnpm build.website
 
