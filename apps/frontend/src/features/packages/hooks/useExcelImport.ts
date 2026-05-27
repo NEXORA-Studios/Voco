@@ -28,6 +28,8 @@ export function useExcelImport() {
     // headerRowIndex 表示数据从哪一行开始（0-based）
     // -1 表示没有表头，从第 0 行开始读取数据
     const [headerRowIndex, setHeaderRowIndex] = useState<number>(0);
+    // 自定义行号输入值（1-based 显示，内部转换为 0-based）
+    const [customRowInput, setCustomRowInput] = useState<string>("");
     const [originalCol, setOriginalCol] = useState(0);
     const [translationCol, setTranslationCol] = useState(1);
 
@@ -74,7 +76,7 @@ export function useExcelImport() {
         return options;
     }, [sheetData]);
 
-    // 是否有表头（headerRowIndex >= 0 表示有表头）
+    // 是否有表头（headerRowIndex >= 0 表示有表头，-1 表示无表头，-2 表示自定义行号）
     const hasHeader = headerRowIndex >= 0;
 
     // 根据当前表头行索引获取表头（用于列选择下拉框）
@@ -103,6 +105,7 @@ export function useExcelImport() {
         const firstCandidate = candidates.length > 0 ? candidates[0] : -1;
         const defaultHeaderIndex = firstCandidate === 0 ? -1 : firstCandidate;
         setHeaderRowIndex(defaultHeaderIndex);
+        setCustomRowInput("");
     }, []);
 
     const loadFile = useCallback(async () => {
@@ -125,12 +128,28 @@ export function useExcelImport() {
             const firstCandidate = candidates.length > 0 ? candidates[0] : -1;
             const defaultHeaderIndex = firstCandidate === 0 ? -1 : firstCandidate;
             setHeaderRowIndex(defaultHeaderIndex);
+            setCustomRowInput("");
         },
         [workbook]
     );
 
     const updateHeaderRowIndex = useCallback((index: number) => {
         setHeaderRowIndex(index);
+        // 如果切换到非自定义选项，清空自定义输入
+        if (index !== -2) {
+            setCustomRowInput("");
+        }
+    }, []);
+
+    const updateCustomRowInput = useCallback((value: string) => {
+        setCustomRowInput(value);
+        // 解析输入的行号并更新 headerRowIndex
+        const rowNum = parseInt(value, 10);
+        if (!isNaN(rowNum) && rowNum >= 1) {
+            setHeaderRowIndex(rowNum - 1); // 转换为 0-based
+        } else {
+            setHeaderRowIndex(-2); // 无效输入时保持自定义状态但不应用
+        }
     }, []);
 
     const mappedEntries = useMemo(() => {
@@ -143,6 +162,7 @@ export function useExcelImport() {
         setSheetName("");
         setSheetResult(null);
         setHeaderRowIndex(0);
+        setCustomRowInput("");
         setOriginalCol(0);
         setTranslationCol(1);
     }, []);
@@ -158,12 +178,14 @@ export function useExcelImport() {
         hasHeader,
         headerRowIndex,
         headerRowOptions,
+        customRowInput,
         originalCol,
         translationCol,
         loadFile,
         loadFromBytes,
         selectSheet,
         updateHeaderRowIndex,
+        updateCustomRowInput,
         setOriginalCol,
         setTranslationCol,
         mappedEntries,

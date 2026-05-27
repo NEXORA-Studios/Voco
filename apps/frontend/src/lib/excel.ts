@@ -115,6 +115,8 @@ export function mapEntries(
     headerRowIndex: number
 ): MappedEntry[] {
     // 从 headerRowIndex 开始读取数据（包括 headerRowIndex 这一行）
+    // -1 表示没有表头，从第 0 行开始读取数据
+    // -2 或任何其他负数也视为从第 0 行开始（兼容自定义行号输入中的无效状态）
     const start = headerRowIndex >= 0 ? headerRowIndex : 0;
     const entries: MappedEntry[] = [];
     for (let i = start; i < data.length; i++) {

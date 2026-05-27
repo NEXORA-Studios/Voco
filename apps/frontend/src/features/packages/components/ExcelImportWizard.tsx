@@ -365,7 +365,44 @@ export function ExcelImportWizard() {
                                             {excel.headerRowIndex === option.index && <Check className="h-4 w-4" />}
                                         </button>
                                     ))}
+                                    {/* 自定义行号选项 */}
+                                    <button
+                                        type="button"
+                                        onClick={() => excel.updateHeaderRowIndex(-2)}
+                                        className={cn(
+                                            "flex items-center gap-2 rounded-md border px-3 py-2 text-sm transition-colors",
+                                            excel.headerRowIndex === -2 ||
+                                                (excel.headerRowIndex >= 0 &&
+                                                    !allHeaderOptions.some((o) => o.index === excel.headerRowIndex))
+                                                ? "border-primary bg-primary/10 text-primary"
+                                                : "border-border bg-background hover:bg-muted"
+                                        )}>
+                                        <span className="font-medium">{t("packages.import.customRow") || "自定义行"}</span>
+                                        {(excel.headerRowIndex === -2 ||
+                                            (excel.headerRowIndex >= 0 &&
+                                                !allHeaderOptions.some((o) => o.index === excel.headerRowIndex))) && (
+                                            <Check className="h-4 w-4" />
+                                        )}
+                                    </button>
                                 </div>
+                                {/* 自定义行号输入框 */}
+                                {(excel.headerRowIndex === -2 ||
+                                    (excel.headerRowIndex >= 0 &&
+                                        !allHeaderOptions.some((o) => o.index === excel.headerRowIndex))) && (
+                                    <div className="flex items-center gap-2">
+                                        <Input
+                                            type="number"
+                                            min={1}
+                                            placeholder={t("packages.import.customRowPlaceholder") || "输入行号（如：10）"}
+                                            value={excel.customRowInput}
+                                            onChange={(e) => excel.updateCustomRowInput(e.target.value)}
+                                            className="w-60"
+                                        />
+                                        <span className="text-sm text-muted-foreground">
+                                            {t("packages.import.customRowHint") || "从该行开始读取数据"}
+                                        </span>
+                                    </div>
+                                )}
                                 <p className="text-xs text-muted-foreground">{t("packages.import.headerRowHint")}</p>
                             </div>
 
@@ -380,7 +417,7 @@ export function ExcelImportWizard() {
                                         </SelectTrigger>
                                         <SelectContent position="popper">
                                             {columnOptions.map((opt) => (
-                                                <SelectItem key={opt.value} value={String(opt.value)}>
+                                                <SelectItem key={opt.value} value={String(opt.value)} disabled={opt.value === excel.translationCol}>
                                                     {opt.label}
                                                 </SelectItem>
                                             ))}
@@ -397,7 +434,7 @@ export function ExcelImportWizard() {
                                         </SelectTrigger>
                                         <SelectContent position="popper">
                                             {columnOptions.map((opt) => (
-                                                <SelectItem key={opt.value} value={String(opt.value)}>
+                                                <SelectItem key={opt.value} value={String(opt.value)} disabled={opt.value === excel.originalCol}>
                                                     {opt.label}
                                                 </SelectItem>
                                             ))}
@@ -424,7 +461,7 @@ export function ExcelImportWizard() {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {excel.sheetData.slice(0, 8).map((row, ri) => {
+                                            {excel.sheetData.slice(0, 10).map((row, ri) => {
                                                 const isHeaderRow = ri === excel.headerRowIndex;
                                                 return (
                                                     <tr key={ri} className={cn("border-b", isHeaderRow && "bg-muted")}>
