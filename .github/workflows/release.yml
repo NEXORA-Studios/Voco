@@ -197,6 +197,7 @@ jobs:
           PYTHON_SCRIPT
 
       - name: Create Release
+        id: create-release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ github.event.inputs.version }}
@@ -207,3 +208,14 @@ jobs:
           files: release-assets/*
         env:
           GITHUB_TOKEN: ${{ secrets.CI_RELEASE_IDENTITY_KEY }}
+
+  deploy-website:
+    name: Deploy Website
+    needs: [release]
+    uses: ./.github/workflows/reusable-deploy.yml
+    with:
+      environment: 'production'
+    secrets:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
