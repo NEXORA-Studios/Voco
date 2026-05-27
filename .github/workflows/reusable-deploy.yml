@@ -49,9 +49,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Install Vercel CLI locally
-        run: pnpm add -D vercel
-
       - name: Update release metadata
         run: node apps/web/scripts/update-metadata.js ${{ inputs.version }}
         env:
