@@ -23,4 +23,7 @@ export default defineConfig([
             tsconfigRootDir: import.meta.dirname,
         },
     },
+    {
+        tsconfigRootDir: ".",
+    },
 ]);

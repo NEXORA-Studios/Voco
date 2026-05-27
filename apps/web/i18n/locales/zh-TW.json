@@ -1,0 +1,157 @@
+{
+    "nav": {
+        "home": "首頁",
+        "downloads": "下載"
+    },
+    "footer": {
+        "copyright": "© 2025-至今 NEXORA Studios. 保留所有權利。"
+    },
+    "landing": {
+        "badge": "課堂詞彙挑戰助手",
+        "title": "讓詞彙教學",
+        "titleHighlight": {
+            "1": "更高效",
+            "2": "更像遊戲",
+            "3": "更輕鬆",
+            "4": "更具互動性"
+        },
+        "description": "Voco 是一款專為教師設計的桌面應用，幫助您輕鬆管理詞彙包、運行課堂隨機抽問挑戰，讓教學更加高效有趣。",
+        "downloadNow": "立即下載",
+        "learnMore": "了解更多",
+        "features": {
+            "title": "核心功能",
+            "subtitle": "為教師量身打造的實用工具",
+            "vocabManagement": {
+                "title": "詞彙包管理",
+                "description": "輕鬆創建和管理詞彙包，支持從 Excel 匯入，多語言支持。"
+            },
+            "classroomChallenge": {
+                "title": "課堂挑戰",
+                "description": "互動式詞彙挑戰，隨機抽問，讓課堂更加生動有趣。"
+            },
+            "randomPicker": {
+                "title": "隨機抽取器",
+                "description": "通用隨機抽取工具，適用於各種課堂互動場景。"
+            }
+        },
+        "cta": {
+            "title": "準備好開始了嗎？",
+            "description": "下載 Voco，讓您的課堂更加生動有趣。支持 Windows、macOS 和 Linux。",
+            "button": "免費下載"
+        }
+    },
+    "downloads": {
+        "badge": "免費下載",
+        "title": "下載 Voco",
+        "description": "選擇適合您平台的版本，開始讓詞彙教學更加有趣",
+        "selectVersion": "選擇適合您系統的版本下載",
+        "releaseDate": "發布日期: {date}",
+        "includedFeatures": "包含功能",
+        "systemRequirements": "系統要求",
+        "version": "版本",
+        "windowsArmNotice": "Windows on ARM 暫未支持。請使用 x86-64 版本並通過相容模式運行。",
+        "linuxExperimental": {
+            "title": "實驗性支持",
+            "description": "Linux 版本未經充分測試，可能需要額外的系統依賴才能運行。"
+        },
+        "loading": "正在加載下載信息...",
+        "error": "加載下載信息失敗",
+        "retry": "重試",
+        "noVersions": "暫無可用版本",
+        "versionInfo": "版本",
+        "platforms": {
+            "windows": {
+                "name": "Windows",
+                "version": "Windows 版本",
+                "x64": "Windows 安裝程式"
+            },
+            "macos": {
+                "name": "macOS",
+                "version": "macOS 版本",
+                "dmg-x64": "Intel Mac (安裝包)",
+                "dmg-aarch64": "Apple Silicon (安裝包)",
+                "tarball-x64": "Intel Mac (壓縮包)",
+                "tarball-aarch64": "Apple Silicon (壓縮包)"
+            },
+            "linux": {
+                "name": "Linux",
+                "version": "Linux 版本",
+                "appimage-amd64": "Linux 免安裝應用程式",
+                "appimage-aarch64": "Linux 免安裝應用程式",
+                "deb-amd64": "Debian 系統套件",
+                "deb-aarch64": "Debian 系統套件",
+                "rpm-amd64": "Red Hat 系統套件",
+                "rpm-aarch64": "Red Hat 系統套件"
+            }
+        },
+        "arch": {
+            "x64": "x64",
+            "intel": "Intel",
+            "appleSilicon": "Apple Silicon",
+            "amd64": "AMD64",
+            "arm64": "ARM64"
+        },
+        "size": "大小",
+        "download": "下載",
+        "featuresList": {
+            "multiLanguage": "多語言支持",
+            "autoUpdate": "自動更新",
+            "offline": "離線使用"
+        },
+        "requirements": {
+            "windows": "Windows 10 或更高",
+            "macos": "macOS 10.13 或更高",
+            "linux": "主流發行版"
+        }
+    },
+    "about": {
+        "badge": "關於我們",
+        "title": "關於 Voco",
+        "description": "Voco 是由 NEXORA Studios 開發的開源項目，致力於為教育工作者提供簡單、高效的課堂工具。我們相信技術應該讓教學更輕鬆，而不是更複雜。",
+        "highlights": {
+            "title": "為什麼選擇 Voco",
+            "subtitle": "我們專注於打造真正有用的工具",
+            "efficient": {
+                "title": "高效便捷",
+                "description": "簡潔直觀的界面設計，無需複雜學習即可上手使用。"
+            },
+            "multilingual": {
+                "title": "多語言支持",
+                "description": "支持多種語言界面，滿足不同地區教師的需求。"
+            },
+            "free": {
+                "title": "完全免費",
+                "description": "開源免費，無廣告、無內購，讓每一位教師都能使用。"
+            }
+        },
+        "team": {
+            "title": "我們的團隊",
+            "subtitle": "由熱愛教育的開發者組成",
+            "development": {
+                "title": "開發團隊",
+                "description": "來自 NEXORA Studios 的專業開發者，專注於打造高質量的軟件產品。"
+            },
+            "community": {
+                "title": "社區貢獻",
+                "description": "感謝所有為 Voco 提供反饋、建議和代碼貢獻的社區成員。"
+            }
+        },
+        "cta": {
+            "title": "開始使用 Voco",
+            "description": "立即下載，體驗更高效的詞彙教學方式。",
+            "button": "立即下載"
+        }
+    },
+    "language": {
+        "zh-CN": "简体中文",
+        "zh-TW": "繁體中文",
+        "en-US": "English (US)",
+        "en-GB": "English (UK)"
+    },
+    "theme": {
+        "light": "淺色",
+        "dark": "深色",
+        "system": "跟隨系統"
+    }
+}
+

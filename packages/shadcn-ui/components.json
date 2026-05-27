@@ -10,15 +10,18 @@
         "cssVariables": true
     },
     "iconLibrary": "lucide",
-    "aliases": {
-        "components": "@workspace/shadcn-ui/components",
-        "utils": "@workspace/shadcn-ui/lib/utils",
-        "hooks": "@workspace/shadcn-ui/hooks",
-        "lib": "@workspace/shadcn-ui/lib",
-        "ui": "@workspace/shadcn-ui/components"
-    },
     "rtl": true,
     "menuColor": "default",
-    "menuAccent": "subtle"
+    "menuAccent": "subtle",
+    "aliases": {
+        "components": "./components",
+        "utils": "./lib/utils",
+        "ui": "./components",
+        "lib": "./lib",
+        "hooks": "./hooks"
+    },
+    "registries": {
+        "@react-bits": "https://reactbits.dev/r/{name}.json"
+    }
 }
 
