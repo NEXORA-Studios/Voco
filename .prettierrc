@@ -15,6 +15,12 @@
             "options": {
                 "printWidth": 2147483647
             }
+        },
+        {
+            "files": "**/*.{yml,yaml}",
+            "options": {
+                "tabWidth": 2
+            }
         }
     ]
 }
