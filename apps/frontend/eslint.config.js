@@ -16,10 +16,11 @@ export default defineConfig([
             reactRefresh.configs.vite,
         ],
         languageOptions: {
-            globals: { ...globals.browser },
+            ecmaVersion: 2020,
+            globals: globals.browser,
         },
-        rules: {
-            "react-refresh/only-export-components": ["disabled", { allowConstantExport: true }],
+        parserOptions: {
+            tsconfigRootDir: import.meta.dirname,
         },
     },
 ]);

@@ -1,19 +1,22 @@
 {
     "name": "voco",
-    "version": "1.9.9",
+    "version": "0.0.0",
     "private": true,
     "scripts": {
-        "build": "turbo build",
-        "tauri:build": "turbo tauri:build",
-        "dev": "turbo dev",
-        "lint": "turbo lint",
-        "format": "turbo format",
-        "typecheck": "turbo typecheck"
+        "build": "turbo run build",
+        "build.desktop": "turbo run build --filter=@nexora-studios/voco-desktop...",
+        "build.website": "turbo run build --filter=@nexora-studios/voco-website...",
+        "dev": "turbo run dev",
+        "dev.desktop": "turbo run dev --filter=@nexora-studios/voco-desktop...",
+        "dev.website": "turbo run dev --filter=@nexora-studios/voco-website...",
+        "lint": "turbo run lint",
+        "format": "turbo run format",
+        "typecheck": "turbo run typecheck"
     },
     "devDependencies": {
         "prettier": "^3.8.3",
         "prettier-plugin-tailwindcss": "^0.7.4",
-        "turbo": "^2.9.9",
+        "turbo": "^2.9.14",
         "typescript": "5.9.3"
     },
     "packageManager": "pnpm@11.0.8",
@@ -24,3 +27,4 @@
         "@tauri-apps/cli": "2.10.1"
     }
 }
+

@@ -1,129 +1,147 @@
 {
-    "app": {
-        "title": "Voco",
+    "nav": {
         "home": "Home",
-        "picker": "Random Picker",
-        "settings": "Settings"
+        "downloads": "Downloads"
     },
-    "packages": {
-        "title": "Vocabulary Packages",
-        "new": "New Package",
-        "edit": "Edit",
-        "delete": "Delete",
-        "start": "Start Challenge",
-        "reset": "Reset Order",
-        "bundle": "Bundle",
-        "entries": "entries",
-        "sort": "Sort",
-        "sort_shuffle": "Shuffle",
-        "sort_alphabetical": "Alphabetical",
-        "sort_original": "Original",
-        "confirmDelete": "Are you sure you want to delete this package?",
-        "emptyBundle": "This bundle is now empty. Delete it too?",
-        "noPackages": "No packages yet",
-        "form": {
-            "step1": "Step 1: Basic Info",
-            "confirm": "Step 3: Confirm & Save",
-            "selectBundle": "Select bundle",
-            "name": "Name",
-            "description": "Description",
-            "bundle": "Bundle",
-            "newBundle": "New bundle",
-            "bundleName": "Bundle name",
-            "sortMethod": "Sort method",
-            "save": "Save",
-            "cancel": "Cancel",
-            "next": "Next",
-            "back": "Back"
+    "footer": {
+        "copyright": "© 2025 NEXORA Studios. All rights reserved."
+    },
+    "landing": {
+        "badge": "Vocabulary Challenge Assistant",
+        "title": "Make Vocabulary Teaching",
+        "titleHighlight": "More Fun",
+        "description": "Voco is a desktop application designed for teachers to easily manage vocabulary packages and run classroom random-pick challenges, making teaching more efficient and engaging.",
+        "downloadNow": "Download Now",
+        "learnMore": "Learn More",
+        "features": {
+            "title": "Key Features",
+            "subtitle": "Practical tools tailored for teachers",
+            "vocabManagement": {
+                "title": "Vocabulary Management",
+                "description": "Easily create and manage vocabulary packages with Excel import support and multi-language capabilities."
+            },
+            "classroomChallenge": {
+                "title": "Classroom Challenge",
+                "description": "Interactive vocabulary challenges with random picking to make classes more lively and engaging."
+            },
+            "randomPicker": {
+                "title": "Random Picker",
+                "description": "Universal random picker tool suitable for various classroom interaction scenarios."
+            }
         },
-        "import": {
-            "title": "Step 2: Excel Import",
-            "chooseFile": "Choose file",
-            "sheet": "Sheet",
-            "headerRow": "Start from row",
-            "hasHeader": "Has header row",
-            "noHeader": "From beginning",
-            "noHeaderDesc": "Read data from row 1",
-            "originalCol": "Original Column",
-            "translationCol": "Translation Column",
-            "preview": "Preview",
-            "totalEntries": "{{count}} entries total",
-            "headerRowHint": "Select which row to start reading data from. Merged cells will be automatically ignored.",
-            "dragDropTitle": "Drop Excel file here",
-            "dragDropDesc": "Drag and drop an Excel file here, or click to select",
-            "supportedFormats": "Supports .xlsx, .xls formats",
-            "dropHere": "Release to import file"
-        },
-        "editor": {
-            "entriesTitle": "Entries",
-            "import": "Import (Append)",
-            "reimport": "Re-import (Replace)",
-            "cleanAll": "Clean All",
-            "confirmReplace": "This will replace all existing entries. Continue?",
-            "confirmCleanAll": "This will remove all entries. Continue?",
-            "confirmImport": "Confirm Import",
-            "confirmReimport": "Confirm Re-import",
-            "cancel": "Cancel",
-            "noEntries": "No entries yet"
+        "cta": {
+            "title": "Ready to Get Started?",
+            "description": "Download Voco and make your classroom more lively and fun. Available for Windows, macOS, and Linux.",
+            "button": "Free Download"
         }
     },
-    "session": {
-        "title": "Challenge",
-        "start": "Start",
-        "continue": "Continue",
-        "spinning": "Picking...",
-        "stop": "Stop",
-        "next": "Next",
-        "showTranslation": "Show Translation",
-        "showOriginal": "Show Original",
-        "hideAlternative": "Hide",
-        "remaining": "{{current}} / {{total}} remaining",
-        "done": "Challenge complete!",
-        "restart": "Restart",
-        "back": "Back to Home",
-        "selectMode": "Select Mode",
-        "mode": {
-            "both": "Original + Translation",
-            "original_only": "Original only",
-            "translation_only": "Translation only"
-        }
-    },
-    "picker": {
-        "title": "Random Picker",
-        "newPreset": "New Preset",
-        "editPreset": "Edit Preset",
-        "presetName": "Preset name",
-        "items": "Items",
-        "itemsHint": "One item per line. Use ::N to set pick quota.",
-        "load": "Load",
-        "pick": "Pick",
-        "reset": "Reset Session",
-        "remaining": "{{count}} picks remaining",
-        "selectPreset": "Select a preset from the left panel",
-        "allExhausted": "All items exhausted. Reset to pick again.",
-        "confirmDelete": "Are you sure you want to delete this preset?"
-    },
-    "settings": {
-        "title": "Settings",
-        "language": "Language",
-        "about": "About",
+    "downloads": {
+        "badge": "Free Download",
+        "title": "Download Voco",
+        "description": "Choose the version suitable for your platform and start making vocabulary teaching more engaging",
+        "selectVersion": "Select the version suitable for your system",
+        "includedFeatures": "Included Features",
+        "systemRequirements": "System Requirements",
         "version": "Version",
-        "checkUpdate": "Check for Updates",
-        "checking": "Checking...",
-        "updateAvailable": "Update Available",
-        "updateNotAvailable": "You're up to date",
-        "updateError": "Failed to check for updates",
-        "currentVersion": "Current Version",
-        "latestVersion": "Latest Version",
-        "updateBody": "What's New",
-        "installUpdate": "Update Now",
-        "installing": "Updating",
-        "later": "Later",
-        "newVersionAvailable": "New Version Available",
-        "releaseNotes": "Release Notes",
-        "updateTo": "Update to",
-        "updateReady": "Update Ready",
-        "restartNow": "Restart Now",
-        "restartToApply": "Please restart the app to apply the update"
+        "windowsArmNotice": "Windows on ARM is not yet supported. Please use the x64 version with emulation.",
+        "linuxExperimental": {
+            "title": "Experimental Support",
+            "description": "Linux builds are not fully tested and may require additional system dependencies to run."
+        },
+        "loading": "Loading download information...",
+        "error": "Failed to load download information",
+        "retry": "Retry",
+        "versionInfo": "Version",
+        "platforms": {
+            "windows": {
+                "name": "Windows",
+                "version": "Windows Version",
+                "x64": "Windows Installer"
+            },
+            "macos": {
+                "name": "macOS",
+                "version": "macOS Version",
+                "dmg-x64": "Intel Mac (DMG)",
+                "dmg-aarch64": "Apple Silicon (DMG)"
+            },
+            "linux": {
+                "name": "Linux",
+                "version": "Linux Version",
+                "appimage-amd64": "AppImage (AMD64)",
+                "appimage-aarch64": "AppImage (ARM64)",
+                "deb-amd64": "Debian/Ubuntu",
+                "deb-aarch64": "Debian/Ubuntu (ARM64)",
+                "rpm-amd64": "Fedora/openSUSE",
+                "rpm-aarch64": "Fedora/openSUSE (ARM64)"
+            }
+        },
+        "arch": {
+            "x64": "x64",
+            "intel": "Intel",
+            "appleSilicon": "Apple Silicon",
+            "amd64": "AMD64",
+            "arm64": "ARM64"
+        },
+        "size": "Size",
+        "download": "Download",
+        "featuresList": {
+            "multiLanguage": "Multi-language Support",
+            "autoUpdate": "Auto Update",
+            "offline": "Offline Use"
+        },
+        "requirements": {
+            "windows": "Windows 10 or higher",
+            "macos": "macOS 10.13 or higher",
+            "linux": "Major distributions"
+        }
+    },
+    "about": {
+        "badge": "About Us",
+        "title": "About Voco",
+        "description": "Voco is an open-source project developed by NEXORA Studios, dedicated to providing educators with simple and efficient classroom tools. We believe technology should make teaching easier, not more complicated.",
+        "highlights": {
+            "title": "Why Choose Voco",
+            "subtitle": "We focus on building truly useful tools",
+            "efficient": {
+                "title": "Efficient & Convenient",
+                "description": "Clean and intuitive interface design, easy to use without complex learning."
+            },
+            "multilingual": {
+                "title": "Multi-language Support",
+                "description": "Support for multiple language interfaces to meet the needs of teachers in different regions."
+            },
+            "free": {
+                "title": "Completely Free",
+                "description": "Open source and free, no ads, no in-app purchases, available to every teacher."
+            }
+        },
+        "team": {
+            "title": "Our Team",
+            "subtitle": "Composed of developers passionate about education",
+            "development": {
+                "title": "Development Team",
+                "description": "Professional developers from NEXORA Studios, focused on creating high-quality software products."
+            },
+            "community": {
+                "title": "Community Contributions",
+                "description": "Thanks to all community members who provide feedback, suggestions, and code contributions to Voco."
+            }
+        },
+        "cta": {
+            "title": "Start Using Voco",
+            "description": "Download now and experience a more efficient way of vocabulary teaching.",
+            "button": "Download Now"
+        }
+    },
+    "language": {
+        "zh-CN": "简体中文",
+        "zh-TW": "繁體中文",
+        "en-US": "English (US)",
+        "en-GB": "English (UK)"
+    },
+    "theme": {
+        "light": "Light",
+        "dark": "Dark",
+        "system": "System"
     }
 }

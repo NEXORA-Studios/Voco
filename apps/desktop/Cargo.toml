@@ -1,6 +1,6 @@
 [package]
 name = "voco-desktop"
-version = "1.9.9"
+version = "0.0.0"
 description = "Voco - Vocabulary Challenge App"
 authors = ["NEOXRA Studios"]
 edition = "2021"

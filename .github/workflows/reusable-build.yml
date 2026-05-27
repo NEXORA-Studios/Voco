@@ -65,10 +65,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 24
 
@@ -109,7 +109,7 @@ jobs:
           key: ${{ matrix.platform.target }}
 
       - name: Cache pnpm store
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.local/share/pnpm/store
           key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -128,7 +128,7 @@ jobs:
           $config | ConvertTo-Json -Depth 10 | Set-Content $configPath
 
       - name: Build application
-        run: pnpm turbo build --ui stream --log-order=stream
+        run: pnpm build.desktop --ui stream --log-order=stream
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
@@ -246,7 +246,7 @@ jobs:
       - name: Upload artifacts
         if: inputs.upload-artifacts
         id: upload-artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: voco-${{ matrix.platform.arch }}-${{ matrix.platform.os }}
           path: artifacts/${{ matrix.platform.arch }}/

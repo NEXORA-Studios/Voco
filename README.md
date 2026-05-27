@@ -1,21 +1,121 @@
-# shadcn/ui monorepo template
+# Voco
 
-This is a Vite monorepo template with shadcn/ui.
+**课堂词汇挑战助手** — 帮助教师轻松管理词汇包、运行课堂随机抽问挑战的桌面应用。
 
-## Adding components
+---
 
-To add components to your app, run the following command at the root of your `web` app:
+## 功能概览
+
+### 词汇包管理
+
+- 从 Excel 文件导入词汇，通过多步向导完成工作表选择、列映射和预览
+- 按分组（Bundle）组织词汇包，支持折叠展开
+- 支持随机、字母序、原始顺序三种排序方式，可随时重排
+- 编辑、删除词汇包，支持重新从 Excel 导入替换词条
+
+### 课堂挑战
+
+- 从词汇包启动挑战会话，词汇轮盘动画随机抽取
+- 三种出题模式：原文 + 翻译 / 仅原文 / 仅翻译
+- 实时进度显示，会话状态机驱动（旋转 → 暂停 → 揭晓 → 下一个）
+- 会话结束可重置再来或返回列表
+
+### 随机抽取器
+
+- 独立于词汇包的通用随机抽取工具（如抽学生、抽小组）
+- 支持保存预设，每个条目可设置抽取次数上限
+- 抽取动画，已抽完的条目自动置灰
+- 一键重置会话，不影响已保存的预设
+
+### 其他
+
+- 多语言界面：简体中文 / 繁體中文 / English (UK) / English (US)
+- 应用内自动更新
+- 跨平台：Windows、macOS、Linux
+
+---
+
+## 下载安装
+
+前往 [Releases](https://github.com/NEXORA-Studios/Voco/releases/latest) 下载对应平台的安装包。
+
+| 平台 | 格式 |
+|------|------|
+| Windows | `.exe`（NSIS 安装包） |
+| macOS (Intel) | `.dmg` |
+| macOS (Apple Silicon) | `.dmg` |
+| Linux | `.deb` / `.rpm` / `.AppImage` |
+
+---
+
+## 使用指南
+
+### 导入词汇
+
+1. 在首页点击「新建词汇包」
+2. 填写分组、名称、描述和排序方式
+3. 选择 Excel 文件（`.xlsx` / `.xls`），选择工作表和原文/翻译列
+4. 预览词条后确认保存
+
+> 导入完成后，Excel 文件不再被引用，可随意移动或删除。
+
+### 开始挑战
+
+1. 在词汇包卡片上点击「开始挑战」
+2. 选择出题模式
+3. 词汇轮盘旋转 → 点击停止 → 显示原文 → 点击揭晓翻译 → 下一个
+4. 所有词条抽完后可重置或返回
+
+### 随机抽取器
+
+1. 进入抽取器页面
+2. 新建或加载预设，输入条目（每行一个，`名字::次数` 设置抽取上限）
+3. 点击抽取，动画停止后锁定当前条目
+4. 抽完可重置会话
+
+---
+
+## 技术栈
+
+| 层 | 技术 |
+|----|------|
+| 前端 | React 19 · TypeScript · Vite · TailwindCSS · shadcn/ui |
+| 桌面框架 | Tauri 2 |
+| 后端 | Rust (voco-io) |
+| 状态管理 | Zustand |
+| 国际化 | i18next |
+| 数据存储 | 本地 YAML 文件 |
+
+---
+
+## 开发
+
+### 环境要求
+
+- Node.js >= 24
+- pnpm 11
+- Rust (stable)
+- Tauri 2 CLI
+
+### 快速开始
 
 ```bash
-pnpm dlx shadcn@latest add button -c apps/web
+# 安装依赖
+pnpm install
+
+# 启动开发服务器
+pnpm dev
 ```
 
-This will place the ui components in the `packages/ui/src/components` directory.
+### 构建
 
-## Using components
-
-To use the components in your app, import them from the `ui` package.
-
-```tsx
-import { Button } from "@workspace/ui/components/button";
+```bash
+pnpm build          # 构建前端
+pnpm tauri:build    # 构建桌面应用
 ```
+
+---
+
+## 许可证
+
+Copyright 2025–present NEXORA Studios. All rights reserved.

@@ -8,10 +8,6 @@
     *:not(.selectable, .selectable *, input, textarea, code, pre) {
         @apply select-none;
     }
-
-    ::-webkit-scrollbar {
-        @apply size-0;
-    }
 }
 
 @layer components {
