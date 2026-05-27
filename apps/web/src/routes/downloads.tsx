@@ -90,8 +90,13 @@ function DownloadsPage() {
             console.error("Metadata is not present, cannot download.");
             return;
         }
-        const url = `${metadata.baseUrl}/${filename}`;
-        window.open(url, "_blank");
+        const url = new URL(filename, metadata.baseUrl).toString();
+        console.log("download url =", url);
+        const win = window.open(url, "_blank");
+        console.log("window =", win);
+        if (!win) {
+            console.error("window.open was blocked");
+        }
     };
 
     if (isLoading) {
