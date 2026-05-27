@@ -45,15 +45,23 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Install Vercel CLI locally
+        run: pnpm add -D vercel
+
+      - name: Update release metadata
+        run: node apps/web/scripts/update-metadata.js ${{ inputs.version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build Website
         run: pnpm build.website
 
       - name: Deploy Project Artifacts to Vercel
         run: |
           if [ "${{ inputs.environment }}" = "production" ]; then
-            pnpm exec vercel deploy apps/voco-website/dist --prod --token=${{ secrets.VERCEL_TOKEN }}
+            pnpm exec vercel deploy apps/web/dist --prod --token=${{ secrets.VERCEL_TOKEN }}
           else
-            pnpm exec vercel deploy apps/voco-website/dist --token=${{ secrets.VERCEL_TOKEN }}
+            pnpm exec vercel deploy apps/web/dist --token=${{ secrets.VERCEL_TOKEN }}
           fi
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}

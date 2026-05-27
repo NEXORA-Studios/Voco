@@ -1,10 +1,10 @@
-name: Release Voco
+name: Release App
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to build (e.g., 2.0.0 or 2.0.0-rc1)'
+        description: 'Version to build (e.g., 2.0.0)'
         required: true
         type: string
       codename_en:
@@ -40,7 +40,7 @@ jobs:
       tagline_zh: ${{ github.event.inputs.tagline_zh }}
 
   build:
-    name: Build
+    name: Build App
     needs: generate-release-body
     uses: ./.github/workflows/reusable-build.yml
     with:
@@ -50,7 +50,7 @@ jobs:
     secrets: inherit
 
   release:
-    name: Create Release
+    name: Create App Release
     needs: [generate-release-body, build]
     runs-on: ubuntu-latest
     permissions:
@@ -172,23 +172,18 @@ jobs:
 
       - name: Update release body with checksums
         run: |
-          # Use Python to safely replace the checksum table
           python3 << 'PYTHON_SCRIPT'
           import re
 
-          # Read release body
           with open('release_body.md', 'r', encoding='utf-8') as f:
               release_body = f.read()
 
-          # Read checksums table
           with open('checksums_table.md', 'r', encoding='utf-8') as f:
               checksums_table = f.read()
 
-          # Replace the placeholder section
           pattern = r'<!-- CHECKSUMS_PLACEHOLDER_START -->.*?<!-- CHECKSUMS_PLACEHOLDER_END -->'
           final_body = re.sub(pattern, checksums_table, release_body, flags=re.DOTALL)
 
-          # Write final release body
           with open('final_release_body.md', 'w', encoding='utf-8') as f:
               f.write(final_body)
 
@@ -208,14 +203,3 @@ jobs:
           files: release-assets/*
         env:
           GITHUB_TOKEN: ${{ secrets.CI_RELEASE_IDENTITY_KEY }}
-
-  deploy-website:
-    name: Deploy Website
-    needs: [release]
-    uses: ./.github/workflows/reusable-deploy.yml
-    with:
-      environment: 'production'
-    secrets:
-      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}

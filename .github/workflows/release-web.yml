@@ -1,0 +1,26 @@
+name: Release Web
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to deploy (e.g., 2.0.0). Metadata will be fetched from GitHub Release API.'
+        required: true
+        type: string
+      environment:
+        description: 'Environment to deploy to'
+        required: false
+        type: string
+        default: 'production'
+
+jobs:
+  deploy-website:
+    name: Deploy Website Only
+    uses: ./.github/workflows/reusable-deploy.yml
+    with:
+      version: ${{ github.event.inputs.version }}
+      environment: ${{ github.event.inputs.environment }}
+    secrets:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
