@@ -1,49 +1,60 @@
 name: Deploy Website
 
 on:
-    workflow_call:
-        inputs:
-            environment:
-                description: "Environment to deploy to"
-                required: false
-                type: string
-                default: "production"
-        secrets:
-            VERCEL_TOKEN:
-                required: true
-            VERCEL_ORG_ID:
-                required: true
-            VERCEL_PROJECT_ID:
-                required: true
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: false
+        type: string
+        default: 'production'
+    secrets:
+      VERCEL_TOKEN:
+        required: true
+      VERCEL_ORG_ID:
+        required: true
+      VERCEL_PROJECT_ID:
+        required: true
 
 jobs:
-    deploy:
-        runs-on: ubuntu-latest
+  deploy:
+    name: Deploy to Vercel
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
 
-        steps:
-            - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
 
-            - uses: actions/setup-node@v6
-              with:
-                  node-version: 20
-                  cache: pnpm
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 11.0.8
 
-            - uses: pnpm/action-setup@v3
-              with:
-                  version: 11.0.8
+      - name: Cache pnpm store
+        uses: actions/cache@v5
+        with:
+          path: ~/.local/share/pnpm/store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
 
-            - run: pnpm install --frozen-lockfile
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-            # 1️⃣ 只 build website（Turbo 精准 scope）
-            - name: Build Website
-              run: pnpm build.website
+      - name: Build Website
+        run: pnpm build.website
 
-            # 2️⃣ Deploy (prebuilt)
-            - name: Deploy to Vercel
-              run: |
-                  vercel deploy apps/voco-website/dist
-                    ${{ inputs.environment == 'production' && '--prod' || '' }} \
-                    --token=${{ secrets.VERCEL_TOKEN }}
-              env:
-                  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-                  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      - name: Deploy Project Artifacts to Vercel
+        run: |
+          if [ "${{ inputs.environment }}" = "production" ]; then
+            pnpm exec vercel deploy apps/voco-website/dist --prod --token=${{ secrets.VERCEL_TOKEN }}
+          else
+            pnpm exec vercel deploy apps/voco-website/dist --token=${{ secrets.VERCEL_TOKEN }}
+          fi
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
