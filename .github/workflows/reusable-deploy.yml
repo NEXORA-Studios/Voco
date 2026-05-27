@@ -3,6 +3,10 @@ name: Deploy Website
 on:
   workflow_call:
     inputs:
+      version:
+        description: 'Version to deploy (e.g., 2.0.0). Metadata will be fetched from GitHub Release API.'
+        required: true
+        type: string
       environment:
         description: 'Environment to deploy to'
         required: false
