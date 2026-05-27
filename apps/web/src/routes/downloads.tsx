@@ -86,7 +86,10 @@ function DownloadsPage() {
     ];
 
     const handleDownload = (filename: string) => {
-        if (!metadata) return;
+        if (!metadata) {
+            console.error("Metadata is not present, cannot download.");
+            return;
+        }
         const url = `${metadata.baseUrl}/${filename}`;
         window.open(url, "_blank");
     };
@@ -120,28 +123,28 @@ function DownloadsPage() {
             id: "windows",
             name: t("downloads.platforms.windows.name"),
             icon: <Monitor className="h-6 w-6" />,
-            versions: metadata.platforms.windows.versions.map(v => ({
+            versions: metadata.platforms.windows.versions.map((v) => ({
                 ...v,
-                label: t(`downloads.platforms.windows.${v.id.replace("windows-", "")}`, v.id)
-            }))
+                label: t(`downloads.platforms.windows.${v.id.replace("windows-", "")}`, v.id),
+            })),
         },
         {
             id: "macos",
             name: t("downloads.platforms.macos.name"),
             icon: <Apple className="h-6 w-6" />,
-            versions: metadata.platforms.macos.versions.map(v => ({
+            versions: metadata.platforms.macos.versions.map((v) => ({
                 ...v,
-                label: t(`downloads.platforms.macos.${v.id.replace("macos-", "")}`, v.id)
-            }))
+                label: t(`downloads.platforms.macos.${v.id.replace("macos-", "")}`, v.id),
+            })),
         },
         {
             id: "linux",
             name: t("downloads.platforms.linux.name"),
             icon: <Laptop className="h-6 w-6" />,
-            versions: metadata.platforms.linux.versions.map(v => ({
+            versions: metadata.platforms.linux.versions.map((v) => ({
                 ...v,
-                label: t(`downloads.platforms.linux.${v.id.replace("linux-", "")}`, v.id)
-            }))
+                label: t(`downloads.platforms.linux.${v.id.replace("linux-", "")}`, v.id),
+            })),
         },
     ];
 
@@ -198,10 +201,7 @@ function DownloadsPage() {
                                     </div>
                                 )}
                                 {platform.versions.map((version) => (
-                                    <div
-                                        key={version.id}
-                                        className="flex items-center justify-between rounded-lg border p-4"
-                                    >
+                                    <div key={version.id} className="flex items-center justify-between rounded-lg border p-4">
                                         <div>
                                             <p className="font-medium">{version.label}</p>
                                             <p className="text-sm text-muted-foreground">
@@ -254,3 +254,4 @@ function DownloadsPage() {
         </div>
     );
 }
+

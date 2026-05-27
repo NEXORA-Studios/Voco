@@ -1,5 +1,4 @@
 import { createRootRoute, Link, Outlet } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 import { useTranslation } from "react-i18next";
 import { Button } from "@workspace/shadcn-ui/components/button";
 import { Download, Home } from "lucide-react";
@@ -46,7 +45,6 @@ function RootComponent() {
                     {t("footer.copyright")}
                 </div>
             </footer>
-            <TanStackRouterDevtools />
         </div>
     );
 }
