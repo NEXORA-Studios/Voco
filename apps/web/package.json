@@ -9,6 +9,7 @@
         "lint": "eslint"
     },
     "dependencies": {
+        "@vercel/analytics": "^2.0.1",
         "@workspace/shadcn-ui": "workspace:*",
         "framer-motion": "^12.40.0",
         "lucide-react": "^1.16.0",
