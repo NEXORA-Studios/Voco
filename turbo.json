@@ -25,15 +25,11 @@
         "typecheck": {
             "dependsOn": ["^typecheck"]
         },
-        "w:dev": {
-            "inputs": ["$TURBO_DEFAULT$", ".env*"],
-            "outputs": ["dist/**"],
-            "cache": false
-        },
         "dev": {
-            "dependsOn": ["w:dev"],
+            "dependsOn": ["^dev"],
             "inputs": ["$TURBO_DEFAULT$", ".env*", "target/**"],
-            "cache": false
+            "cache": false,
+            "persistent": true
         }
     }
 }
