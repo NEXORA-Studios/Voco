@@ -5,7 +5,7 @@
         "build": {
             "dependsOn": ["^build"],
             "inputs": ["$TURBO_DEFAULT$", ".env*", "target/**"],
-            "outputs": ["target/release/bundle/**"],
+            "outputs": ["target/release/bundle/**", ".next/**"],
             "env": [
                 "TAURI_SIGNING_PRIVATE_KEY",
                 "TAURI_SIGNING_PRIVATE_KEY_PASSWORD",
