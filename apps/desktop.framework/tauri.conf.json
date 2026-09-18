@@ -4,7 +4,7 @@
     "version": "99.99.99",
     "identifier": "tech.nexora-studios.voco.desktop",
     "build": {
-        "frontendDist": "../frontend/dist",
+        "frontendDist": "../desktop.frontend/dist",
         "devUrl": "http://localhost:1420"
     },
     "app": {

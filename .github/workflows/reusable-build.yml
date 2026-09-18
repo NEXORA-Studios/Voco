@@ -122,7 +122,7 @@ jobs:
       - name: Update version in tauri.conf.json
         shell: pwsh
         run: |
-          $configPath = "apps/desktop/tauri.conf.json"
+          $configPath = "apps/desktop.framework/tauri.conf.json"
           $config = Get-Content $configPath -Raw | ConvertFrom-Json
           $config.version = "${{ inputs.version }}"
           $config | ConvertTo-Json -Depth 10 | Set-Content $configPath
