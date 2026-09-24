@@ -1,6 +1,16 @@
-import type { VocabEntry } from "@/types/global.d.ts";
+import type { VocabEntry, SortMethod } from "@/types/global.d.ts";
 
-export function sortEntries(entries: VocabEntry[], method: "shuffle" | "alphabetical" | "original"): VocabEntry[] {
+export const SORT_METHODS: SortMethod[] = ["shuffle", "alphabetical", "original"];
+
+export function isSortMethod(value: unknown): value is SortMethod {
+    return typeof value === "string" && SORT_METHODS.includes(value as SortMethod);
+}
+
+export function normalizeSortMethod(value: unknown): SortMethod {
+    return isSortMethod(value) ? value : "shuffle";
+}
+
+export function sortEntries(entries: VocabEntry[], method: SortMethod): VocabEntry[] {
     const copy = [...entries];
     if (method === "shuffle") {
         for (let i = copy.length - 1; i > 0; i--) {

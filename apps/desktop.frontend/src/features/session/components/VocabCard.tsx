@@ -5,7 +5,9 @@ import { useSessionStore } from "@/store/session.store";
 export function VocabCard() {
     const { t } = useTranslation(); const { state, mode } = useSessionStore(); const [showAlternative, setShowAlternative] = useState(false);
     if (state.status !== "paused" && state.status !== "revealed") return null;
-    const entry = state.entry; const source = entry.source.word; const translation = entry.translation.word;
+    const entry = state.entry;
+    if (!entry?.source?.word || !entry?.translation?.word) return null;
+    const source = entry.source.word; const translation = entry.translation.word;
     const isSingleMode = mode === "translation_only" || mode === "original_only";
     return <div className="flex flex-col items-center gap-4">
         {mode === "translation_only" ? <div className="text-[7vw] font-bold tracking-tight">{translation}</div> : mode === "original_only" ? <div className="text-[7vw] font-bold tracking-tight">{source}</div> : <><div className="text-[7vw] font-bold tracking-tight">{source}</div>{state.status === "revealed" && <div className="text-[3vw] text-muted-foreground">{translation}</div>}</>}

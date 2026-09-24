@@ -1,11 +1,12 @@
 import { create } from "zustand";
 import { Bridge } from "@/lib/bridge";
-import { sortEntries } from "@/lib/sort";
+import { sortEntries, normalizeSortMethod } from "@/lib/sort";
 import { useSessionStore } from "@/store/session.store";
 import type { Package } from "@/types/global.d.ts";
 
 interface PackagesState {
     packages: Package[];
+    loaded: boolean;
     error: string | null;
     load: () => Promise<void>;
     createPackage: (pkg: Package) => Promise<void>;
@@ -17,7 +18,10 @@ export const usePackagesStore = create<PackagesState>((set, get) => ({
     packages: [], loaded: false, error: null,
     async load() {
         try {
-            const packages = await Bridge.packages.list();
+            const packages = (await Bridge.packages.list()).map((pkg) => ({
+                ...pkg,
+                sort_method: normalizeSortMethod(pkg.sort_method),
+            }));
             set({ packages, loaded: true, error: null });
         } catch (error) {
             set({ loaded: true, error: String(error) });
@@ -32,7 +36,8 @@ export const usePackagesStore = create<PackagesState>((set, get) => ({
     async resetPackageSort(slug, method) {
         const pkg = get().packages.find((p) => p.slug === slug);
         if (!pkg) return;
-        const updated = { ...pkg, entries: sortEntries(pkg.entries, method), sort_method: method };
+        const normalizedMethod = normalizeSortMethod(method);
+        const updated = { ...pkg, entries: sortEntries(pkg.entries, normalizedMethod), sort_method: normalizedMethod };
         await Bridge.packages.write(updated);
         set((state) => ({ packages: state.packages.map((p) => p.slug === slug ? updated : p) }));
         const sessionPkg = useSessionStore.getState().pkg;

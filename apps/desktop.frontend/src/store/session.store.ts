@@ -32,8 +32,14 @@ export const useSessionStore = create<SessionStore>()(
             state: { status: "idle" },
 
             init(pkg, mode) {
-                const remaining = pkg.entries.map((_, i) => i);
-                set({ pkg, mode, remaining, state: { status: "idle" } });
+                const validEntries = pkg.entries.filter(
+                    (entry) => Boolean(entry?.source?.word && entry?.translation?.word),
+                );
+                const sessionPackage = validEntries.length === pkg.entries.length
+                    ? pkg
+                    : { ...pkg, entries: validEntries };
+                const remaining = sessionPackage.entries.map((_, i) => i);
+                set({ pkg: sessionPackage, mode, remaining, state: { status: "idle" } });
             },
 
             setMode(mode) {
@@ -51,7 +57,12 @@ export const useSessionStore = create<SessionStore>()(
                     return;
                 }
                 const idx = remaining[0];
-                set({ state: { status: "paused", entry: pkg.entries[idx] } });
+                const entry = pkg.entries[idx];
+                if (!entry?.source?.word || !entry?.translation?.word) {
+                    set({ remaining: remaining.slice(1), state: { status: "spinning" } });
+                    return;
+                }
+                set({ state: { status: "paused", entry } });
             },
 
             reveal() {
@@ -78,6 +89,19 @@ export const useSessionStore = create<SessionStore>()(
         }),
         {
             name: "voco-session",
+            onRehydrateStorage: () => (state) => {
+                if (!state?.pkg) return;
+                const entry = state.state.status === "paused" || state.state.status === "revealed"
+                    ? state.state.entry
+                    : undefined;
+                const hasValidEntry = !entry || Boolean(entry?.source?.word && entry?.translation?.word);
+                const hasValidRemaining = state.remaining.every(
+                    (index) => Number.isInteger(index) && index >= 0 && index < state.pkg!.entries.length,
+                );
+                if (!hasValidEntry || !hasValidRemaining) {
+                    state.reset();
+                }
+            },
             partialize: (state) => ({
                 pkg: state.pkg,
                 mode: state.mode,

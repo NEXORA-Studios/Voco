@@ -93,15 +93,16 @@ fn read_package_dir(path: &Path, enforce_dir_slug: bool) -> Result<Package, crat
             "Package data metadata mismatch: {slug}"
         )));
     }
-    if !matches!(
-        data.sort_method.as_str(),
-        "original" | "alphabetical" | "shuffle"
-    ) {
-        return Err(crate::Error::InvalidData(format!(
-            "Unsupported sort method: {}",
-            data.sort_method
-        )));
-    }
+    let sort_method = match data.sort_method.as_str() {
+        "" => "shuffle".to_string(),
+        "original" | "alphabetical" | "shuffle" => data.sort_method.clone(),
+        _ => {
+            return Err(crate::Error::InvalidData(format!(
+                "Unsupported sort method: {}",
+                data.sort_method
+            )))
+        }
+    };
     let mut seen = std::collections::HashSet::new();
     for entry in &data.entries {
         if !seen.insert(entry.id.clone()) {
@@ -151,7 +152,7 @@ fn read_package_dir(path: &Path, enforce_dir_slug: bool) -> Result<Package, crat
         data: data_path.clone(),
         images,
     };
-    package.sort_method = data.sort_method.clone();
+    package.sort_method = sort_method;
     package.entries = data
         .entries
         .into_iter()
@@ -217,11 +218,21 @@ pub fn write(dir: PathBuf, package: &Package) -> Result<(), crate::Error> {
         manifest_package.entries.clear();
         let manifest = toml::to_string_pretty(&manifest_package)?;
         crate::fs::write_string(temporary.join("package.toml"), &manifest)?;
+        let sort_method = match package.sort_method.as_str() {
+            "" => "shuffle".to_string(),
+            "original" | "alphabetical" | "shuffle" => package.sort_method.clone(),
+            _ => {
+                return Err(crate::Error::InvalidData(format!(
+                    "Unsupported sort method: {}",
+                    package.sort_method
+                )))
+            }
+        };
         let data = DataFile {
             format: "voco-package-data".into(),
             format_version: 1,
             package_id: package.id.clone(),
-            sort_method: package.sort_method.clone(),
+            sort_method,
             entries: package.entries.clone(),
         };
         crate::fs::write_string(temporary.join("data.toml"), &toml::to_string_pretty(&data)?)?;
