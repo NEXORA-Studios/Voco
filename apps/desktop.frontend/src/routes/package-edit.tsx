@@ -47,8 +47,8 @@ export function PackageEdit() {
 
     const startEdit = (entry: VocabEntry) => {
         setEditingId(entry.id);
-        setEditOriginal(entry.original);
-        setEditTranslation(entry.translation);
+        setEditOriginal(entry.source.word);
+        setEditTranslation(entry.translation.word);
     };
 
     const cancelEdit = () => {
@@ -60,9 +60,9 @@ export function PackageEdit() {
     const handleUpdateEntry = async () => {
         if (!pkg || !editingId) return;
         const entries = pkg.entries.map((e) =>
-            e.id === editingId ? { ...e, original: editOriginal, translation: editTranslation } : e
+            e.id === editingId ? { ...e, source: { ...e.source, word: editOriginal }, translation: { ...e.translation, word: editTranslation } } : e
         );
-        const updated: Package = { ...pkg, entries, updated_at: new Date().toISOString() };
+        const updated: Package = { ...pkg, entries, updated: { at: new Date().toISOString() } };
         await updatePackage(updated);
         setPkg(updated);
         cancelEdit();
@@ -71,7 +71,7 @@ export function PackageEdit() {
     const handleDeleteEntry = async () => {
         if (!pkg || !deleteEntryId) return;
         const entries = pkg.entries.filter((e) => e.id !== deleteEntryId);
-        const updated: Package = { ...pkg, entries, updated_at: new Date().toISOString() };
+        const updated: Package = { ...pkg, entries, updated: { at: new Date().toISOString() } };
         await updatePackage(updated);
         setPkg(updated);
         setDeleteEntryId(null);
@@ -81,12 +81,12 @@ export function PackageEdit() {
         if (!pkg) return;
         const newEntries: VocabEntry[] = excel.mappedEntries.map((e) => ({
             id: uuidv4(),
-            original: e.original,
-            translation: e.translation,
+            source: { word: e.original, description: "" },
+            translation: { word: e.translation, description: "" },
         }));
 
         const entries = importMode === "append" ? [...pkg.entries, ...newEntries] : newEntries;
-        const updated: Package = { ...pkg, entries, updated_at: new Date().toISOString() };
+        const updated: Package = { ...pkg, entries, updated: { at: new Date().toISOString() } };
         await updatePackage(updated);
         setPkg(updated);
         setImportMode(null);
@@ -95,7 +95,7 @@ export function PackageEdit() {
 
     const handleCleanAll = async () => {
         if (!pkg) return;
-        const updated: Package = { ...pkg, entries: [], updated_at: new Date().toISOString() };
+        const updated: Package = { ...pkg, entries: [], updated: { at: new Date().toISOString() } };
         await updatePackage(updated);
         setPkg(updated);
         setShowCleanAllConfirm(false);
@@ -216,8 +216,8 @@ export function PackageEdit() {
                                             </>
                                         ) : (
                                             <>
-                                                <td className="border-r px-3 py-2">{entry.original}</td>
-                                                <td className="border-r px-3 py-2">{entry.translation}</td>
+                                                <td className="border-r px-3 py-2">{entry.source.word}</td>
+                                                <td className="border-r px-3 py-2">{entry.translation.word}</td>
                                                 <td className="px-3 py-2">
                                                     <div className="flex justify-end gap-1">
                                                         <Button

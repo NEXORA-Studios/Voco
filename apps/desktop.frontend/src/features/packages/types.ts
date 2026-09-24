@@ -1,3 +1,2 @@
-import type { Package, BundleMeta, SortMethod } from "@/types/global.d.ts";
-
-export type { Package, BundleMeta, SortMethod };
+import type { Package, SortMethod } from "@/types/global.d.ts";
+export type { Package, SortMethod };

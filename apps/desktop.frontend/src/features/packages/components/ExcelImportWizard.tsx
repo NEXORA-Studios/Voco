@@ -11,26 +11,25 @@ import { useExcelImport } from "@/features/packages/hooks/useExcelImport";
 import { ExcelSheetPicker } from "./ExcelSheetPicker";
 import { SortMethodSelect } from "./SortMethodSelect";
 import { usePackagesStore } from "@/store/packages.store";
-import type { Package, BundleMeta, SortMethod, VocabEntry } from "@/types/global.d.ts";
+import type { Package, SortMethod, VocabEntry } from "@/types/global.d.ts";
 import { cn } from "@workspace/shadcn-ui/lib/utils";
 import { Check, Upload, FileSpreadsheet } from "lucide-react";
 
-function slugify(/* name: string */) {
-    return "pkg-" + Math.random().toString(36).slice(2, 8);
+function slugify(name: string) {
+    return name.trim().replace(/[\s_]+/g, "-").replace(/[^A-Za-z0-9._-]/g, "") || `pkg-${Math.random().toString(36).slice(2, 8)}`;
 }
 
 export function ExcelImportWizard() {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const { bundles, createPackage } = usePackagesStore();
+    const { createPackage } = usePackagesStore();
     const excel = useExcelImport();
 
     const [step, setStep] = useState(1);
     const [name, setName] = useState("");
     const [slug, setSlug] = useState("");
     const [description, setDescription] = useState("");
-    const [bundleSlug, setBundleSlug] = useState("");
-    const [newBundleName, setNewBundleName] = useState("");
+    const [tagsText, setTagsText] = useState("");
     const [sortMethod, setSortMethod] = useState<SortMethod>("shuffle");
     const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -38,55 +37,10 @@ export function ExcelImportWizard() {
     const handleSave = async () => {
         if (!name.trim() || !slug.trim() || excel.mappedEntries.length === 0) return;
 
-        const finalSlug = slug.trim();
-        let finalBundleSlug = bundleSlug;
-        let bundle: BundleMeta | null = null;
-
-        if (finalBundleSlug === "__new__") {
-            const bslug = slugify(/* newBundleName */);
-            bundle = {
-                version: 1,
-                id: uuidv4(),
-                slug: bslug,
-                name: newBundleName,
-                package_slugs: [finalSlug],
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
-            };
-            finalBundleSlug = bslug;
-        } else {
-            const existing = bundles.find((b) => b.slug === finalBundleSlug);
-            if (existing) {
-                bundle = {
-                    ...existing,
-                    package_slugs: [...existing.package_slugs, slug],
-                    updated_at: new Date().toISOString(),
-                };
-            }
-        }
-
-        if (!bundle) return;
-
-        const entries: VocabEntry[] = excel.mappedEntries.map((e) => ({
-            id: uuidv4(),
-            original: e.original,
-            translation: e.translation,
-        }));
-
-        const pkg: Package = {
-            version: 1,
-            id: uuidv4(),
-            bundle_slug: finalBundleSlug,
-            slug: finalSlug,
-            name: name.trim(),
-            description: description.trim(),
-            sort_method: sortMethod,
-            entries,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-        };
-
-        await createPackage(pkg, bundle);
+        const now = new Date().toISOString();
+        const entries: VocabEntry[] = excel.mappedEntries.map((e) => ({ id: uuidv4(), source: { word: e.original, description: "" }, translation: { word: e.translation, description: "" } }));
+        const pkg: Package = { format: "voco-package", format_version: 1, id: uuidv4(), slug: slugify(slug), name: name.trim(), description: description.trim(), source_language: "und", target_language: "und", tags: [...new Set(tagsText.split(",").map((tag) => tag.trim()).filter(Boolean))], sort_order: {}, files: { rawdata: "rawdata.toml", data: "data.toml", images: "images" }, created: { at: now, by: "voco" }, updated: { at: now }, sort_method: sortMethod, entries };
+        await createPackage(pkg);
         navigate("/");
     };
 
@@ -227,27 +181,8 @@ export function ExcelImportWizard() {
                 <div className="flex flex-col gap-4 rounded-lg border p-4">
                     <h2 className="text-lg font-semibold">{t("packages.form.step1")}</h2>
                     <div className="flex flex-col gap-2">
-                        <Label>{t("packages.form.bundle")}</Label>
-                        <Select value={bundleSlug} onValueChange={(v) => setBundleSlug(v)}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="--" />
-                            </SelectTrigger>
-                            <SelectContent position="popper">
-                                {bundles.map((b) => (
-                                    <SelectItem key={b.slug} value={b.slug}>
-                                        {b.name}
-                                    </SelectItem>
-                                ))}
-                                <SelectItem value="__new__">{t("packages.form.newBundle")}</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        {bundleSlug === "__new__" && (
-                            <Input
-                                placeholder={t("packages.form.bundleName")}
-                                value={newBundleName}
-                                onChange={(e) => setNewBundleName(e.target.value)}
-                            />
-                        )}
+                        <Label>{t("packages.form.bundle", { defaultValue: "Tags" })}</Label>
+                        <Input placeholder="grade-7, animals" value={tagsText} onChange={(e) => setTagsText(e.target.value)} />
                     </div>
                     <div className="flex flex-col gap-2">
                         <Label>{t("packages.form.name")}</Label>
@@ -255,7 +190,7 @@ export function ExcelImportWizard() {
                             value={name}
                             onChange={(e) => {
                                 setName(e.target.value);
-                                if (!slug || step === 1) setSlug(slugify(/* e.target.value */));
+                                if (!slug || step === 1) setSlug(slugify(e.target.value));
                             }}
                         />
                     </div>
@@ -269,7 +204,7 @@ export function ExcelImportWizard() {
                     </div>
                     <Button
                         onClick={() => setStep(2)}
-                        disabled={!name.trim() || !bundleSlug || (bundleSlug === "__new__" && !newBundleName.trim())}>
+                        disabled={!name.trim() || !slug.trim()}>
                         {t("packages.form.next")}
                     </Button>
                 </div>

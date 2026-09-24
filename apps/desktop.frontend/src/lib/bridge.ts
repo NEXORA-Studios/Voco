@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { Settings, BundleMeta, Package, Preset } from "@/types/global.d.ts";
+import type { Settings, Package, Preset } from "@/types/global.d.ts";
 
 export interface UpdateInfo {
     available: boolean;
@@ -11,12 +11,6 @@ export const Bridge = {
     settings: {
         read: () => invoke<Settings>("read_settings"),
         write: (s: Settings) => invoke<void>("write_settings", { settings: s }),
-    },
-    bundles: {
-        list: () => invoke<BundleMeta[]>("list_bundles"),
-        read: (slug: string) => invoke<BundleMeta>("read_bundle", { slug }),
-        write: (b: BundleMeta) => invoke<void>("write_bundle", { bundle: b }),
-        delete: (slug: string) => invoke<void>("delete_bundle", { slug }),
     },
     packages: {
         list: () => invoke<Package[]>("list_packages"),

@@ -6,7 +6,7 @@ import { UpdateChecker } from "@/features/settings/components/UpdateChecker";
 
 export function SettingsPage() {
     const { t } = useTranslation();
-    const { loaded, load } = useSettingsStore();
+    const { loaded, error, load } = useSettingsStore();
 
     useEffect(() => {
         if (!loaded) load();
@@ -15,12 +15,12 @@ export function SettingsPage() {
     return (
         <div className="flex flex-col gap-6">
             <h1 className="text-2xl font-bold">{t("settings.title")}</h1>
-            <div className="rounded-lg border p-4">
-                <LanguageSelect />
-            </div>
-            <div className="rounded-lg border p-4">
-                <UpdateChecker />
-            </div>
+            {error && <p className="text-destructive">{error}</p>}
+            {!loaded && !error && <p>{t("common.loading")}</p>}
+            {!error && <>
+                <div className="rounded-lg border p-4"><LanguageSelect /></div>
+                <div className="rounded-lg border p-4"><UpdateChecker /></div>
+            </>}
         </div>
     );
 }

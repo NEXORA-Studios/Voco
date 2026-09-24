@@ -8,12 +8,12 @@ fn read_file(path: PathBuf) -> Result<PresetsFile, crate::Error> {
         return Ok(PresetsFile::default());
     }
     let content = fs::read_string(&path)?;
-    let file: PresetsFile = serde_yaml::from_str(&content)?;
+    let file: PresetsFile = toml::from_str(&content)?;
     Ok(file)
 }
 
 fn write_file(path: PathBuf, file: &PresetsFile) -> Result<(), crate::Error> {
-    let content = serde_yaml::to_string(file)?;
+    let content = toml::to_string_pretty(file)?;
     fs::write_string(path, &content)?;
     Ok(())
 }

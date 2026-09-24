@@ -1,5 +1,5 @@
 use tauri::Manager;
-use voco_io::models::{BundleMeta, Package, Preset, Settings};
+use voco_io::models::{Package, Preset, Settings};
 use voco_io::VocoStore;
 
 #[tauri::command]
@@ -18,50 +18,6 @@ async fn write_settings(
     let store = store.inner().clone();
     tauri::async_runtime::spawn_blocking(move || {
         store.write_settings(&settings).map_err(|e| e.to_string())
-    })
-    .await
-    .map_err(|e| e.to_string())?
-}
-
-#[tauri::command]
-async fn list_bundles(store: tauri::State<'_, VocoStore>) -> Result<Vec<BundleMeta>, String> {
-    let store = store.inner().clone();
-    tauri::async_runtime::spawn_blocking(move || store.list_bundles().map_err(|e| e.to_string()))
-        .await
-        .map_err(|e| e.to_string())?
-}
-
-#[tauri::command]
-async fn read_bundle(
-    store: tauri::State<'_, VocoStore>,
-    slug: String,
-) -> Result<BundleMeta, String> {
-    let store = store.inner().clone();
-    tauri::async_runtime::spawn_blocking(move || {
-        store.read_bundle(&slug).map_err(|e| e.to_string())
-    })
-    .await
-    .map_err(|e| e.to_string())?
-}
-
-#[tauri::command]
-async fn write_bundle(
-    store: tauri::State<'_, VocoStore>,
-    bundle: BundleMeta,
-) -> Result<(), String> {
-    let store = store.inner().clone();
-    tauri::async_runtime::spawn_blocking(move || {
-        store.write_bundle(&bundle).map_err(|e| e.to_string())
-    })
-    .await
-    .map_err(|e| e.to_string())?
-}
-
-#[tauri::command]
-async fn delete_bundle(store: tauri::State<'_, VocoStore>, slug: String) -> Result<(), String> {
-    let store = store.inner().clone();
-    tauri::async_runtime::spawn_blocking(move || {
-        store.delete_bundle(&slug).map_err(|e| e.to_string())
     })
     .await
     .map_err(|e| e.to_string())?
@@ -267,10 +223,6 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             read_settings,
             write_settings,
-            list_bundles,
-            read_bundle,
-            write_bundle,
-            delete_bundle,
             list_packages,
             read_package,
             write_package,
@@ -287,5 +239,5 @@ pub fn run() {
             restart_app,
         ])
         .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .unwrap_or_else(|error| eprintln!("Voco 启动失败: {error}"));
 }

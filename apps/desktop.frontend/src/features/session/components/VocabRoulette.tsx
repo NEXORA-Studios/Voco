@@ -12,7 +12,7 @@ export function VocabRoulette() {
         const interval = setInterval(() => {
             const idx = Math.floor(Math.random() * remaining.length);
             const entry = pkg.entries[remaining[idx]];
-            const text = mode === "translation_only" ? entry?.translation : entry?.original;
+            const text = mode === "translation_only" ? entry?.translation.word : entry?.source.word;
             setDisplay(text ?? "");
         }, 80);
         return () => clearInterval(interval);
