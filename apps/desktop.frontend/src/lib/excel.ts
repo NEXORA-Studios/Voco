@@ -105,14 +105,21 @@ export function previewRows(data: unknown[][], limit: number): unknown[][] {
 
 export interface MappedEntry {
     original: string;
+    originalDescription: string;
     translation: string;
+    translationDescription: string;
+    imageSource: string;
+    sourceRow: number;
 }
 
 export function mapEntries(
     data: unknown[][],
     originalCol: number,
     translationCol: number,
-    headerRowIndex: number
+    headerRowIndex: number,
+    originalDescriptionCol = -1,
+    translationDescriptionCol = -1,
+    imageCol = -1
 ): MappedEntry[] {
     // 从 headerRowIndex 开始读取数据（包括 headerRowIndex 这一行）
     // -1 表示没有表头，从第 0 行开始读取数据
@@ -125,7 +132,15 @@ export function mapEntries(
         const original = String(row[originalCol] ?? "").trim();
         const translation = String(row[translationCol] ?? "").trim();
         if (original && translation) {
-            entries.push({ original, translation });
+            entries.push({
+                original,
+                originalDescription: originalDescriptionCol >= 0 ? String(row[originalDescriptionCol] ?? "").trim() : "",
+                translation,
+                translationDescription:
+                    translationDescriptionCol >= 0 ? String(row[translationDescriptionCol] ?? "").trim() : "",
+                imageSource: imageCol >= 0 ? String(row[imageCol] ?? "").trim() : "",
+                sourceRow: i + 1,
+            });
         }
     }
     return entries;

@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { toast } from "@workspace/shadcn-ui/components/sonner";
 import { useSettingsStore } from "@/store/settings.store";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/shadcn-ui/components/select";
 import type { Language } from "@/types/global.d.ts";
@@ -14,10 +15,20 @@ export function LanguageSelect() {
         { value: "en-US", label: "English (US)" },
     ];
 
+    const handleLanguageChange = async (value: string) => {
+        try {
+            await setLanguage(value as Language);
+            toast.success(t("settings.languageSaved"));
+        } catch (error) {
+            console.error("Failed to save language:", error);
+            toast.error(t("settings.languageSaveError"));
+        }
+    };
+
     return (
         <div className="flex flex-col gap-2">
             <label className="text-sm font-medium">{t("settings.language")}</label>
-            <Select value={settings?.language ?? "zh-TW"} onValueChange={(v) => setLanguage(v as Language)}>
+            <Select value={settings?.language ?? "zh-TW"} onValueChange={(value) => void handleLanguageChange(value)}>
                 <SelectTrigger>
                     <SelectValue />
                 </SelectTrigger>

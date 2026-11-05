@@ -32,6 +32,10 @@ export function useExcelImport() {
     const [customRowInput, setCustomRowInput] = useState<string>("");
     const [originalCol, setOriginalCol] = useState(0);
     const [translationCol, setTranslationCol] = useState(1);
+    const [originalDescriptionCol, setOriginalDescriptionCol] = useState(-1);
+    const [translationDescriptionCol, setTranslationDescriptionCol] = useState(-1);
+    const [imageCol, setImageCol] = useState(-1);
+    const [workbookBytes, setWorkbookBytes] = useState<Uint8Array | null>(null);
 
     // 从 sheetResult 获取数据
     const sheetData = useMemo(() => sheetResult?.data ?? [], [sheetResult]);
@@ -91,6 +95,7 @@ export function useExcelImport() {
 
     const loadFromBytes = useCallback(async (bytes: Uint8Array, _fileName?: string) => {
         const wb = parseWorkbook(bytes);
+        setWorkbookBytes(bytes);
         setWorkbook(wb);
         const names = getSheetNames(wb);
         const first = names[0] ?? "";
@@ -154,8 +159,16 @@ export function useExcelImport() {
 
     const mappedEntries = useMemo(() => {
         if (sheetData.length === 0) return [];
-        return mapEntries(sheetData, originalCol, translationCol, headerRowIndex);
-    }, [sheetData, originalCol, translationCol, headerRowIndex]);
+        return mapEntries(
+            sheetData,
+            originalCol,
+            translationCol,
+            headerRowIndex,
+            originalDescriptionCol,
+            translationDescriptionCol,
+            imageCol
+        );
+    }, [sheetData, originalCol, translationCol, headerRowIndex, originalDescriptionCol, translationDescriptionCol, imageCol]);
 
     const reset = useCallback(() => {
         setWorkbook(null);
@@ -165,6 +178,10 @@ export function useExcelImport() {
         setCustomRowInput("");
         setOriginalCol(0);
         setTranslationCol(1);
+        setOriginalDescriptionCol(-1);
+        setTranslationDescriptionCol(-1);
+        setImageCol(-1);
+        setWorkbookBytes(null);
     }, []);
 
     return {
@@ -181,6 +198,10 @@ export function useExcelImport() {
         customRowInput,
         originalCol,
         translationCol,
+        originalDescriptionCol,
+        translationDescriptionCol,
+        imageCol,
+        workbookBytes,
         loadFile,
         loadFromBytes,
         selectSheet,
@@ -188,6 +209,9 @@ export function useExcelImport() {
         updateCustomRowInput,
         setOriginalCol,
         setTranslationCol,
+        setOriginalDescriptionCol,
+        setTranslationDescriptionCol,
+        setImageCol,
         mappedEntries,
         isMergedCell: (row: number, col: number) => isMergedCell(merges, row, col),
         getMergeSpan: (row: number, col: number) => getMergeSpan(merges, row, col),

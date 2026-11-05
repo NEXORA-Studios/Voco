@@ -1,0 +1,19 @@
+{
+  "migrated_version": "3.0.0",
+  "finalized": false,
+  "appliedAt": "2026-11-04T10:13:56.780Z",
+  "log": [
+    {
+      "action": "skipped:missing",
+      "from": "/Users/jimlin/Developer/Projects/Org.NEXORA-Studios/Voco Project/Voco/.unipi/config/compactor.json"
+    },
+    {
+      "action": "skipped:missing",
+      "from": "/Users/jimlin/Developer/Projects/Org.NEXORA-Studios/Voco Project/Voco/.unipi/fusion-preset.json"
+    },
+    {
+      "action": "skipped:missing",
+      "from": "/Users/jimlin/Developer/Projects/Org.NEXORA-Studios/Voco Project/Voco/.unipi/config/background-tasks.json"
+    }
+  ]
+}

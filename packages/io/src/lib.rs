@@ -1,3 +1,4 @@
+pub mod excel_images;
 pub mod fs;
 pub mod models;
 pub mod repos;
@@ -76,7 +77,8 @@ impl VocoStore {
             .base_path
             .join("backups/migration-data-format")
             .join(stamp);
-        fs::create_dir_all(&backup_root)?;
+        let migration_tmp = self.packages_dir().join(".migration-tmp");
+        fs::create_dir_all(&migration_tmp)?;
         let mut records = Vec::new();
         fn copy_tree(
             src: &std::path::Path,
@@ -153,7 +155,7 @@ impl VocoStore {
             })
             .collect();
         fs::write(
-            backup_root.join("manifest.toml"),
+            migration_tmp.join("manifest.toml"),
             toml::to_string_pretty(&Manifest {
                 version: 1,
                 source_root: self.base_path.to_string_lossy().into_owned(),
@@ -191,27 +193,41 @@ impl VocoStore {
             }
         }
         let mut relation: BTreeMap<String, Vec<(String, i32)>> = BTreeMap::new();
+        let mut tag_ids_by_name = BTreeMap::new();
+        fn ensure_tag_id(
+            settings: &mut Settings,
+            ids_by_name: &mut BTreeMap<String, String>,
+            name: String,
+        ) -> String {
+            if let Some(id) = ids_by_name.get(&name) {
+                return id.clone();
+            }
+            let id = uuid::Uuid::new_v4().to_string();
+            settings.tags.insert(
+                id.clone(),
+                models::TagDefinition {
+                    name: name.clone(),
+                    color: None,
+                    order: (settings.tags.len() as i32 + 1) * 10,
+                },
+            );
+            ids_by_name.insert(name, id.clone());
+            id
+        }
         for (slug, b) in &bundles {
             let name = b
                 .get("name")
                 .and_then(|v| v.as_str())
                 .unwrap_or(slug)
                 .to_string();
-            settings.tags.insert(
-                slug.clone(),
-                models::TagDefinition {
-                    name,
-                    color: None,
-                    order: (settings.tags.len() as i32 + 1) * 10,
-                },
-            );
+            let tag_id = ensure_tag_id(&mut settings, &mut tag_ids_by_name, name);
             if let Some(arr) = b.get("package_slugs").and_then(|v| v.as_sequence()) {
                 for (i, p) in arr.iter().enumerate() {
                     if let Some(p) = p.as_str() {
                         relation
                             .entry(p.into())
                             .or_default()
-                            .push((slug.clone(), (i as i32 + 1) * 10));
+                            .push((tag_id.clone(), (i as i32 + 1) * 10));
                     }
                 }
             }
@@ -240,17 +256,37 @@ impl VocoStore {
                     getstr("id")
                 };
                 let relations = relation.remove(&slug).unwrap_or_default();
+                let mut seen_tags = std::collections::HashSet::new();
                 let mut tags = relations
                     .iter()
                     .map(|(tag, _)| tag.clone())
+                    .filter(|tag| seen_tags.insert(tag.clone()))
                     .collect::<Vec<_>>();
                 let legacy_tag = getstr("bundle_slug");
-                if !legacy_tag.is_empty() && !tags.contains(&legacy_tag) {
-                    tags.push(legacy_tag.clone());
+                let legacy_tag = if legacy_tag.is_empty() {
+                    None
+                } else {
+                    let name = bundles
+                        .get(&legacy_tag)
+                        .and_then(|bundle| bundle.get("name").and_then(|v| v.as_str()))
+                        .unwrap_or(&legacy_tag)
+                        .to_string();
+                    Some(ensure_tag_id(&mut settings, &mut tag_ids_by_name, name))
+                };
+                if let Some(tag_id) = legacy_tag.as_ref() {
+                    if seen_tags.insert(tag_id.clone()) {
+                        tags.push(tag_id.clone());
+                    }
                 }
-                let mut sort_order = relations.into_iter().collect::<BTreeMap<_, _>>();
-                if !legacy_tag.is_empty() {
-                    sort_order.entry(legacy_tag).or_insert(10);
+                let mut sort_order: BTreeMap<String, i32> = BTreeMap::new();
+                for (tag_id, order) in relations {
+                    sort_order
+                        .entry(tag_id)
+                        .and_modify(|current| *current = (*current).min(order))
+                        .or_insert(order);
+                }
+                if let Some(tag_id) = legacy_tag {
+                    sort_order.entry(tag_id).or_insert(10);
                 }
                 let mut entries = Vec::new();
                 if let Some(arr) = old.get("entries").and_then(|v| v.as_sequence()) {
@@ -270,7 +306,12 @@ impl VocoStore {
                             .and_then(|v| v.as_str())
                             .unwrap_or("")
                             .to_string();
-                        entries.push(repos::package_repo::blank_entry(eid, original, translation));
+                        entries.push(repos::package_repo::blank_entry(
+                            eid,
+                            original,
+                            translation,
+                            entries.len() as i32 + 1,
+                        ));
                     }
                 }
                 let now = chrono::Utc::now();
@@ -332,7 +373,7 @@ impl VocoStore {
             packages_migrated: migrated.len(),
             entries_total: migrated.iter().map(|p| p.entries.len()).sum(),
         };
-        let report_path = self.base_path.join("packages/migration-report.toml");
+        let report_path = migration_tmp.join("migration-report.toml");
         fs::write(&report_path, toml::to_string_pretty(&report)?)?;
 
         // The verified backup remains the rollback source after legacy files are removed.
@@ -360,6 +401,8 @@ impl VocoStore {
         if old_presets.exists() {
             fs::remove_file(old_presets)?;
         }
+        fs::remove_file(migration_tmp.join("manifest.toml"))?;
+        fs::remove_file(migration_tmp.join("migration-report.toml"))?;
         Ok(())
     }
 
@@ -371,6 +414,37 @@ impl VocoStore {
 
     pub fn write_settings(&self, s: &Settings) -> Result<(), Error> {
         self.ensure_ready()?;
+        let mut tag_names = std::collections::HashSet::new();
+        if let Some(tag) = s
+            .tags
+            .values()
+            .find(|tag| !tag_names.insert(tag.name.clone()))
+        {
+            return Err(Error::InvalidData(format!(
+                "Duplicate tag display name: {}",
+                tag.name
+            )));
+        }
+        let current = repos::settings_repo::read(self.settings_path())?;
+        let removed_tags = current
+            .tags
+            .keys()
+            .filter(|id| !s.tags.contains_key(*id))
+            .cloned()
+            .collect::<std::collections::HashSet<_>>();
+        if !removed_tags.is_empty() {
+            for mut package in repos::package_repo::list(self.packages_dir())? {
+                if !package.tags.iter().any(|id| removed_tags.contains(id)) {
+                    continue;
+                }
+                package.tags.retain(|id| !removed_tags.contains(id));
+                package
+                    .sort_order
+                    .retain(|id, _| !removed_tags.contains(id));
+                package.updated.at = chrono::Utc::now();
+                repos::package_repo::write(self.packages_dir(), &package)?;
+            }
+        }
         repos::settings_repo::write(self.settings_path(), s)
     }
 
@@ -419,7 +493,10 @@ impl VocoStore {
 
 #[cfg(test)]
 mod tests {
-    use super::VocoStore;
+    use super::{
+        models::{Settings, TagDefinition, VocabEntry, VocabText},
+        repos, VocoStore,
+    };
     use std::fs;
     use std::path::PathBuf;
 
@@ -450,17 +527,137 @@ mod tests {
             .unwrap()
             .path();
         assert!(backup_root.join("picker/presets.yml").is_file());
-        let manifest: toml::Value =
-            toml::from_str(&fs::read_to_string(backup_root.join("manifest.toml")).unwrap())
-                .unwrap();
-        let files = manifest.get("files").unwrap().as_array().unwrap();
-        assert!(files.iter().any(|file| {
-            file.get("path").and_then(toml::Value::as_str) == Some("picker/presets.yml")
-        }));
+        assert!(!backup_root.join("manifest.toml").exists());
+        assert!(!base.join("packages/.migration-tmp/manifest.toml").exists());
+        assert!(!base
+            .join("packages/.migration-tmp/migration-report.toml")
+            .exists());
 
         assert!(!base.join("settings.yml").exists());
         assert!(!base.join("picker/presets.yml").exists());
         assert!(backup_root.join("settings.yml").is_file());
+
+        fs::remove_dir_all(base).unwrap();
+    }
+
+    #[test]
+    fn translated_description_is_optional_in_package_data() {
+        let base = temp_data_dir();
+        let now = chrono::Utc::now();
+        let mut package = repos::package_repo::from_legacy(
+            1,
+            "package-id".into(),
+            "package".into(),
+            "Package".into(),
+            String::new(),
+            "original".into(),
+            vec![VocabEntry {
+                id: "entry-id".into(),
+                original_index: 1,
+                runtime_index: 1,
+                source: VocabText {
+                    word: "source".into(),
+                    description: "source description".into(),
+                },
+                translation: VocabText {
+                    word: "translation".into(),
+                    description: String::new(),
+                },
+                image: None,
+                image_source: None,
+                image_data: None,
+                image_name: None,
+            }],
+            now,
+            now,
+            Vec::new(),
+        );
+        package.source_language = "en".into();
+        package.target_language = "zh".into();
+
+        let store = VocoStore::new(base.clone());
+        store.write_package(&package).unwrap();
+        let data = fs::read_to_string(base.join("packages/package/data.toml")).unwrap();
+        assert!(!data.contains("translation_description"));
+
+        let loaded = store.read_package("package").unwrap();
+        assert_eq!(loaded.entries[0].translation.description, "");
+        fs::remove_dir_all(base).unwrap();
+    }
+
+    #[test]
+    fn deleting_tag_definition_removes_package_references() {
+        let base = temp_data_dir();
+        let store = VocoStore::new(base.clone());
+        let tag_id = uuid::Uuid::new_v4().to_string();
+        let mut settings = Settings::default();
+        settings.tags.insert(
+            tag_id.clone(),
+            TagDefinition {
+                name: "Shared name".into(),
+                color: None,
+                order: 0,
+            },
+        );
+        store.write_settings(&settings).unwrap();
+
+        let now = chrono::Utc::now();
+        let mut package = repos::package_repo::from_legacy(
+            1,
+            "package-id".into(),
+            "package".into(),
+            "Package".into(),
+            String::new(),
+            "original".into(),
+            Vec::new(),
+            now,
+            now,
+            vec![tag_id.clone()],
+        );
+        package.sort_order.insert(tag_id.clone(), 10);
+        store.write_package(&package).unwrap();
+
+        settings.tags.clear();
+        store.write_settings(&settings).unwrap();
+        let package = store.read_package("package").unwrap();
+        assert!(package.tags.is_empty());
+        assert!(package.sort_order.is_empty());
+
+        fs::remove_dir_all(base).unwrap();
+    }
+
+    #[test]
+    fn migration_deduplicates_tags_by_display_name_and_uses_uuid_identity() {
+        let base = temp_data_dir();
+        fs::create_dir_all(base.join("packages/bundles")).unwrap();
+        fs::create_dir_all(base.join("packages/source")).unwrap();
+        fs::write(base.join("settings.yml"), "language: zh-CN\n").unwrap();
+        fs::write(
+            base.join("packages/bundles/first.yml"),
+            "slug: first\nname: Shared name\npackage_slugs: [lesson]\n",
+        )
+        .unwrap();
+        fs::write(
+            base.join("packages/bundles/second.yml"),
+            "slug: second\nname: Shared name\npackage_slugs: [lesson]\n",
+        )
+        .unwrap();
+        fs::write(
+            base.join("packages/source/lesson.yml"),
+            "version: 1\nid: lesson-id\nslug: lesson\nname: Lesson\nbundle_slug: first\nentries: []\n",
+        )
+        .unwrap();
+
+        let store = VocoStore::new(base.clone());
+        let settings = store.read_settings().unwrap();
+        assert_eq!(settings.tags.len(), 1);
+        let (tag_id, tag) = settings.tags.iter().next().unwrap();
+        assert!(uuid::Uuid::parse_str(tag_id).is_ok());
+        assert_eq!(tag.name, "Shared name");
+
+        let package = store.read_package("lesson").unwrap();
+        assert_eq!(package.tags, vec![tag_id.clone()]);
+        assert_eq!(package.sort_order.get(tag_id), Some(&10));
 
         fs::remove_dir_all(base).unwrap();
     }

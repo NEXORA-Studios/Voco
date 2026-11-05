@@ -55,7 +55,6 @@
 
 ```text
 {app_data_dir}/backups/migration-data-format/2025-04-01T100000Z/
-├── manifest.toml
 ├── settings.yml
 ├── packages/
 │   ├── bundles/
@@ -63,7 +62,15 @@
 └── picker/presets.yml
 ```
 
-`manifest.toml` 应记录快照时间、源根目录、文件相对路径、文件大小和校验和。恢复时根据 manifest 校验备份内容。若创建快照、写 manifest 或校验任一环节失败，迁移器须停止并展示迁移错误界面：用户可以明确确认后从零开始，或选择反馈 Issue。错误界面不得提供“忽略备份继续迁移”的选项。从零开始初始化前，应保留已创建的备份快照；迁移生成物仍先写入独立临时目录，例如 `packages/.migration-tmp/<package-slug>/`。临时目录不是备份，也不能替代备份快照。
+迁移过程文件位于数据目录的临时目录：
+
+```text
+{app_data_dir}/packages/.migration-tmp/
+├── manifest.toml
+└── migration-report.toml
+```
+
+`manifest.toml` 记录本次备份的源根目录、文件相对路径、文件大小和校验和，并在备份校验和迁移报告生成期间保留。若创建、写入或校验失败，迁移器须停止并展示迁移错误界面，同时保留临时文件供诊断。迁移成功并删除旧 YAML 后，删除这两个临时文件；备份快照本身继续保留。
 
 ## 3. 旧 Package 到新 Package
 
@@ -91,7 +98,7 @@
 | `slug`        | `package.toml.slug` 和目录名     | 原样保留，必须与目录名一致                    |
 | `name`        | `package.toml.name`              | 原样保留                                      |
 | `description` | `package.toml.description`       | 原样保留                                      |
-| `bundle_slug` | `package.toml.tags`              | 转成单个 tag slug；具体冲突规则见 Bundle 迁移 |
+| `bundle_slug` | `package.toml.tags`              | 按 Bundle 的展示名称映射为 tag UUID；具体冲突规则见 Bundle 迁移 |
 | `created_at`  | `[created].at`                   | 转成 TOML datetime                            |
 | `updated_at`  | `[updated].at`                   | 转成 TOML datetime                            |
 | `sort_method` | `data.toml.sort_method`          | 原样保留并校验支持值                          |
@@ -114,10 +121,10 @@ name = "Unit 3 - Animals"
 description = "Animals vocabulary"
 source_language = "und"
 target_language = "und"
-tags = ["grade-7"]
+tags = ["550e8400-e29b-41d4-a716-446655440000"]
 
 [sort_order]
-grade-7 = 10
+550e8400-e29b-41d4-a716-446655440000 = 10
 
 [files]
 rawdata = "rawdata.toml"
@@ -192,11 +199,11 @@ translation_description = ""
 
 旧 Bundle 包含 slug、名称、package_slugs 顺序等信息。新格式不生成 Bundle 文件：
 
-1. 每个旧 Bundle 的 `slug` 转为 tag slug。
+1. 每个旧 Bundle 的展示名称映射为一个 tag UUID；同一展示名称必须复用同一个 UUID。
 2. Bundle `name` 转为 `settings.toml` 中该 tag 的 `name`。
-3. 对应 Package 的 `bundle_slug` 和 Bundle `package_slugs` 都映射到 `package.toml.tags`。
-4. 旧 `package_slugs` 数组的次序映射到各 Package 的 `[sort_order].<tag-slug>`，从 `10` 开始按 `10` 递增。
-5. Tag 全局显示顺序映射到 `settings.toml [tags.<slug>].order`。可沿用旧 Bundle 文件名的字典序作为确定性顺序，或由用户确认自定义顺序。
+3. 对应 Package 的 `bundle_slug` 和 Bundle `package_slugs` 都映射到 `package.toml.tags` 中的 tag UUID。
+4. 旧 `package_slugs` 数组的次序映射到各 Package 的 `[sort_order].<tag-uuid>`，从 `10` 开始按 `10` 递增。
+5. Tag 全局显示顺序映射到 `settings.toml [tags.<uuid>].order`。可沿用旧 Bundle 文件名的字典序作为确定性顺序，或由用户确认自定义顺序。
 6. 未归属任何 Bundle 的 Package 使用空 `tags = []`。
 
 若 Package 的 `bundle_slug` 和 Bundle 的 `package_slugs` 信息冲突：
@@ -212,12 +219,12 @@ translation_description = ""
 version = 1
 language = "zh-CN"
 
-[tags.grade-7]
+[tags.550e8400-e29b-41d4-a716-446655440000]
 name = "Grade 7"
 color = "blue"
 order = 10
 
-[tags.grade-8]
+[tags.6ba7b810-9dad-41d1-80b4-00c04fd430c8]
 name = "Grade 8"
 color = "green"
 order = 20
@@ -235,13 +242,15 @@ order = 20
 version = 1
 language = "zh-CN"
 
-[tags.grade-7]
+[tags.550e8400-e29b-41d4-a716-446655440000]
 name = "Grade 7"
 order = 10
 ```
 
 具体要求：
 
+- 每个 tag 定义的 map key 是 UUID，且 `package.toml.tags` 和 `[sort_order]` 使用同一 UUID。
+- Tag 是否重复只按最终展示的 `name` 判断，不按旧 Bundle slug 判断；相同展示名称的 Bundle 合并为一个 tag。
 - `language` 是 UI 语言，不用它推断 package 语言。
 - 新设置文件只输出 TOML。
 - 原 YAML 文件在备份期内只作为迁移来源，不再由新代码读写。
@@ -272,7 +281,7 @@ picks_per_reset = 3
 
 ## 8. 迁移报告
 
-报告使用 `packages/migration-report.toml`，不使用 JSON：
+报告使用 `packages/.migration-tmp/migration-report.toml`，不使用 JSON；迁移成功后删除该临时报告，迁移错误时保留：
 
 ```toml
 migration = "legacy-to-voco-package-toml"
@@ -294,16 +303,16 @@ message = "Source and target language were not present in legacy data."
 ## 9. 推荐迁移流程与验收
 
 ```text
-1. 在 `backups/migration-data-format/<timestamp>/` 创建旧数据快照和 `manifest.toml`
+1. 在 `backups/migration-data-format/<timestamp>/` 创建旧数据快照，并在 `packages/.migration-tmp/manifest.toml` 写入清单
 2. 校验备份文件清单及校验和；任一步失败即终止迁移并提示用户
 3. 提供“从零开始”或“反馈 Issue”；从零开始必须经用户确认，反馈前允许用户检查诊断信息
 4. 备份失败时不创建或发布任何新格式数据；不提供跳过备份继续迁移
 5. 备份成功后，读取并校验旧 settings、Bundle、Package、Picker 数据
-6. 建立 slug/id/tag 映射，检测 Bundle 引用冲突
+6. 建立 package/id/tag UUID 映射，按展示名称检测 Bundle 冲突
 7. 在临时目录生成 package.toml、rawdata.toml、data.toml、images/
 8. 生成 settings.toml 和 picker/presets.toml
 9. 将所有目标 TOML 重新解析并校验
-10. 写入 migration-report.toml
+10. 在 `packages/.migration-tmp/` 写入 `migration-report.toml`
 11. 原子地发布生成结果
 12. 对比 Package 数、entry 数、ID、原文、译文及顺序
 13. 切换新读取逻辑并验证启动
@@ -317,7 +326,7 @@ message = "Source and target language were not present in legacy data."
 - Entry 数量、顺序、ID 与旧数据一致。
 - 旧 `original`、`translation` 分别等于新 `source.word`、`translation.word`。
 - 缺少的两个 description 明确写为空字符串。
-- tag 关系与旧 Bundle 关系按规则一致，顺序被保存到 `sort_order`。
+- tag 关系与旧 Bundle 关系按规则一致，使用 UUID 标识并按展示名称去重，顺序被保存到 `sort_order`。
 - 图片目录可为空，并能被扫描。
 - 新生成的数据文件扩展名只包含 `.toml`；不生成 JSON/YAML。
 

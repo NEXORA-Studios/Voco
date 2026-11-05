@@ -31,3 +31,6 @@ npm-debug.log*
 
 # Rust Target
 target/
+
+# Temporary files
+temp/

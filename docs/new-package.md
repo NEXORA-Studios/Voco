@@ -10,7 +10,7 @@
 - 所有结构化数据均使用 TOML：Package 清单为 `package.toml`，导入原始数据为 `rawdata.toml`，消费数据为 `data.toml`。
 - `rawdata.toml` 保存 Excel 导入时可获得的信息，供追溯和重新处理；运行时消费数据以 `data.toml` 为准。
 - 词汇包含源语言词汇、源语言简介、翻译词汇、翻译简介四部分。
-- Package 通过多个 tag slug 分类，不再依赖 Bundle 实体或 Bundle 到 Package 的反向列表。
+- Package 通过多个 tag UUID 分类，不再依赖 Bundle 实体或 Bundle 到 Package 的反向列表。
 - 图片是可选资源。加载 package 时扫描图片目录，并按 entry ID 动态附加图片路径。
 - TOML 文件都带格式版本，未来不兼容变更通过版本迁移处理。
 
@@ -58,13 +58,12 @@ description = "Animals vocabulary from textbook Chapter 3."
 
 source_language = "en"
 target_language = "zh-TW"
-tags = ["grade-7", "semester-1", "animals"]
+tags = ["550e8400-e29b-41d4-a716-446655440000", "6ba7b810-9dad-41d1-80b4-00c04fd430c8"]
 
 # 在每个 tag 分类中的显示顺序；数值越小越靠前。
 [sort_order]
-grade-7 = 10
-semester-1 = 20
-animals = 30
+550e8400-e29b-41d4-a716-446655440000 = 10
+6ba7b810-9dad-41d1-80b4-00c04fd430c8 = 20
 
 [files]
 rawdata = "rawdata.toml"
@@ -96,13 +95,13 @@ at = 2025-04-01T10:00:00Z
 | `description`            | string       | 可选描述；未提供时使用空字符串      |
 | `source_language`        | string       | 源语言 IETF/BCP 47 代码             |
 | `target_language`        | string       | 翻译语言 IETF/BCP 47 代码           |
-| `tags`                   | string array | tag slug 列表；可为空，可多选       |
+| `tags`                   | string array | tag UUID 列表；可为空，可多选       |
 | `[sort_order]`           | integer map  | 可选；各 tag 下的 package 顺序      |
 | `[files]`                | string map   | package 内相对文件/目录路径         |
 | `[origin]`               | table        | 可选来源信息，不保存 Excel 文件本身 |
 | `[created]`, `[updated]` | table        | 创建和更新时间                      |
 
-Tag slug 是稳定、语言无关的标识。Tag 展示名、颜色和全局顺序由应用级 `settings.toml` 定义。若某个 slug 没有定义，界面回退显示 slug。`tags` 中不得重复 slug；`sort_order` 中未声明的 tag 使用默认顺序。
+Tag UUID 是稳定、与展示语言无关的标识。Tag 展示名、颜色和全局顺序由应用级 `settings.toml` 定义。若某个 UUID 没有定义，界面回退显示 UUID。Tag 定义的展示名不得重复；`tags` 中不得重复 UUID；`sort_order` 中未声明的 UUID 使用默认顺序。
 
 ### 3.2 版本规则
 
@@ -175,14 +174,14 @@ source = { word = "dog", description = "A domesticated canine." }
 translation = { word = "狗", description = "一种家养犬科动物。" }
 ```
 
-每个 entry 必须包含唯一 `id`，以及四个字符串字段：
+每个 entry 必须包含唯一 `id`，以及 `source.word`、`source.description`、`translation.word` 三个字符串字段；`translation.description` 为可选字符串字段，缺失时按空字符串处理。
 
 - `source.word`：源语言词汇
 - `source.description`：源语言简介
 - `translation.word`：翻译词汇
-- `translation.description`：翻译简介
+- `translation.description`：翻译简介，可省略；省略时等同于空字符串
 
-字段允许为空，但必须存在，空值写 `""`。Entry ID 在同一 package 内唯一，重新生成消费数据时应尽量稳定；推荐 UUID 或稳定的 slug 化 ID。
+除 `translation.description` 外，字段允许为空，但必须存在，空值写 `""`。Entry ID 在同一 package 内唯一，重新生成消费数据时应尽量稳定；推荐 UUID 或稳定的 slug 化 ID。
 
 ### 5.1 消费数据规则
 
@@ -197,11 +196,11 @@ translation = { word = "狗", description = "一种家养犬科动物。" }
 Package 自己声明 tags：
 
 ```toml
-tags = ["grade-7", "animals"]
+tags = ["550e8400-e29b-41d4-a716-446655440000", "6ba7b810-9dad-41d1-80b4-00c04fd430c8"]
 
 [sort_order]
-grade-7 = 10
-animals = 20
+550e8400-e29b-41d4-a716-446655440000 = 10
+6ba7b810-9dad-41d1-80b4-00c04fd430c8 = 20
 ```
 
 应用级 `settings.toml` 保存 tag 定义和显示属性：
@@ -210,12 +209,12 @@ animals = 20
 version = 1
 language = "zh-CN"
 
-[tags.grade-7]
+[tags.550e8400-e29b-41d4-a716-446655440000]
 name = "七年级"
 color = "blue"
 order = 10
 
-[tags.animals]
+[tags.6ba7b810-9dad-41d1-80b4-00c04fd430c8]
 name = "动物"
 color = "orange"
 order = 20
@@ -223,12 +222,12 @@ order = 20
 
 职责划分：
 
-- `package.toml.tags` 决定 package 属于哪些分类。
-- `settings.toml [tags.<slug>]` 提供展示名称、颜色和全局分类顺序。
-- Tag 定义不存在时显示 slug，不删除或隐藏 package。
-- 删除 tag 定义不会自动修改 package；删除关联需显式从 `package.toml.tags` 移除。
+- `package.toml.tags` 决定 package 属于哪些分类，值为 tag UUID。
+- `settings.toml [tags.<uuid>]` 提供展示名称、颜色和全局分类顺序。
+- Tag 定义不存在时显示 UUID，不删除或隐藏 package。
+- 删除 tag 定义时，必须同时从所有 package 的 `tags` 和 `sort_order` 中移除该 UUID。
 - 一个 package 可以有零个或多个 tags。
-- 同一个 package 在不同 tag 下的顺序可以通过 `sort_order` 分别设置；缺省时按名称、再按 slug 稳定排序。
+- 同一个 package 在不同 tag 下的顺序可以通过 `sort_order` 分别设置；缺省时按名称、再按 UUID 稳定排序。
 
 Tag 不是独立内容容器，不保存 package 列表，不维护反向引用，也不拥有 package 生命周期。
 
@@ -265,7 +264,7 @@ images/
 - `[files]` 路径均为 package 内相对路径，且不能逃逸 package 根目录。
 - `data.toml.package_id` 与 `package.toml.id` 一致。
 - 每个 entry ID 唯一，四个文本字段存在。
-- `tags` 不重复；未知 tag slug 允许存在并回退显示 slug。
+- `tags` 不重复，且引用的已注册 Tag 展示名不重复；未知 tag UUID 允许存在并回退显示 UUID。
 - 图片路径只能来自安全扫描结果。
 
 ## 9. 全局数据文件

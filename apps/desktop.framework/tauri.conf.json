@@ -16,7 +16,6 @@
                 "height": 720,
                 "minWidth": 1280,
                 "minHeight": 720,
-                "maximized": true,
                 "center": true,
                 "dragDropEnabled": false
             },

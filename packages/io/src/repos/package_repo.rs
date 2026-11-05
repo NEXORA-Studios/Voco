@@ -10,22 +10,19 @@ struct DataFile {
     format_version: i32,
     package_id: String,
     sort_method: String,
-    entries: Vec<VocabEntry>,
+    rows: Vec<DataRow>,
 }
 
-#[derive(serde::Serialize)]
-struct RawData<'a> {
-    format: &'static str,
-    format_version: i32,
-    migrated_from: &'static str,
-    rows: Vec<RawRow<'a>>,
-}
-#[derive(serde::Serialize)]
-struct RawRow<'a> {
-    source_word: &'a str,
-    source_description: &'a str,
-    translation_word: &'a str,
-    translation_description: &'a str,
+#[derive(serde::Serialize, serde::Deserialize)]
+struct DataRow {
+    id: String,
+    original_index: i32,
+    runtime_index: i32,
+    source_word: String,
+    source_description: String,
+    translation_word: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    translation_description: Option<String>,
 }
 
 fn valid_slug(slug: &str) -> bool {
@@ -80,11 +77,10 @@ fn read_package_dir(path: &Path, enforce_dir_slug: bool) -> Result<Package, crat
         }
         Ok(value)
     };
-    let rawdata = relative("rawdata", "rawdata.toml")?;
     let data_path = relative("data", "data.toml")?;
     let images = relative("images", "images")?;
     let mut package: Package = toml::from_str(&std::fs::read_to_string(manifest_path)?)?;
-    let data: DataFile = toml::from_str(&std::fs::read_to_string(path.join(&data_path))?)?;
+    let mut data: DataFile = toml::from_str(&std::fs::read_to_string(path.join(&data_path))?)?;
     if data.format != "voco-package-data"
         || data.format_version != 1
         || data.package_id != package.id
@@ -104,14 +100,15 @@ fn read_package_dir(path: &Path, enforce_dir_slug: bool) -> Result<Package, crat
         }
     };
     let mut seen = std::collections::HashSet::new();
-    for entry in &data.entries {
-        if !seen.insert(entry.id.clone()) {
+    for row in &data.rows {
+        if !seen.insert(row.id.clone()) {
             return Err(crate::Error::InvalidData(format!(
                 "Duplicate entry id: {}",
-                entry.id
+                row.id
             )));
         }
     }
+    data.rows.sort_by_key(|row| row.runtime_index);
     let mut by_id = BTreeMap::new();
     let image_dir = path.join(&images);
     if image_dir.exists() {
@@ -148,17 +145,32 @@ fn read_package_dir(path: &Path, enforce_dir_slug: bool) -> Result<Package, crat
         }
     }
     package.files = PackageFiles {
-        rawdata,
         data: data_path.clone(),
         images,
     };
     package.sort_method = sort_method;
     package.entries = data
-        .entries
+        .rows
         .into_iter()
-        .map(|mut entry| {
-            entry.image = by_id.get(&entry.id).map(|(_, p)| p.clone());
-            entry
+        .map(|row| {
+            let image = by_id.get(&row.id).map(|(_, p)| p.clone());
+            VocabEntry {
+                id: row.id,
+                original_index: row.original_index,
+                runtime_index: row.runtime_index,
+                source: VocabText {
+                    word: row.source_word,
+                    description: row.source_description,
+                },
+                translation: VocabText {
+                    word: row.translation_word,
+                    description: row.translation_description.unwrap_or_default(),
+                },
+                image_source: None,
+                image_data: None,
+                image_name: None,
+                image,
+            }
         })
         .collect();
     if package
@@ -214,6 +226,60 @@ pub fn write(dir: PathBuf, package: &Package) -> Result<(), crate::Error> {
     fs::create_dir(&temporary)?;
     let result = (|| -> Result<(), crate::Error> {
         fs::create_dir(temporary.join("images"))?;
+        for entry in &package.entries {
+            if let Some(encoded) = entry.image_data.as_deref() {
+                let extension = entry
+                    .image_name
+                    .as_deref()
+                    .and_then(|name| Path::new(name).extension())
+                    .and_then(|value| value.to_str())
+                    .map(str::to_ascii_lowercase)
+                    .unwrap_or_else(|| "png".into());
+                if !matches!(
+                    extension.as_str(),
+                    "webp" | "png" | "jpg" | "jpeg" | "gif" | "bmp"
+                ) {
+                    return Err(crate::Error::InvalidData(format!(
+                        "Unsupported image format: {extension}"
+                    )));
+                }
+                let bytes =
+                    base64::Engine::decode(&base64::engine::general_purpose::STANDARD, encoded)
+                        .map_err(|error| {
+                            crate::Error::InvalidData(format!("Invalid image data: {error}"))
+                        })?;
+                fs::write(
+                    temporary
+                        .join("images")
+                        .join(format!("{}.{}", entry.id, extension)),
+                    bytes,
+                )?;
+            } else if let Some(source) = entry.image_source.as_deref() {
+                let extension = Path::new(source)
+                    .extension()
+                    .and_then(|value| value.to_str())
+                    .map(str::to_ascii_lowercase)
+                    .ok_or_else(|| {
+                        crate::Error::InvalidData(format!(
+                            "Image source has no extension: {source}"
+                        ))
+                    })?;
+                if !matches!(
+                    extension.as_str(),
+                    "webp" | "png" | "jpg" | "jpeg" | "gif" | "bmp"
+                ) {
+                    return Err(crate::Error::InvalidData(format!(
+                        "Unsupported image format: {source}"
+                    )));
+                }
+                fs::copy(
+                    source,
+                    temporary
+                        .join("images")
+                        .join(format!("{}.{}", entry.id, extension)),
+                )?;
+            }
+        }
         let mut manifest_package = package.clone();
         manifest_package.entries.clear();
         let manifest = toml::to_string_pretty(&manifest_package)?;
@@ -228,33 +294,35 @@ pub fn write(dir: PathBuf, package: &Package) -> Result<(), crate::Error> {
                 )))
             }
         };
+        let mut rows = Vec::with_capacity(package.entries.len());
+        for (index, entry) in package.entries.iter().enumerate() {
+            let index = index as i32 + 1;
+            rows.push(DataRow {
+                id: entry.id.clone(),
+                original_index: if entry.original_index > 0 {
+                    entry.original_index
+                } else {
+                    index
+                },
+                runtime_index: index,
+                source_word: entry.source.word.clone(),
+                source_description: entry.source.description.clone(),
+                translation_word: entry.translation.word.clone(),
+                translation_description: if entry.translation.description.is_empty() {
+                    None
+                } else {
+                    Some(entry.translation.description.clone())
+                },
+            });
+        }
         let data = DataFile {
             format: "voco-package-data".into(),
             format_version: 1,
             package_id: package.id.clone(),
             sort_method,
-            entries: package.entries.clone(),
+            rows,
         };
         crate::fs::write_string(temporary.join("data.toml"), &toml::to_string_pretty(&data)?)?;
-        let raw = RawData {
-            format: "voco-rawdata",
-            format_version: 1,
-            migrated_from: "application-entry-editor",
-            rows: package
-                .entries
-                .iter()
-                .map(|e| RawRow {
-                    source_word: &e.source.word,
-                    source_description: &e.source.description,
-                    translation_word: &e.translation.word,
-                    translation_description: &e.translation.description,
-                })
-                .collect(),
-        };
-        crate::fs::write_string(
-            temporary.join("rawdata.toml"),
-            &toml::to_string_pretty(&raw)?,
-        )?;
         // Re-parse the generated package before publication.
         read_package_dir(&temporary, false)?;
         if target.exists() {
@@ -314,7 +382,6 @@ pub fn from_legacy(
         sort_order: Default::default(),
         tags,
         files: PackageFiles {
-            rawdata: "rawdata.toml".into(),
             data: "data.toml".into(),
             images: "images".into(),
         },
@@ -327,9 +394,16 @@ pub fn from_legacy(
         entries,
     }
 }
-pub fn blank_entry(id: String, original: String, translation: String) -> VocabEntry {
+pub fn blank_entry(
+    id: String,
+    original: String,
+    translation: String,
+    original_index: i32,
+) -> VocabEntry {
     VocabEntry {
         id,
+        original_index,
+        runtime_index: original_index,
         source: VocabText {
             word: original,
             description: String::new(),
@@ -339,5 +413,8 @@ pub fn blank_entry(id: String, original: String, translation: String) -> VocabEn
             description: String::new(),
         },
         image: None,
+        image_source: None,
+        image_data: None,
+        image_name: None,
     }
 }

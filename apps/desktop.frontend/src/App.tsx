@@ -94,10 +94,15 @@ function Layout() {
     const location = useLocation();
     const noSidebar = location.pathname.startsWith("/session") || location.pathname.startsWith("/picker");
 
+    const isHome = location.pathname === "/";
+    const isPackageEditor = location.pathname === "/packages/new" || /^\/packages\/[^/]+\/edit$/.test(location.pathname);
+    const fullHeight = noSidebar || isHome;
+    const pagePadding = noSidebar ? "p-0" : isPackageEditor ? "px-4 py-4 sm:px-5 sm:py-5" : "px-2 py-2 sm:px-3 sm:py-3";
+
     return (
-        <div className={`${noSidebar ? "h-svh overflow-hidden" : "min-h-svh"} ${noSidebar ? "" : "lg:pl-64"}`}>
+        <div className={`${fullHeight ? "h-svh overflow-hidden" : "min-h-svh"} ${noSidebar ? "" : "lg:pl-64"}`}>
             <Sidebar />
-            <main className={`p-6 ${noSidebar ? "p-0" : ""}`}>
+            <main className={`${fullHeight ? "h-full min-h-0" : ""} ${pagePadding}`}>
                 <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/packages/new" element={<PackageNew />} />

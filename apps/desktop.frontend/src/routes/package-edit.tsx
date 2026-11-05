@@ -60,7 +60,13 @@ export function PackageEdit() {
     const handleUpdateEntry = async () => {
         if (!pkg || !editingId) return;
         const entries = pkg.entries.map((e) =>
-            e.id === editingId ? { ...e, source: { ...e.source, word: editOriginal }, translation: { ...e.translation, word: editTranslation } } : e
+            e.id === editingId
+                ? {
+                      ...e,
+                      source: { ...e.source, word: editOriginal },
+                      translation: { ...e.translation, word: editTranslation },
+                  }
+                : e
         );
         const updated: Package = { ...pkg, entries, updated: { at: new Date().toISOString() } };
         await updatePackage(updated);
@@ -79,8 +85,10 @@ export function PackageEdit() {
 
     const handleImport = async () => {
         if (!pkg) return;
-        const newEntries: VocabEntry[] = excel.mappedEntries.map((e) => ({
+        const newEntries: VocabEntry[] = excel.mappedEntries.map((e, index) => ({
             id: uuidv4(),
+            original_index: pkg.entries.length + index + 1,
+            runtime_index: pkg.entries.length + index + 1,
             source: { word: e.original, description: "" },
             translation: { word: e.translation, description: "" },
         }));

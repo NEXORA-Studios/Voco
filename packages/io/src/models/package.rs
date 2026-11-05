@@ -10,8 +10,16 @@ pub struct VocabText {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct VocabEntry {
     pub id: String,
+    pub original_index: i32,
+    pub runtime_index: i32,
     pub source: VocabText,
     pub translation: VocabText,
+    #[serde(skip_serializing, default)]
+    pub image_source: Option<String>,
+    #[serde(skip_serializing, default)]
+    pub image_data: Option<String>,
+    #[serde(skip_serializing, default)]
+    pub image_name: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub image: Option<String>,
 }
@@ -44,7 +52,6 @@ pub struct Package {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PackageFiles {
-    pub rawdata: String,
     pub data: String,
     pub images: String,
 }

@@ -32,12 +32,8 @@ export const useSessionStore = create<SessionStore>()(
             state: { status: "idle" },
 
             init(pkg, mode) {
-                const validEntries = pkg.entries.filter(
-                    (entry) => Boolean(entry?.source?.word && entry?.translation?.word),
-                );
-                const sessionPackage = validEntries.length === pkg.entries.length
-                    ? pkg
-                    : { ...pkg, entries: validEntries };
+                const validEntries = pkg.entries.filter((entry) => Boolean(entry?.source?.word && entry?.translation?.word));
+                const sessionPackage = validEntries.length === pkg.entries.length ? pkg : { ...pkg, entries: validEntries };
                 const remaining = sessionPackage.entries.map((_, i) => i);
                 set({ pkg: sessionPackage, mode, remaining, state: { status: "idle" } });
             },
@@ -91,12 +87,11 @@ export const useSessionStore = create<SessionStore>()(
             name: "voco-session",
             onRehydrateStorage: () => (state) => {
                 if (!state?.pkg) return;
-                const entry = state.state.status === "paused" || state.state.status === "revealed"
-                    ? state.state.entry
-                    : undefined;
+                const entry =
+                    state.state.status === "paused" || state.state.status === "revealed" ? state.state.entry : undefined;
                 const hasValidEntry = !entry || Boolean(entry?.source?.word && entry?.translation?.word);
                 const hasValidRemaining = state.remaining.every(
-                    (index) => Number.isInteger(index) && index >= 0 && index < state.pkg!.entries.length,
+                    (index) => Number.isInteger(index) && index >= 0 && index < state.pkg!.entries.length
                 );
                 if (!hasValidEntry || !hasValidRemaining) {
                     state.reset();

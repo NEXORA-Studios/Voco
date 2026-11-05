@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from "uuid";
 import { create } from "zustand";
 import { Bridge } from "@/lib/bridge";
 import i18n from "@/lib/i18n";
@@ -9,6 +10,8 @@ interface SettingsState {
     error: string | null;
     load: () => Promise<void>;
     setLanguage: (lang: Language) => Promise<void>;
+    setTags: (tags: Settings["tags"]) => Promise<void>;
+    createBundle: (name: string) => Promise<string | null>;
 }
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({
@@ -32,5 +35,32 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
         await Bridge.settings.write(settings);
         i18n.changeLanguage(language);
         set({ settings, error: null });
+    },
+
+    async setTags(tags) {
+        const current = get().settings;
+        if (!current) return;
+        const settings = { ...current, tags };
+        await Bridge.settings.write(settings);
+        set({ settings, error: null });
+    },
+
+    async createBundle(name) {
+        const current = get().settings;
+        const normalizedName = name.trim();
+        if (!current || !normalizedName) return null;
+        const existing = Object.entries(current.tags).find(
+            ([id, tag]) => tag.name.trim() === normalizedName || id === normalizedName
+        );
+        if (existing) return existing[0];
+        const id = uuidv4();
+        const order = Object.values(current.tags).reduce((max, tag) => Math.max(max, tag.order), 0) + 10;
+        const settings: Settings = {
+            ...current,
+            tags: { ...current.tags, [id]: { name: normalizedName, order } },
+        };
+        await Bridge.settings.write(settings);
+        set({ settings, error: null });
+        return id;
     },
 }));

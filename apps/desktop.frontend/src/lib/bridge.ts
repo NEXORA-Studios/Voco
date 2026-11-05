@@ -7,6 +7,15 @@ export interface UpdateInfo {
     body?: string;
 }
 
+export function bytesToBase64(bytes: Uint8Array): string {
+    let binary = "";
+    const chunkSize = 0x8000;
+    for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+        binary += String.fromCharCode(...bytes.subarray(offset, offset + chunkSize));
+    }
+    return btoa(binary);
+}
+
 export const Bridge = {
     settings: {
         read: () => invoke<Settings>("read_settings"),
@@ -28,6 +37,11 @@ export const Bridge = {
         openFile: (filters: { name: string; extensions: string[] }[]) => invoke<string | null>("open_file_dialog", { filters }),
     },
     fs: {
+        extractImages: (workbookBase64: string, sheetName: string, anchorColumn: number) =>
+            invoke<{ id: string; name: string; row: number; mime_type: string; data_base64: string }[]>(
+                "extract_excel_images",
+                { workbookBase64, sheetName, anchorColumn }
+            ),
         readFileBytes: (path: string) => invoke<number[]>("read_file_bytes", { path }),
     },
     window: {

@@ -4,6 +4,7 @@ import { createRoot } from "react-dom/client";
 import { App } from "./App.js";
 import { ThemeProvider } from "@/components/theme-provider.tsx";
 import { TooltipProvider } from "@workspace/shadcn-ui/components/tooltip";
+import { Toaster } from "@workspace/shadcn-ui/components/sonner";
 import { useSettingsStore } from "@/store/settings.store";
 
 import "@/lib/i18n";
@@ -17,6 +18,7 @@ createRoot(document.getElementById("root")!).render(
     <StrictMode>
         <ThemeProvider>
             <TooltipProvider>
+                <Toaster position="bottom-right" />
                 <App />
             </TooltipProvider>
         </ThemeProvider>

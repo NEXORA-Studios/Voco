@@ -1,5 +1,6 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "@workspace/shadcn-ui/components/sonner";
 import { v4 as uuidv4 } from "uuid";
 import { Button } from "@workspace/shadcn-ui/components/button";
 import { Input } from "@workspace/shadcn-ui/components/input";
@@ -10,36 +11,183 @@ import { useNavigate } from "react-router-dom";
 import { useExcelImport } from "@/features/packages/hooks/useExcelImport";
 import { ExcelSheetPicker } from "./ExcelSheetPicker";
 import { SortMethodSelect } from "./SortMethodSelect";
+import { BundleSelect, EMPTY_BUNDLE_VALUE, NEW_BUNDLE_VALUE } from "./BundleSelect";
 import { usePackagesStore } from "@/store/packages.store";
+import { useSettingsStore } from "@/store/settings.store";
 import type { Package, SortMethod, VocabEntry } from "@/types/global.d.ts";
 import { cn } from "@workspace/shadcn-ui/lib/utils";
-import { Check, Upload, FileSpreadsheet } from "lucide-react";
+import { Check, Upload, FileSpreadsheet, ImagePlus, LoaderCircle } from "lucide-react";
+import { Bridge, bytesToBase64 } from "@/lib/bridge";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@workspace/shadcn-ui/components/tooltip";
 
 function slugify(name: string) {
-    return name.trim().replace(/[\s_]+/g, "-").replace(/[^A-Za-z0-9._-]/g, "") || `pkg-${Math.random().toString(36).slice(2, 8)}`;
+    return (
+        name
+            .trim()
+            .replace(/[\s_]+/g, "-")
+            .replace(/[^A-Za-z0-9._-]/g, "") || `pkg-${Math.random().toString(36).slice(2, 8)}`
+    );
+}
+
+interface ImportImage {
+    id: string;
+    name: string;
+    row?: number;
+    mimeType: string;
+    dataBase64: string;
+}
+
+function fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result).split(",", 2)[1] ?? "");
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+    });
+}
+
+function imagePreview(image: ImportImage) {
+    return `data:${image.mimeType};base64,${image.dataBase64}`;
 }
 
 export function ExcelImportWizard() {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const { createPackage } = usePackagesStore();
+    const settings = useSettingsStore((state) => state.settings);
+    const createBundle = useSettingsStore((state) => state.createBundle);
     const excel = useExcelImport();
 
     const [step, setStep] = useState(1);
     const [name, setName] = useState("");
     const [slug, setSlug] = useState("");
     const [description, setDescription] = useState("");
-    const [tagsText, setTagsText] = useState("");
+    const [bundleId, setBundleId] = useState("");
+    const [newBundleName, setNewBundleName] = useState("");
     const [sortMethod, setSortMethod] = useState<SortMethod>("shuffle");
     const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    const [imageAssets, setImageAssets] = useState<ImportImage[]>([]);
+    const [imageAssignments, setImageAssignments] = useState<Record<number, string>>({});
+    const imageFilesRef = useRef<HTMLInputElement>(null);
+    const imageFolderRef = useRef<HTMLInputElement>(null);
+    const [isExtractingImages, setIsExtractingImages] = useState(false);
+    const [imageAnchorCol, setImageAnchorCol] = useState(-1);
+    useEffect(() => {
+        setImageAssets([]);
+        setImageAssignments({});
+    }, [excel.workbookBytes, excel.sheetName]);
+    const setImageAssignment = (row: number, imageId: string) => {
+        setImageAssignments((current) => {
+            const next = { ...current };
+            if (imageId) next[row] = imageId;
+            else delete next[row];
+            return next;
+        });
+    };
+
+    const extractWorkbookImages = async () => {
+        if (!excel.workbookBytes) return;
+        setIsExtractingImages(true);
+        try {
+            const images = await Bridge.fs.extractImages(bytesToBase64(excel.workbookBytes), excel.sheetName, imageAnchorCol);
+            const assets = images.map((image) => ({
+                id: image.id,
+                name: image.name,
+                row: image.row,
+                mimeType: image.mime_type,
+                dataBase64: image.data_base64,
+            }));
+            setImageAssets(assets);
+            setImageAssignments(Object.fromEntries(assets.filter((image) => image.row).map((image) => [image.row!, image.id])));
+        } catch (error) {
+            toast.error(String(error));
+        } finally {
+            setIsExtractingImages(false);
+        }
+    };
+
+    const loadImageFiles = async (files: FileList | null) => {
+        if (!files) return;
+        const selected = Array.from(files).filter((file) => /^image\/(png|jpeg|gif|webp|bmp)$/.test(file.type));
+        const assets = await Promise.all(
+            selected.map(async (file, index) => ({
+                id: `file-${index}-${file.name}-${file.lastModified}`,
+                name: file.webkitRelativePath || file.name,
+                mimeType: file.type,
+                dataBase64: await fileToBase64(file),
+            }))
+        );
+        const byName = new Map(
+            assets.map((image) => [
+                image.name
+                    .split("/")
+                    .pop()!
+                    .replace(/\.[^.]+$/, "")
+                    .toLowerCase(),
+                image.id,
+            ])
+        );
+        setImageAssets(assets);
+        setImageAssignments(
+            Object.fromEntries(
+                excel.mappedEntries.flatMap((entry) => {
+                    const rowMatch = assets.find((image) => {
+                        const stem = image.name
+                            .split("/")
+                            .pop()!
+                            .replace(/\.[^.]+$/, "");
+                        return /^\d+$/.test(stem) && Number(stem) === entry.sourceRow;
+                    });
+                    const match =
+                        rowMatch?.id ?? byName.get(entry.original.toLowerCase()) ?? byName.get(entry.translation.toLowerCase());
+                    return match ? [[entry.sourceRow, match]] : [];
+                })
+            )
+        );
+    };
+
     const handleSave = async () => {
         if (!name.trim() || !slug.trim() || excel.mappedEntries.length === 0) return;
-
+        if (bundleId === NEW_BUNDLE_VALUE) {
+            toast.error(t("packages.form.confirmBundleName"));
+            return;
+        }
+        const selectedBundleId = bundleId === EMPTY_BUNDLE_VALUE ? "" : bundleId;
         const now = new Date().toISOString();
-        const entries: VocabEntry[] = excel.mappedEntries.map((e) => ({ id: uuidv4(), source: { word: e.original, description: "" }, translation: { word: e.translation, description: "" } }));
-        const pkg: Package = { format: "voco-package", format_version: 1, id: uuidv4(), slug: slugify(slug), name: name.trim(), description: description.trim(), source_language: "und", target_language: "und", tags: [...new Set(tagsText.split(",").map((tag) => tag.trim()).filter(Boolean))], sort_order: {}, files: { rawdata: "rawdata.toml", data: "data.toml", images: "images" }, created: { at: now, by: "voco" }, updated: { at: now }, sort_method: sortMethod, entries };
+        const entries: VocabEntry[] = excel.mappedEntries.map((e, index) => ({
+            id: uuidv4(),
+            original_index: index + 1,
+            runtime_index: index + 1,
+            source: { word: e.original, description: e.originalDescription },
+            translation: { word: e.translation, description: e.translationDescription },
+            ...(imageAssignments[e.sourceRow] && imageAssets.find((image) => image.id === imageAssignments[e.sourceRow])
+                ? (() => {
+                      const image = imageAssets.find((candidate) => candidate.id === imageAssignments[e.sourceRow])!;
+                      return { image_data: image.dataBase64, image_name: image.name };
+                  })()
+                : e.imageSource
+                  ? { image_source: e.imageSource }
+                  : {}),
+        }));
+        const pkg: Package = {
+            format: "voco-package",
+            format_version: 1,
+            id: uuidv4(),
+            slug: slugify(slug),
+            name: name.trim(),
+            description: description.trim(),
+            source_language: "und",
+            target_language: "und",
+            tags: selectedBundleId ? [selectedBundleId] : [],
+            sort_order: {},
+            files: { data: "data.toml", images: "images" },
+            created: { at: now, by: "voco" },
+            updated: { at: now },
+            sort_method: sortMethod,
+            entries,
+        };
         await createPackage(pkg);
         navigate("/");
     };
@@ -101,6 +249,33 @@ export function ExcelImportWizard() {
         value: index,
         label: letter,
     }));
+    const optionalColumnOptions = [{ value: -1, label: t("packages.import.noColumn") }, ...columnOptions];
+    const selectedColumns = [
+        excel.originalCol,
+        excel.translationCol,
+        excel.originalDescriptionCol,
+        excel.translationDescriptionCol,
+    ];
+    const renderOptionalColumn = (label: string, value: number, onChange: (value: number) => void) => (
+        <div className="flex flex-col gap-2">
+            <Label>{label}</Label>
+            <Select value={String(value)} onValueChange={(v) => onChange(Number(v))}>
+                <SelectTrigger>
+                    <SelectValue />
+                </SelectTrigger>
+                <SelectContent position="popper">
+                    {optionalColumnOptions.map((opt) => (
+                        <SelectItem
+                            key={opt.value}
+                            value={String(opt.value)}
+                            disabled={opt.value >= 0 && opt.value !== value && selectedColumns.includes(opt.value)}>
+                            {opt.label}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+        </div>
+    );
 
     // 处理拖放事件
     const handleDragEnter = useCallback((e: React.DragEvent) => {
@@ -181,8 +356,15 @@ export function ExcelImportWizard() {
                 <div className="flex flex-col gap-4 rounded-lg border p-4">
                     <h2 className="text-lg font-semibold">{t("packages.form.step1")}</h2>
                     <div className="flex flex-col gap-2">
-                        <Label>{t("packages.form.bundle", { defaultValue: "Tags" })}</Label>
-                        <Input placeholder="grade-7, animals" value={tagsText} onChange={(e) => setTagsText(e.target.value)} />
+                        <Label>{t("packages.form.bundle")}</Label>
+                        <BundleSelect
+                            value={bundleId}
+                            onValueChange={setBundleId}
+                            settings={settings}
+                            newName={newBundleName}
+                            onNewNameChange={setNewBundleName}
+                            onNewBundleConfirm={createBundle}
+                        />
                     </div>
                     <div className="flex flex-col gap-2">
                         <Label>{t("packages.form.name")}</Label>
@@ -202,9 +384,7 @@ export function ExcelImportWizard() {
                         <Label>{t("packages.form.sortMethod")}</Label>
                         <SortMethodSelect value={sortMethod} onChange={setSortMethod} />
                     </div>
-                    <Button
-                        onClick={() => setStep(2)}
-                        disabled={!name.trim() || !slug.trim()}>
+                    <Button onClick={() => setStep(2)} disabled={!name.trim() || !slug.trim()}>
                         {t("packages.form.next")}
                     </Button>
                 </div>
@@ -352,7 +532,12 @@ export function ExcelImportWizard() {
                                         </SelectTrigger>
                                         <SelectContent position="popper">
                                             {columnOptions.map((opt) => (
-                                                <SelectItem key={opt.value} value={String(opt.value)} disabled={opt.value === excel.translationCol}>
+                                                <SelectItem
+                                                    key={opt.value}
+                                                    value={String(opt.value)}
+                                                    disabled={
+                                                        opt.value !== excel.originalCol && selectedColumns.includes(opt.value)
+                                                    }>
                                                     {opt.label}
                                                 </SelectItem>
                                             ))}
@@ -369,13 +554,29 @@ export function ExcelImportWizard() {
                                         </SelectTrigger>
                                         <SelectContent position="popper">
                                             {columnOptions.map((opt) => (
-                                                <SelectItem key={opt.value} value={String(opt.value)} disabled={opt.value === excel.originalCol}>
+                                                <SelectItem
+                                                    key={opt.value}
+                                                    value={String(opt.value)}
+                                                    disabled={
+                                                        opt.value !== excel.translationCol &&
+                                                        selectedColumns.includes(opt.value)
+                                                    }>
                                                     {opt.label}
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
                                 </div>
+                                {renderOptionalColumn(
+                                    t("packages.import.originalDescriptionCol"),
+                                    excel.originalDescriptionCol,
+                                    excel.setOriginalDescriptionCol
+                                )}
+                                {renderOptionalColumn(
+                                    t("packages.import.translationDescriptionCol"),
+                                    excel.translationDescriptionCol,
+                                    excel.setTranslationDescriptionCol
+                                )}
                             </div>
 
                             {excel.sheetData.length > 0 && (
@@ -425,6 +626,11 @@ export function ExcelImportWizard() {
                                     {excel.mappedEntries.slice(0, 5).map((e, i) => (
                                         <div key={i} className="text-xs">
                                             {e.original} → {e.translation}
+                                            {(e.originalDescription || e.translationDescription || e.imageSource) && (
+                                                <span className="text-muted-foreground">
+                                                    {e.originalDescription || e.translationDescription || e.imageSource}
+                                                </span>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
@@ -447,11 +653,152 @@ export function ExcelImportWizard() {
             )}
 
             {step === 3 && (
+                <div className="flex flex-col gap-4">
+                    <h2 className="text-lg font-semibold">{t("packages.import.imagesTitle")}</h2>
+                    <input
+                        ref={imageFilesRef}
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={(event) => {
+                            void loadImageFiles(event.target.files);
+                            event.target.value = "";
+                        }}
+                    />
+                    <input
+                        ref={imageFolderRef}
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        {...({ webkitdirectory: "" } as React.InputHTMLAttributes<HTMLInputElement>)}
+                        onChange={(event) => {
+                            void loadImageFiles(event.target.files);
+                            event.target.value = "";
+                        }}
+                    />
+                    <div className="flex flex-wrap items-end gap-3">
+                        <div className="flex flex-col gap-2">
+                            <Label>{t("packages.import.imageAnchorCol")}</Label>
+                            <Select value={String(imageAnchorCol)} onValueChange={(value) => setImageAnchorCol(Number(value))}>
+                                <SelectTrigger className="w-28">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent position="popper">
+                                    {columnOptions.map((option) => (
+                                        <SelectItem key={option.value} value={String(option.value)}>
+                                            {option.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <Button
+                            variant="outline"
+                            disabled={!excel.workbookBytes || isExtractingImages || imageAnchorCol < 0}
+                            onClick={() => void extractWorkbookImages()}>
+                            {isExtractingImages ? (
+                                <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                                <ImagePlus className="mr-2 h-4 w-4" />
+                            )}
+                            {isExtractingImages ? t("packages.import.extractingImages") : t("packages.import.extractImages")}
+                        </Button>
+                        <Button variant="outline" onClick={() => imageFilesRef.current?.click()}>
+                            {t("packages.import.chooseImages")}
+                        </Button>
+                        <Button variant="outline" onClick={() => imageFolderRef.current?.click()}>
+                            {t("packages.import.chooseImageFolder")}
+                        </Button>
+                    </div>
+                    {imageAssets.length > 0 && (
+                        <p className="text-sm text-muted-foreground">
+                            {t("packages.import.imageCount", { count: imageAssets.length })}
+                        </p>
+                    )}
+                    <div className="max-h-[420px] overflow-auto rounded-md border">
+                        <table className="w-full border-collapse text-sm">
+                            <thead className="sticky top-0 bg-muted">
+                                <tr className="border-b">
+                                    <th className="px-3 py-2 text-left">{t("packages.import.entry")}</th>
+                                    <th className="px-3 py-2 text-left">{t("packages.import.image")}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {excel.mappedEntries.map((entry) => {
+                                    const selected = imageAssets.find(
+                                        (image) => image.id === imageAssignments[entry.sourceRow]
+                                    );
+                                    return (
+                                        <tr key={entry.sourceRow} className="border-b last:border-0">
+                                            <td className="px-3 py-2">
+                                                <span className="text-muted-foreground">{entry.sourceRow}</span> ·{" "}
+                                                {entry.original} → {entry.translation}
+                                            </td>
+                                            <td className="px-3 py-2">
+                                                <div className="flex items-center gap-2">
+                                                    <Select
+                                                        value={imageAssignments[entry.sourceRow] ?? "none"}
+                                                        onValueChange={(value) =>
+                                                            setImageAssignment(entry.sourceRow, value === "none" ? "" : value)
+                                                        }>
+                                                        <SelectTrigger className="min-w-48">
+                                                            <SelectValue placeholder={t("packages.import.noImage")} />
+                                                        </SelectTrigger>
+                                                        <SelectContent position="popper">
+                                                            <SelectItem value="none">{t("packages.import.noImage")}</SelectItem>
+                                                            {imageAssets.map((image) => (
+                                                                <SelectItem key={image.id} value={image.id}>
+                                                                    {image.name}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                    {selected && (
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <img
+                                                                    src={imagePreview(selected)}
+                                                                    alt={selected.name}
+                                                                    className="h-10 w-10 rounded border object-contain"
+                                                                />
+                                                            </TooltipTrigger>
+                                                            <TooltipContent
+                                                                side="left"
+                                                                className="border bg-background p-2 text-foreground">
+                                                                <img
+                                                                    src={imagePreview(selected)}
+                                                                    alt={selected.name}
+                                                                    className="max-h-64 max-w-64 object-contain"
+                                                                />
+                                                                <span className="sr-only">{selected.name}</span>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className="flex gap-2">
+                        <Button variant="outline" onClick={() => setStep(2)}>
+                            {t("packages.form.back")}
+                        </Button>
+                        <Button onClick={() => setStep(4)}>{t("packages.form.next")}</Button>
+                    </div>
+                </div>
+            )}
+
+            {step === 4 && (
                 <div className="flex flex-col gap-4 rounded-lg border p-4">
                     <h2 className="text-lg font-semibold">{t("packages.form.confirm")}</h2>
                     <p>{t("packages.import.totalEntries", { count: excel.mappedEntries.length })}</p>
                     <div className="flex gap-2">
-                        <Button variant="outline" onClick={() => setStep(2)}>
+                        <Button variant="outline" onClick={() => setStep(3)}>
                             {t("packages.form.back")}
                         </Button>
                         <Button onClick={handleSave}>{t("packages.form.save")}</Button>
