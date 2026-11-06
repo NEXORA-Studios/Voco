@@ -107,16 +107,20 @@ use base64::engine::general_purpose::STANDARD;
 use base64::Engine;
 
 #[tauri::command]
-fn extract_excel_images(
+async fn extract_excel_images(
     workbook_base64: String,
     sheet_name: String,
     anchor_column: usize,
 ) -> Result<Vec<voco_io::excel_images::ExtractedImage>, String> {
-    let bytes = STANDARD
-        .decode(workbook_base64)
-        .map_err(|error| error.to_string())?;
-    voco_io::excel_images::extract_for_sheet(&bytes, &sheet_name, anchor_column)
-        .map_err(|error| error.to_string())
+    tauri::async_runtime::spawn_blocking(move || {
+        let bytes = STANDARD
+            .decode(workbook_base64)
+            .map_err(|error| error.to_string())?;
+        voco_io::excel_images::extract_for_sheet(&bytes, &sheet_name, anchor_column)
+            .map_err(|error| error.to_string())
+    })
+    .await
+    .map_err(|error| error.to_string())?
 }
 
 #[tauri::command]

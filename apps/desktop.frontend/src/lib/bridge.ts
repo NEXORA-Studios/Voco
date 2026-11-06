@@ -7,13 +7,13 @@ export interface UpdateInfo {
     body?: string;
 }
 
-export function bytesToBase64(bytes: Uint8Array): string {
-    let binary = "";
-    const chunkSize = 0x8000;
-    for (let offset = 0; offset < bytes.length; offset += chunkSize) {
-        binary += String.fromCharCode(...bytes.subarray(offset, offset + chunkSize));
-    }
-    return btoa(binary);
+export function bytesToBase64(bytes: Uint8Array): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result).split(",", 2)[1] ?? "");
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(new Blob([bytes]));
+    });
 }
 
 export const Bridge = {

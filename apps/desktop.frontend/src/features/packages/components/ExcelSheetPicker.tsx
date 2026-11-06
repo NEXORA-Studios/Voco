@@ -17,7 +17,7 @@ export function ExcelSheetPicker({ sheets, value, onChange }: Props) {
                 <SelectTrigger>
                     <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent position="popper">
                     {sheets.map((name) => (
                         <SelectItem key={name} value={name}>
                             {name}

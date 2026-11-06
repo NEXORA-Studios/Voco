@@ -10,15 +10,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useNavigate } from "react-router-dom";
 import { useExcelImport } from "@/features/packages/hooks/useExcelImport";
 import { ExcelSheetPicker } from "./ExcelSheetPicker";
+import { ExcelWorksheetPreview } from "./ExcelWorksheetPreview";
 import { SortMethodSelect } from "./SortMethodSelect";
 import { BundleSelect, EMPTY_BUNDLE_VALUE, NEW_BUNDLE_VALUE } from "./BundleSelect";
 import { usePackagesStore } from "@/store/packages.store";
 import { useSettingsStore } from "@/store/settings.store";
 import type { Package, SortMethod, VocabEntry } from "@/types/global.d.ts";
 import { cn } from "@workspace/shadcn-ui/lib/utils";
-import { Check, Upload, FileSpreadsheet, ImagePlus, LoaderCircle } from "lucide-react";
+import { Check, Upload, FileSpreadsheet, ImagePlus, LoaderCircle, Eye } from "lucide-react";
 import { Bridge, bytesToBase64 } from "@/lib/bridge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@workspace/shadcn-ui/components/tooltip";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@workspace/shadcn-ui/components/dialog";
 
 function slugify(name: string) {
     return (
@@ -91,7 +100,8 @@ export function ExcelImportWizard() {
         if (!excel.workbookBytes) return;
         setIsExtractingImages(true);
         try {
-            const images = await Bridge.fs.extractImages(bytesToBase64(excel.workbookBytes), excel.sheetName, imageAnchorCol);
+            const workbookBase64 = await bytesToBase64(excel.workbookBytes);
+            const images = await Bridge.fs.extractImages(workbookBase64, excel.sheetName, imageAnchorCol);
             const assets = images.map((image) => ({
                 id: image.id,
                 name: image.name,
@@ -192,48 +202,6 @@ export function ExcelImportWizard() {
         navigate("/");
     };
 
-    // 渲染表格单元格，处理合并单元格
-    const renderTableCell = (cell: unknown, rowIdx: number, colIdx: number) => {
-        const mergeSpan = excel.getMergeSpan(rowIdx, colIdx);
-
-        // 如果被合并了（不是主单元格），不渲染
-        if (mergeSpan && mergeSpan.rowspan === 0 && mergeSpan.colspan === 0) {
-            return null;
-        }
-
-        const parsedSource = String(cell ?? "");
-        const isCellEmpty = parsedSource.length === 0;
-        const isHeaderRow = rowIdx === excel.headerRowIndex;
-        const isMerged = mergeSpan && (mergeSpan.rowspan > 1 || mergeSpan.colspan > 1);
-
-        const cellClass = cn(
-            "border-r px-2 py-1 [overflow-wrap:anywhere] break-words last:border-r-0",
-            isCellEmpty && "opacity-50",
-            isHeaderRow && "bg-muted font-medium",
-            isMerged && "text-center"
-        );
-
-        const content = isCellEmpty ? "(empty)" : parsedSource;
-
-        if (mergeSpan) {
-            return (
-                <td
-                    key={colIdx}
-                    className={cellClass}
-                    rowSpan={mergeSpan.rowspan > 1 ? mergeSpan.rowspan : undefined}
-                    colSpan={mergeSpan.colspan > 1 ? mergeSpan.colspan : undefined}>
-                    <div className="block w-full max-w-full min-w-0 truncate">{content}</div>
-                </td>
-            );
-        }
-
-        return (
-            <td key={colIdx} className={cellClass}>
-                <div className="block w-full max-w-full min-w-0 truncate">{content}</div>
-            </td>
-        );
-    };
-
     // 获取所有表头行选项（包括"从头开始"）
     const allHeaderOptions = [
         {
@@ -250,28 +218,6 @@ export function ExcelImportWizard() {
         label: letter,
     }));
     const optionalColumnOptions = [{ value: -1, label: t("packages.import.noColumn") }, ...columnOptions];
-    const renderOptionalColumn = (
-        label: string,
-        field: "originalDescription" | "translationDescription",
-        value: number,
-        orderClass: string
-    ) => (
-        <div className={cn("flex flex-col gap-2", orderClass)}>
-            <Label>{label}</Label>
-            <Select value={String(value)} onValueChange={(v) => excel.assignColumn(field, Number(v))}>
-                <SelectTrigger>
-                    <SelectValue />
-                </SelectTrigger>
-                <SelectContent position="popper">
-                    {optionalColumnOptions.map((opt) => (
-                        <SelectItem key={opt.value} value={String(opt.value)}>
-                            {opt.label}
-                        </SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
-        </div>
-    );
 
     // 处理拖放事件
     const handleDragEnter = useCallback((e: React.DragEvent) => {
@@ -598,44 +544,12 @@ export function ExcelImportWizard() {
                             </div>
 
                             {excel.sheetData.length > 0 && (
-                                <div className="overflow-auto rounded-md border">
-                                    <table className="w-full table-fixed border-collapse text-sm">
-                                        <thead>
-                                            <tr className="border-b bg-muted/50">
-                                                <th className="w-8 border-r px-2 py-1 text-left text-xs text-muted-foreground">
-                                                    #
-                                                </th>
-                                                {excel.columnLetters.map((letter) => (
-                                                    <th
-                                                        key={letter}
-                                                        className="border-r px-2 py-1 text-left text-xs text-muted-foreground last:border-r-0">
-                                                        {letter}
-                                                    </th>
-                                                ))}
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {excel.sheetData.slice(0, 10).map((row, ri) => {
-                                                const isHeaderRow = ri === excel.headerRowIndex;
-                                                return (
-                                                    <tr key={ri} className={cn("h-10 border-b", isHeaderRow && "bg-muted")}>
-                                                        <td
-                                                            className={cn(
-                                                                "border-r px-2 py-1 text-xs text-muted-foreground",
-                                                                isHeaderRow && "font-medium text-primary"
-                                                            )}>
-                                                            {ri + 1}
-                                                        </td>
-                                                        {excel.columnLetters.map((_, ci) => {
-                                                            const cell = row?.[ci];
-                                                            return renderTableCell(cell, ri, ci);
-                                                        })}
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                <ExcelWorksheetPreview
+                                    columnLetters={excel.columnLetters}
+                                    data={excel.sheetData}
+                                    headerRowIndex={excel.headerRowIndex}
+                                    getMergeSpan={excel.getMergeSpan}
+                                />
                             )}
 
                             <div className="rounded-md bg-muted p-3">
@@ -707,39 +621,91 @@ export function ExcelImportWizard() {
                             event.target.value = "";
                         }}
                     />
-                    <div className="flex flex-wrap items-end gap-3">
-                        <div className="flex flex-col gap-2">
-                            <Label>{t("packages.import.imageAnchorCol")}</Label>
-                            <Select value={String(imageAnchorCol)} onValueChange={(value) => setImageAnchorCol(Number(value))}>
-                                <SelectTrigger className="w-28">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent position="popper">
-                                    {columnOptions.map((option) => (
-                                        <SelectItem key={option.value} value={String(option.value)}>
-                                            {option.label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <Button
-                            variant="outline"
-                            disabled={!excel.workbookBytes || isExtractingImages || imageAnchorCol < 0}
-                            onClick={() => void extractWorkbookImages()}>
-                            {isExtractingImages ? (
-                                <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-                            ) : (
-                                <ImagePlus className="mr-2 h-4 w-4" />
-                            )}
-                            {isExtractingImages ? t("packages.import.extractingImages") : t("packages.import.extractImages")}
-                        </Button>
-                        <Button variant="outline" onClick={() => imageFilesRef.current?.click()}>
-                            {t("packages.import.chooseImages")}
-                        </Button>
-                        <Button variant="outline" onClick={() => imageFolderRef.current?.click()}>
-                            {t("packages.import.chooseImageFolder")}
-                        </Button>
+                    <div className="grid gap-4 lg:grid-cols-2">
+                        <section className="flex flex-col gap-3 rounded-md border p-4">
+                            <div>
+                                <h3 className="font-medium">{t("packages.import.excelImageSource")}</h3>
+                                <p className="mt-1 text-sm text-muted-foreground">
+                                    {t("packages.import.excelImageSourceHint")}
+                                </p>
+                            </div>
+                            <div className="flex flex-wrap items-end gap-3">
+                                <div className="flex flex-col gap-2">
+                                    <Label>{t("packages.import.imageAnchorCol")}</Label>
+                                    <Select
+                                        value={String(imageAnchorCol)}
+                                        onValueChange={(value) => setImageAnchorCol(Number(value))}>
+                                        <SelectTrigger className="w-32">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent position="popper" className="w-32! min-w-0!">
+                                            {columnOptions.map((option) => (
+                                                <SelectItem key={option.value} value={String(option.value)} className="w-32!">
+                                                    {option.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <Button
+                                    variant="outline"
+                                    disabled={!excel.workbookBytes || isExtractingImages || imageAnchorCol < 0}
+                                    onClick={() => void extractWorkbookImages()}>
+                                    {isExtractingImages ? (
+                                        <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <ImagePlus className="mr-2 h-4 w-4" />
+                                    )}
+                                    {isExtractingImages
+                                        ? t("packages.import.extractingImages")
+                                        : t("packages.import.extractImages")}
+                                </Button>
+                                <Dialog>
+                                    <DialogTrigger asChild>
+                                        <Button variant="outline" disabled={excel.sheetData.length === 0}>
+                                            <Eye className="mr-2 h-4 w-4" />
+                                            {t("packages.import.excelPreviewButton")}
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="max-w-6xl!">
+                                        <DialogHeader>
+                                            <DialogTitle>
+                                                {t("packages.import.excelPreview", { sheet: excel.sheetName })}
+                                            </DialogTitle>
+                                            <DialogDescription>{t("packages.import.excelPreviewHint")}</DialogDescription>
+                                        </DialogHeader>
+                                        <div className="max-h-[70vh] overflow-auto">
+                                            <ExcelWorksheetPreview
+                                                columnLetters={excel.columnLetters}
+                                                data={excel.sheetData}
+                                                headerRowIndex={excel.headerRowIndex}
+                                                getMergeSpan={excel.getMergeSpan}
+                                                highlightColumn={imageAnchorCol}
+                                                maxRows={20}
+                                            />
+                                        </div>
+                                    </DialogContent>
+                                </Dialog>
+                            </div>
+                        </section>
+                        <section className="flex flex-col gap-3 rounded-md border p-4">
+                            <div>
+                                <h3 className="font-medium">{t("packages.import.manualImageSource")}</h3>
+                                <p className="mt-1 text-sm text-muted-foreground">
+                                    {t("packages.import.manualImageSourceHint")}
+                                </p>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                                <Button variant="outline" onClick={() => imageFilesRef.current?.click()}>
+                                    <ImagePlus className="mr-2 h-4 w-4" />
+                                    {t("packages.import.chooseImages")}
+                                </Button>
+                                <Button variant="outline" onClick={() => imageFolderRef.current?.click()}>
+                                    <FileSpreadsheet className="mr-2 h-4 w-4" />
+                                    {t("packages.import.chooseImageFolder")}
+                                </Button>
+                            </div>
+                        </section>
                     </div>
                     {imageAssets.length > 0 && (
                         <p className="text-sm text-muted-foreground">
