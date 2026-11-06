@@ -129,6 +129,7 @@ export function PackageEdit() {
         value: index,
         label: letter,
     }));
+    const optionalColumnOptions = [{ value: -1, label: t("packages.import.noColumn") }, ...columnOptions];
 
     if (!pkg) {
         return <div className="p-6">Loading...</div>;
@@ -302,12 +303,12 @@ export function PackageEdit() {
                                         <Label>{t("packages.import.originalCol")}</Label>
                                         <Select
                                             value={String(excel.originalCol)}
-                                            onValueChange={(v) => excel.setOriginalCol(Number(v))}>
+                                            onValueChange={(v) => excel.assignColumn("original", Number(v))}>
                                             <SelectTrigger>
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent position="popper">
-                                                {columnOptions.map((opt) => (
+                                                {optionalColumnOptions.map((opt) => (
                                                     <SelectItem key={opt.value} value={String(opt.value)}>
                                                         {opt.label}
                                                     </SelectItem>
@@ -319,12 +320,12 @@ export function PackageEdit() {
                                         <Label>{t("packages.import.translationCol")}</Label>
                                         <Select
                                             value={String(excel.translationCol)}
-                                            onValueChange={(v) => excel.setTranslationCol(Number(v))}>
+                                            onValueChange={(v) => excel.assignColumn("translation", Number(v))}>
                                             <SelectTrigger>
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent position="popper">
-                                                {columnOptions.map((opt) => (
+                                                {optionalColumnOptions.map((opt) => (
                                                     <SelectItem key={opt.value} value={String(opt.value)}>
                                                         {opt.label}
                                                     </SelectItem>
@@ -337,7 +338,7 @@ export function PackageEdit() {
                                 {/* 数据预览表格 - 与 ExcelImportWizard 一致 */}
                                 {excel.sheetData.length > 0 && (
                                     <div className="overflow-auto rounded-md border">
-                                        <table className="w-max min-w-full table-auto border-collapse text-sm">
+                                        <table className="w-full table-fixed border-collapse text-sm">
                                             <thead>
                                                 <tr className="border-b bg-muted/50">
                                                     <th className="w-8 border-r px-2 py-1 text-left text-xs text-muted-foreground">
@@ -384,7 +385,7 @@ export function PackageEdit() {
                                                                     (mergeSpan.rowspan > 1 || mergeSpan.colspan > 1);
 
                                                                 const cellClass = cn(
-                                                                    "border-r px-2 py-1 last:border-r-0 max-w-[36rem] truncate",
+                                                                    "border-r px-2 py-1 last:border-r-0",
                                                                     isCellEmpty && "opacity-50",
                                                                     isHeaderRow && "bg-muted font-medium",
                                                                     isMerged && "text-center"
@@ -407,14 +408,14 @@ export function PackageEdit() {
                                                                                     ? mergeSpan.colspan
                                                                                     : undefined
                                                                             }>
-                                                                            <div className="block w-full min-w-0 truncate">{content}</div>
+                                                                            <div className="block w-full max-w-full min-w-0 truncate">{content}</div>
                                                                         </td>
                                                                     );
                                                                 }
 
                                                                 return (
                                                                     <td key={ci} className={cellClass}>
-                                                                        <div className="block w-full min-w-0 truncate">{content}</div>
+                                                                        <div className="block w-full max-w-full min-w-0 truncate">{content}</div>
                                                                     </td>
                                                                 );
                                                             })}

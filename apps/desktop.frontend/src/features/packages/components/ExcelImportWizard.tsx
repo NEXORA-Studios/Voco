@@ -207,7 +207,7 @@ export function ExcelImportWizard() {
         const isMerged = mergeSpan && (mergeSpan.rowspan > 1 || mergeSpan.colspan > 1);
 
         const cellClass = cn(
-            "border-r px-2 py-1 last:border-r-0 break-words [overflow-wrap:anywhere]",
+            "border-r px-2 py-1 [overflow-wrap:anywhere] break-words last:border-r-0",
             isCellEmpty && "opacity-50",
             isHeaderRow && "bg-muted font-medium",
             isMerged && "text-center"
@@ -222,14 +222,14 @@ export function ExcelImportWizard() {
                     className={cellClass}
                     rowSpan={mergeSpan.rowspan > 1 ? mergeSpan.rowspan : undefined}
                     colSpan={mergeSpan.colspan > 1 ? mergeSpan.colspan : undefined}>
-                    <div className="block w-full min-w-0 truncate">{content}</div>
+                    <div className="block w-full max-w-full min-w-0 truncate">{content}</div>
                 </td>
             );
         }
 
         return (
             <td key={colIdx} className={cellClass}>
-                <div className="block w-full min-w-0 truncate">{content}</div>
+                <div className="block w-full max-w-full min-w-0 truncate">{content}</div>
             </td>
         );
     };
@@ -250,30 +250,21 @@ export function ExcelImportWizard() {
         label: letter,
     }));
     const optionalColumnOptions = [{ value: -1, label: t("packages.import.noColumn") }, ...columnOptions];
-    const selectedColumns = [
-        excel.originalCol,
-        excel.translationCol,
-        excel.originalDescriptionCol,
-        excel.translationDescriptionCol,
-    ];
     const renderOptionalColumn = (
         label: string,
+        field: "originalDescription" | "translationDescription",
         value: number,
-        onChange: (value: number) => void,
         orderClass: string
     ) => (
         <div className={cn("flex flex-col gap-2", orderClass)}>
             <Label>{label}</Label>
-            <Select value={String(value)} onValueChange={(v) => onChange(Number(v))}>
+            <Select value={String(value)} onValueChange={(v) => excel.assignColumn(field, Number(v))}>
                 <SelectTrigger>
                     <SelectValue />
                 </SelectTrigger>
                 <SelectContent position="popper">
                     {optionalColumnOptions.map((opt) => (
-                        <SelectItem
-                            key={opt.value}
-                            value={String(opt.value)}
-                            disabled={opt.value >= 0 && opt.value !== value && selectedColumns.includes(opt.value)}>
+                        <SelectItem key={opt.value} value={String(opt.value)}>
                             {opt.label}
                         </SelectItem>
                     ))}
@@ -528,21 +519,39 @@ export function ExcelImportWizard() {
 
                             <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
                                 <div className="flex flex-col gap-2 xl:order-1">
-                                    <Label>{t("packages.import.originalCol")}</Label>
+                                    <Label className="flex gap-0.5">
+                                        {t("packages.import.originalCol")}
+                                        <span className="text-destructive">*</span>
+                                    </Label>
                                     <Select
                                         value={String(excel.originalCol)}
-                                        onValueChange={(v) => excel.setOriginalCol(Number(v))}>
+                                        onValueChange={(v) => excel.assignColumn("original", Number(v))}>
                                         <SelectTrigger>
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent position="popper">
-                                            {columnOptions.map((opt) => (
-                                                <SelectItem
-                                                    key={opt.value}
-                                                    value={String(opt.value)}
-                                                    disabled={
-                                                        opt.value !== excel.originalCol && selectedColumns.includes(opt.value)
-                                                    }>
+                                            {optionalColumnOptions.map((opt) => (
+                                                <SelectItem key={opt.value} value={String(opt.value)}>
+                                                    {opt.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="flex flex-col gap-2 xl:order-2">
+                                    <Label className="flex gap-0.5">
+                                        {t("packages.import.translationCol")}
+                                        <span className="text-destructive">*</span>
+                                    </Label>
+                                    <Select
+                                        value={String(excel.translationCol)}
+                                        onValueChange={(v) => excel.assignColumn("translation", Number(v))}>
+                                        <SelectTrigger>
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent position="popper">
+                                            {optionalColumnOptions.map((opt) => (
+                                                <SelectItem key={opt.value} value={String(opt.value)}>
                                                     {opt.label}
                                                 </SelectItem>
                                             ))}
@@ -550,45 +559,47 @@ export function ExcelImportWizard() {
                                     </Select>
                                 </div>
                                 <div className="flex flex-col gap-2 xl:order-3">
-                                    <Label>{t("packages.import.translationCol")}</Label>
+                                    <Label className="flex gap-0.5">
+                                        {t("packages.import.originalDescriptionCol")}
+                                        <span className="text-destructive">*</span>
+                                    </Label>
                                     <Select
-                                        value={String(excel.translationCol)}
-                                        onValueChange={(v) => excel.setTranslationCol(Number(v))}>
+                                        value={String(excel.originalDescriptionCol)}
+                                        onValueChange={(v) => excel.assignColumn("originalDescription", Number(v))}>
                                         <SelectTrigger>
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent position="popper">
-                                            {columnOptions.map((opt) => (
-                                                <SelectItem
-                                                    key={opt.value}
-                                                    value={String(opt.value)}
-                                                    disabled={
-                                                        opt.value !== excel.translationCol &&
-                                                        selectedColumns.includes(opt.value)
-                                                    }>
+                                            {optionalColumnOptions.map((opt) => (
+                                                <SelectItem key={opt.value} value={String(opt.value)}>
                                                     {opt.label}
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                {renderOptionalColumn(
-                                    t("packages.import.originalDescriptionCol"),
-                                    excel.originalDescriptionCol,
-                                    excel.setOriginalDescriptionCol,
-                                    "xl:order-2"
-                                )}
-                                {renderOptionalColumn(
-                                    t("packages.import.translationDescriptionCol"),
-                                    excel.translationDescriptionCol,
-                                    excel.setTranslationDescriptionCol,
-                                    "xl:order-4"
-                                )}
+                                <div className="flex flex-col gap-2 xl:order-4">
+                                    <Label>{t("packages.import.translationDescriptionCol")}</Label>
+                                    <Select
+                                        value={String(excel.translationDescriptionCol)}
+                                        onValueChange={(v) => excel.assignColumn("translationDescription", Number(v))}>
+                                        <SelectTrigger>
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent position="popper">
+                                            {optionalColumnOptions.map((opt) => (
+                                                <SelectItem key={opt.value} value={String(opt.value)}>
+                                                    {opt.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             </div>
 
                             {excel.sheetData.length > 0 && (
                                 <div className="overflow-auto rounded-md border">
-                                    <table className="w-max min-w-full table-auto border-collapse text-sm">
+                                    <table className="w-full table-fixed border-collapse text-sm">
                                         <thead>
                                             <tr className="border-b bg-muted/50">
                                                 <th className="w-8 border-r px-2 py-1 text-left text-xs text-muted-foreground">
@@ -607,7 +618,7 @@ export function ExcelImportWizard() {
                                             {excel.sheetData.slice(0, 10).map((row, ri) => {
                                                 const isHeaderRow = ri === excel.headerRowIndex;
                                                 return (
-                                                    <tr key={ri} className={cn("border-b h-10", isHeaderRow && "bg-muted")}>
+                                                    <tr key={ri} className={cn("h-10 border-b", isHeaderRow && "bg-muted")}>
                                                         <td
                                                             className={cn(
                                                                 "border-r px-2 py-1 text-xs text-muted-foreground",
@@ -630,16 +641,27 @@ export function ExcelImportWizard() {
                             <div className="rounded-md bg-muted p-3">
                                 <p className="text-sm font-medium">{t("packages.import.preview")}</p>
                                 <div className="mt-2 flex flex-col gap-1">
-                                    {excel.mappedEntries.slice(0, 5).map((e, i) => (
-                                        <div key={i} className="text-xs">
-                                            {e.original} → {e.translation}
-                                            {(e.originalDescription || e.translationDescription || e.imageSource) && (
-                                                <span className="text-muted-foreground">
-                                                    {e.originalDescription || e.translationDescription || e.imageSource}
-                                                </span>
-                                            )}
-                                        </div>
-                                    ))}
+                                    {excel.mappedEntries.slice(0, 5).map((e, i) => {
+                                        function truncateText(text: string, maxLength: number): string {
+                                            if (text.length <= maxLength) return text;
+                                            return text.slice(0, maxLength) + "...";
+                                        }
+                                        return (
+                                            <div key={i} className="flex gap-1 text-xs">
+                                                {e.original} → {e.translation}
+                                                {e.originalDescription && (
+                                                    <span className="text-muted-foreground">
+                                                        ({truncateText(e.originalDescription, 40)})
+                                                    </span>
+                                                )}
+                                                {e.translationDescription && (
+                                                    <span className="text-muted-foreground">
+                                                        ({truncateText(e.translationDescription, 40)})
+                                                    </span>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                                 <p className="mt-2 text-xs text-muted-foreground">
                                     {t("packages.import.totalEntries", { count: excel.mappedEntries.length })}

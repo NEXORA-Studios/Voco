@@ -36,6 +36,27 @@ export function useExcelImport() {
     const [translationDescriptionCol, setTranslationDescriptionCol] = useState(-1);
     const [imageCol, setImageCol] = useState(-1);
     const [workbookBytes, setWorkbookBytes] = useState<Uint8Array | null>(null);
+    const assignColumn = useCallback(
+        (field: "original" | "translation" | "originalDescription" | "translationDescription", value: number) => {
+            const assignments = [
+                { field: "original", value: originalCol, set: setOriginalCol },
+                { field: "translation", value: translationCol, set: setTranslationCol },
+                { field: "originalDescription", value: originalDescriptionCol, set: setOriginalDescriptionCol },
+                { field: "translationDescription", value: translationDescriptionCol, set: setTranslationDescriptionCol },
+            ] as const;
+
+            if (value >= 0) {
+                assignments.forEach((assignment) => {
+                    if (assignment.field !== field && assignment.value === value) {
+                        assignment.set(-1);
+                    }
+                });
+            }
+
+            assignments.find((assignment) => assignment.field === field)?.set(value);
+        },
+        [originalCol, translationCol, originalDescriptionCol, translationDescriptionCol]
+    );
 
     // 从 sheetResult 获取数据
     const sheetData = useMemo(() => sheetResult?.data ?? [], [sheetResult]);
@@ -211,6 +232,7 @@ export function useExcelImport() {
         setTranslationCol,
         setOriginalDescriptionCol,
         setTranslationDescriptionCol,
+        assignColumn,
         setImageCol,
         mappedEntries,
         isMergedCell: (row: number, col: number) => isMergedCell(merges, row, col),
