@@ -207,7 +207,7 @@ export function ExcelImportWizard() {
         const isMerged = mergeSpan && (mergeSpan.rowspan > 1 || mergeSpan.colspan > 1);
 
         const cellClass = cn(
-            "border-r px-2 py-1 last:border-r-0",
+            "border-r px-2 py-1 last:border-r-0 break-words [overflow-wrap:anywhere]",
             isCellEmpty && "opacity-50",
             isHeaderRow && "bg-muted font-medium",
             isMerged && "text-center"
@@ -222,14 +222,14 @@ export function ExcelImportWizard() {
                     className={cellClass}
                     rowSpan={mergeSpan.rowspan > 1 ? mergeSpan.rowspan : undefined}
                     colSpan={mergeSpan.colspan > 1 ? mergeSpan.colspan : undefined}>
-                    {content}
+                    <div className="block w-full min-w-0 truncate">{content}</div>
                 </td>
             );
         }
 
         return (
             <td key={colIdx} className={cellClass}>
-                {content}
+                <div className="block w-full min-w-0 truncate">{content}</div>
             </td>
         );
     };
@@ -256,8 +256,13 @@ export function ExcelImportWizard() {
         excel.originalDescriptionCol,
         excel.translationDescriptionCol,
     ];
-    const renderOptionalColumn = (label: string, value: number, onChange: (value: number) => void) => (
-        <div className="flex flex-col gap-2">
+    const renderOptionalColumn = (
+        label: string,
+        value: number,
+        onChange: (value: number) => void,
+        orderClass: string
+    ) => (
+        <div className={cn("flex flex-col gap-2", orderClass)}>
             <Label>{label}</Label>
             <Select value={String(value)} onValueChange={(v) => onChange(Number(v))}>
                 <SelectTrigger>
@@ -521,8 +526,8 @@ export function ExcelImportWizard() {
                                 <p className="text-xs text-muted-foreground">{t("packages.import.headerRowHint")}</p>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="flex flex-col gap-2">
+                            <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+                                <div className="flex flex-col gap-2 xl:order-1">
                                     <Label>{t("packages.import.originalCol")}</Label>
                                     <Select
                                         value={String(excel.originalCol)}
@@ -544,7 +549,7 @@ export function ExcelImportWizard() {
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                <div className="flex flex-col gap-2">
+                                <div className="flex flex-col gap-2 xl:order-3">
                                     <Label>{t("packages.import.translationCol")}</Label>
                                     <Select
                                         value={String(excel.translationCol)}
@@ -570,18 +575,20 @@ export function ExcelImportWizard() {
                                 {renderOptionalColumn(
                                     t("packages.import.originalDescriptionCol"),
                                     excel.originalDescriptionCol,
-                                    excel.setOriginalDescriptionCol
+                                    excel.setOriginalDescriptionCol,
+                                    "xl:order-2"
                                 )}
                                 {renderOptionalColumn(
                                     t("packages.import.translationDescriptionCol"),
                                     excel.translationDescriptionCol,
-                                    excel.setTranslationDescriptionCol
+                                    excel.setTranslationDescriptionCol,
+                                    "xl:order-4"
                                 )}
                             </div>
 
                             {excel.sheetData.length > 0 && (
                                 <div className="overflow-auto rounded-md border">
-                                    <table className="w-full border-collapse text-sm">
+                                    <table className="w-max min-w-full table-auto border-collapse text-sm">
                                         <thead>
                                             <tr className="border-b bg-muted/50">
                                                 <th className="w-8 border-r px-2 py-1 text-left text-xs text-muted-foreground">
@@ -600,7 +607,7 @@ export function ExcelImportWizard() {
                                             {excel.sheetData.slice(0, 10).map((row, ri) => {
                                                 const isHeaderRow = ri === excel.headerRowIndex;
                                                 return (
-                                                    <tr key={ri} className={cn("border-b", isHeaderRow && "bg-muted")}>
+                                                    <tr key={ri} className={cn("border-b h-10", isHeaderRow && "bg-muted")}>
                                                         <td
                                                             className={cn(
                                                                 "border-r px-2 py-1 text-xs text-muted-foreground",

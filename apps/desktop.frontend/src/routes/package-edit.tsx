@@ -337,7 +337,7 @@ export function PackageEdit() {
                                 {/* 数据预览表格 - 与 ExcelImportWizard 一致 */}
                                 {excel.sheetData.length > 0 && (
                                     <div className="overflow-auto rounded-md border">
-                                        <table className="w-full border-collapse text-sm">
+                                        <table className="w-max min-w-full table-auto border-collapse text-sm">
                                             <thead>
                                                 <tr className="border-b bg-muted/50">
                                                     <th className="w-8 border-r px-2 py-1 text-left text-xs text-muted-foreground">
@@ -356,7 +356,7 @@ export function PackageEdit() {
                                                 {excel.sheetData.slice(0, 5).map((row, ri) => {
                                                     const isHeaderRow = ri === excel.headerRowIndex;
                                                     return (
-                                                        <tr key={ri} className={cn("border-b", isHeaderRow && "bg-muted")}>
+                                                        <tr key={ri} className={cn("border-b h-10", isHeaderRow && "bg-muted")}>
                                                             <td
                                                                 className={cn(
                                                                     "border-r px-2 py-1 text-xs text-muted-foreground",
@@ -384,7 +384,7 @@ export function PackageEdit() {
                                                                     (mergeSpan.rowspan > 1 || mergeSpan.colspan > 1);
 
                                                                 const cellClass = cn(
-                                                                    "border-r px-2 py-1 last:border-r-0",
+                                                                    "border-r px-2 py-1 last:border-r-0 max-w-[36rem] truncate",
                                                                     isCellEmpty && "opacity-50",
                                                                     isHeaderRow && "bg-muted font-medium",
                                                                     isMerged && "text-center"
@@ -407,14 +407,14 @@ export function PackageEdit() {
                                                                                     ? mergeSpan.colspan
                                                                                     : undefined
                                                                             }>
-                                                                            {content}
+                                                                            <div className="block w-full min-w-0 truncate">{content}</div>
                                                                         </td>
                                                                     );
                                                                 }
 
                                                                 return (
                                                                     <td key={ci} className={cellClass}>
-                                                                        {content}
+                                                                        <div className="block w-full min-w-0 truncate">{content}</div>
                                                                     </td>
                                                                 );
                                                             })}
