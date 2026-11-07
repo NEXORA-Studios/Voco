@@ -64,4 +64,8 @@ export interface Settings {
 }
 export type SortMethod = Package["sort_method"];
 export type SessionMode = "both" | "original_only" | "translation_only";
+export interface SessionDisplayState extends SessionDisplaySettings {
+    original: boolean;
+    translation: boolean;
+}
 export type Language = "zh-CN" | "zh-TW" | "en-GB" | "en-US";

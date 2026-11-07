@@ -1,11 +1,12 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { createJSONStorage, persist } from "zustand/middleware";
 import type { Package, SessionMode, SessionDisplaySettings, VocabEntry } from "@/types/global.d.ts";
 import {
     DEFAULT_SESSION_DISPLAY_STATE,
     DEFAULT_SESSION_DISPLAY_SETTINGS,
     type SessionDisplayState,
 } from "@/features/session/display";
+import { sessionStateStorage } from "@/lib/bridge";
 
 type SessionState =
     | { status: "idle" }
@@ -22,6 +23,7 @@ interface SessionStore {
     display: SessionDisplayState;
     displayDefaults: SessionDisplaySettings;
     imageDialogOpen: boolean;
+    hydrated: boolean;
     sessionLaunchId: string | null;
     init: (pkg: Package, mode: SessionMode, display?: SessionDisplaySettings, launchId?: string | null) => void;
     setMode: (mode: SessionMode) => void;
@@ -29,6 +31,7 @@ interface SessionStore {
     setDisplayDefaults: (display: SessionDisplaySettings) => void;
     applyDisplayOverride: (display: SessionDisplaySettings, launchId: string) => void;
     setImageDialogOpen: (open: boolean) => void;
+    setHydrated: (hydrated: boolean) => void;
     spin: () => void;
     stop: () => void;
     reveal: () => void;
@@ -46,6 +49,7 @@ export const useSessionStore = create<SessionStore>()(
             display: DEFAULT_SESSION_DISPLAY_STATE,
             displayDefaults: DEFAULT_SESSION_DISPLAY_SETTINGS,
             imageDialogOpen: false,
+            hydrated: false,
             sessionLaunchId: null,
 
             init(pkg, mode, display = DEFAULT_SESSION_DISPLAY_SETTINGS, launchId = null) {
@@ -88,6 +92,10 @@ export const useSessionStore = create<SessionStore>()(
 
             setImageDialogOpen(open) {
                 set({ imageDialogOpen: open });
+            },
+
+            setHydrated(hydrated) {
+                set({ hydrated });
             },
 
             spin() {
@@ -151,19 +159,23 @@ export const useSessionStore = create<SessionStore>()(
         }),
         {
             name: "voco-session",
-            onRehydrateStorage: () => (state) => {
-                if (!state?.pkg) return;
-                state.display = { ...DEFAULT_SESSION_DISPLAY_STATE, ...state.display };
-                state.imageDialogOpen = false;
-                const entry =
-                    state.state.status === "paused" || state.state.status === "revealed" ? state.state.entry : undefined;
-                const hasValidEntry = !entry || Boolean(entry?.source?.word && entry?.translation?.word);
-                const hasValidRemaining = state.remaining.every(
-                    (index) => Number.isInteger(index) && index >= 0 && index < state.pkg!.entries.length
-                );
-                if (!hasValidEntry || !hasValidRemaining) {
-                    state.reset();
+            storage: createJSONStorage(() => sessionStateStorage),
+            onRehydrateStorage: () => (state, error) => {
+                if (state) {
+                    state.display = { ...DEFAULT_SESSION_DISPLAY_STATE, ...state.display };
+                    state.imageDialogOpen = false;
+                    const entry =
+                        state.state.status === "paused" || state.state.status === "revealed" ? state.state.entry : undefined;
+                    const hasValidEntry = !entry || Boolean(entry?.source?.word && entry?.translation?.word);
+                    const hasValidRemaining =
+                        !state.pkg ||
+                        state.remaining.every(
+                            (index) => Number.isInteger(index) && index >= 0 && index < state.pkg!.entries.length
+                        );
+                    if (!hasValidEntry || !hasValidRemaining) state.reset();
+                    state.setHydrated(true);
                 }
+                if (error) console.error("Failed to restore Session state:", error);
             },
             partialize: (state) => ({
                 pkg: state.pkg,

@@ -56,6 +56,10 @@ impl VocoStore {
         self.base_path.join("settings.toml")
     }
 
+    fn session_state_path(&self) -> PathBuf {
+        self.base_path.join("session-state.toml")
+    }
+
     fn packages_dir(&self) -> PathBuf {
         self.base_path.join("packages")
     }
@@ -406,6 +410,70 @@ impl VocoStore {
         Ok(())
     }
 
+    pub fn read_session_state(&self) -> Result<Option<String>, Error> {
+        self.ensure_ready()?;
+        match std::fs::read_to_string(self.session_state_path()) {
+            Ok(content) => {
+                let value: toml::Value = toml::from_str(&content)?;
+                Ok(Some(serde_json::to_string(&value).map_err(|error| {
+                    Error::InvalidData(format!("Invalid Session TOML: {error}"))
+                })?))
+            }
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),
+            Err(error) => Err(error.into()),
+        }
+    }
+
+    pub fn clear_session_state(&self) -> Result<(), Error> {
+        self.ensure_ready()?;
+        let path = self.session_state_path();
+        match std::fs::remove_file(path) {
+            Ok(()) => Ok(()),
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
+            Err(error) => Err(error.into()),
+        }
+    }
+
+    pub fn write_session_state(&self, content: &str) -> Result<(), Error> {
+        self.ensure_ready()?;
+        let mut value: serde_json::Value = serde_json::from_str(content)
+            .map_err(|error| Error::InvalidData(format!("Invalid session state: {error}")))?;
+        fn remove_nulls(value: &mut serde_json::Value) {
+            match value {
+                serde_json::Value::Object(object) => {
+                    object.retain(|_, value| !value.is_null());
+                    object.values_mut().for_each(remove_nulls);
+                }
+                serde_json::Value::Array(array) => array.iter_mut().for_each(remove_nulls),
+                _ => {}
+            }
+        }
+        remove_nulls(&mut value);
+        let content = toml::to_string_pretty(&value)
+            .map_err(|error| Error::InvalidData(format!("Cannot encode Session TOML: {error}")))?;
+
+        let path = self.session_state_path();
+        std::fs::create_dir_all(&self.base_path)?;
+        let temporary = self.base_path.join("session-state.toml.tmp");
+        std::fs::write(&temporary, content)?;
+        if path.exists() {
+            let backup = self.base_path.join("session-state.toml.bak");
+            if backup.exists() {
+                std::fs::remove_file(&backup)?;
+            }
+            std::fs::rename(&path, &backup)?;
+            if let Err(error) = std::fs::rename(&temporary, &path) {
+                let _ = std::fs::rename(&backup, &path);
+                let _ = std::fs::remove_file(&temporary);
+                return Err(error.into());
+            }
+            std::fs::remove_file(backup)?;
+        } else {
+            std::fs::rename(&temporary, &path)?;
+        }
+        Ok(())
+    }
+
     // Settings
     pub fn read_settings(&self) -> Result<Settings, Error> {
         self.ensure_ready()?;
@@ -527,6 +595,31 @@ mod tests {
 
     fn temp_data_dir() -> PathBuf {
         std::env::temp_dir().join(format!("voco-io-migration-{}", uuid::Uuid::new_v4()))
+    }
+
+    #[test]
+    fn session_state_is_written_read_and_cleared_as_a_local_file() {
+        let base = temp_data_dir();
+        let store = VocoStore::new(base.clone());
+        assert_eq!(store.read_session_state().unwrap(), None);
+
+        let state = r#"{"version":1,"state":{"remaining":["entry-2"]}}"#;
+        store.write_session_state(state).unwrap();
+        assert_eq!(store.read_session_state().unwrap().as_deref(), Some(state));
+        let toml = fs::read_to_string(base.join("session-state.toml")).unwrap();
+        assert!(toml.contains("version = 1"));
+
+        let updated_state = r#"{"version":1,"state":{"remaining":[]}}"#;
+        store.write_session_state(updated_state).unwrap();
+        assert_eq!(
+            store.read_session_state().unwrap().as_deref(),
+            Some(updated_state)
+        );
+        assert!(store.write_session_state("not-json").is_err());
+
+        store.clear_session_state().unwrap();
+        assert_eq!(store.read_session_state().unwrap(), None);
+        fs::remove_dir_all(base).unwrap();
     }
 
     #[test]

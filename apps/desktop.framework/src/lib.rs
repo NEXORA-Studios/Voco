@@ -3,6 +3,45 @@ use voco_io::models::{Package, Preset, Settings};
 use voco_io::VocoStore;
 
 #[tauri::command]
+async fn read_session_state(store: tauri::State<'_, VocoStore>) -> Result<Option<String>, String> {
+    let store = store.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        store
+            .read_session_state()
+            .map_err(|error| error.to_string())
+    })
+    .await
+    .map_err(|error| error.to_string())?
+}
+
+#[tauri::command]
+async fn clear_session_state(store: tauri::State<'_, VocoStore>) -> Result<(), String> {
+    let store = store.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        store
+            .clear_session_state()
+            .map_err(|error| error.to_string())
+    })
+    .await
+    .map_err(|error| error.to_string())?
+}
+
+#[tauri::command]
+async fn write_session_state(
+    store: tauri::State<'_, VocoStore>,
+    state: String,
+) -> Result<(), String> {
+    let store = store.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        store
+            .write_session_state(&state)
+            .map_err(|error| error.to_string())
+    })
+    .await
+    .map_err(|error| error.to_string())?
+}
+
+#[tauri::command]
 async fn read_settings(store: tauri::State<'_, VocoStore>) -> Result<Settings, String> {
     let store = store.inner().clone();
     tauri::async_runtime::spawn_blocking(move || store.read_settings().map_err(|e| e.to_string()))
@@ -259,6 +298,9 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             read_settings,
             write_settings,
+            read_session_state,
+            write_session_state,
+            clear_session_state,
             list_packages,
             read_package,
             read_package_image,

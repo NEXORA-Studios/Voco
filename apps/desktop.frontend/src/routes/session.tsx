@@ -26,8 +26,19 @@ export function Session() {
     const displayOverride = (location.state as { sessionDisplayOverride?: SessionDisplaySettings } | null)
         ?.sessionDisplayOverride;
     const launchId = location.key;
-    const { pkg, state, display, displayDefaults, sessionLaunchId, init, setMode, setDisplay, applyDisplayOverride, stop } =
-        useSessionStore();
+    const {
+        pkg,
+        state,
+        hydrated,
+        display,
+        displayDefaults,
+        sessionLaunchId,
+        init,
+        setMode,
+        setDisplay,
+        applyDisplayOverride,
+        stop,
+    } = useSessionStore();
     const isSameActiveSession = pkg?.slug === slug && state.status !== "done";
     const sessionDisplay =
         displayOverride ??
@@ -42,7 +53,7 @@ export function Session() {
     }, [settingsLoaded, loadSettings]);
 
     useEffect(() => {
-        if (loaded && settingsLoaded && slug) {
+        if (loaded && settingsLoaded && hydrated && slug) {
             const found = packages.find((p) => p.slug === slug || p.id === slug);
             if (!found) return;
 
@@ -64,6 +75,7 @@ export function Session() {
     }, [
         loaded,
         settingsLoaded,
+        hydrated,
         slug,
         packages,
         pkg,
@@ -88,7 +100,7 @@ export function Session() {
         }
     }, [state.status, stop]);
 
-    if (!pkg) {
+    if (!hydrated || !pkg) {
         return (
             <div className="flex max-h-svh items-center justify-center">
                 <p className="text-muted-foreground">Loading...</p>

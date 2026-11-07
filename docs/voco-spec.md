@@ -407,15 +407,11 @@ The reordered `entries[]` is written back to the package YAML. `sort_method` is 
 
 ### 5.2 Challenge Session
 
-#### 5.2.1 Start Session Dialog
+#### 5.2.1 Start Session Confirmation
 
 **Triggered from:** Package card → "Start Challenge"
 
-| Option | Values |
-|--------|--------|
-| Start Mode | `both` (original + translation) · `original_only` · `translation_only` |
-
-Session mode is ephemeral — not persisted to disk.
+The confirmation dialog shows the five default display toggles (original, original description, translation, translation description, image). The user may override these for the current challenge only. The challenge resumes its saved progress when reopened.
 
 #### 5.2.2 Session State Machine
 
@@ -433,6 +429,8 @@ IDLE → SPINNING → PAUSED → [REVEALED] → SPINNING → … → DONE
 **Picking logic:** Entries walk `entries[]` in the order fixed at last Reset. A `remaining` index list lives in `session.store`. Each "Next" removes the current index. No mid-session re-shuffle.
 
 **Progress indicator:** `X / N remaining` at all times.
+
+**Persistence:** The active challenge is stored in `session-state.toml` under the application data directory. It records the package reference, remaining entry IDs, current state and per-session display settings. Vocabulary content remains in package files. On restore, entry IDs are mapped onto the latest saved package order.
 
 #### 5.2.3 Session End
 
@@ -516,7 +514,7 @@ Use **Zustand** for all client-side state. Stores never call `invoke` directly �
 | Store | Persisted? | Responsibility |
 |-------|-----------|----------------|
 | `packages.store.ts` | Yes (via bridge) | Bundle + package CRUD, current selection |
-| `session.store.ts` | No | Active challenge session state machine |
+| `session.store.ts` | Yes (`session-state.toml`) | Active challenge state and progress |
 | `picker.store.ts` | Presets: yes; session: no | Preset CRUD + ephemeral `PickerSessionState` |
 | `settings.store.ts` | Yes (via bridge) | Language, future preferences |
 
