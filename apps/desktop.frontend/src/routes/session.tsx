@@ -23,13 +23,15 @@ export function Session() {
     const { packages, loaded, load } = usePackagesStore();
     const { settings, loaded: settingsLoaded, load: loadSettings } = useSettingsStore();
     const location = useLocation();
-    const displayOverride = (location.state as { sessionDisplayOverride?: SessionDisplaySettings } | null)?.sessionDisplayOverride;
+    const displayOverride = (location.state as { sessionDisplayOverride?: SessionDisplaySettings } | null)
+        ?.sessionDisplayOverride;
     const launchId = location.key;
-    const { pkg, state, display, displayDefaults, sessionLaunchId, init, setMode, setDisplay, applyDisplayOverride, stop } = useSessionStore();
+    const { pkg, state, display, displayDefaults, sessionLaunchId, init, setMode, setDisplay, applyDisplayOverride, stop } =
+        useSessionStore();
     const isSameActiveSession = pkg?.slug === slug && state.status !== "done";
     const sessionDisplay =
         displayOverride ??
-        (isSameActiveSession ? displayDefaults : settings?.session_display ?? DEFAULT_SESSION_DISPLAY_SETTINGS);
+        (isSameActiveSession ? displayDefaults : (settings?.session_display ?? DEFAULT_SESSION_DISPLAY_SETTINGS));
 
     useEffect(() => {
         if (!loaded) load();
@@ -59,7 +61,24 @@ export function Session() {
                 }
             }
         }
-    }, [loaded, settingsLoaded, slug, packages, pkg, display.image_method, displayDefaults, sessionLaunchId, init, setMode, setDisplay, applyDisplayOverride, state.status, sessionDisplay, launchId, displayOverride]);
+    }, [
+        loaded,
+        settingsLoaded,
+        slug,
+        packages,
+        pkg,
+        display.image_method,
+        displayDefaults,
+        sessionLaunchId,
+        init,
+        setMode,
+        setDisplay,
+        applyDisplayOverride,
+        state.status,
+        sessionDisplay,
+        launchId,
+        displayOverride,
+    ]);
 
     // Auto-stop spinner after 5 seconds
     useEffect(() => {

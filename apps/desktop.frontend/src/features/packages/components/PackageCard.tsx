@@ -47,8 +47,6 @@ export function PackageCard({ pkg }: Props) {
         setShowSortDialog(false);
     };
 
-
-
     const sortOptions = [
         { value: "shuffle", label: t("packages.sort_shuffle") },
         { value: "alphabetical", label: t("packages.sort_alphabetical") },
@@ -102,11 +100,7 @@ export function PackageCard({ pkg }: Props) {
                 onConfirm={handleDelete}
             />
 
-            <SessionSetupDialog
-                open={showModeDialog}
-                onOpenChange={setShowModeDialog}
-                onConfirm={handleDisplayConfirm}
-            />
+            <SessionSetupDialog open={showModeDialog} onOpenChange={setShowModeDialog} onConfirm={handleDisplayConfirm} />
 
             <SelectDialog
                 open={showSortDialog}

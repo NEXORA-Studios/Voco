@@ -31,7 +31,10 @@ export function SessionControls() {
                 return;
 
             const session = useSessionStore.getState();
-            if (session.imageDialogOpen && (event.code === "Space" || ["c", "v", "b", "n", "m"].includes(event.key.toLowerCase()))) {
+            if (
+                session.imageDialogOpen &&
+                (event.code === "Space" || ["c", "v", "b", "n", "m"].includes(event.key.toLowerCase()))
+            ) {
                 return;
             }
 

@@ -71,9 +71,9 @@ export function SessionDisplaySettingsForm() {
                     variant="outline"
                     size="sm"
                     className={cn(
-                            "h-10 min-w-0 justify-between gap-2 px-2 text-xs",
-                            display.image && "border-primary! bg-primary/10! text-foreground! hover:bg-primary/15!"
-                        )}
+                        "h-10 min-w-0 justify-between gap-2 px-2 text-xs",
+                        display.image && "border-primary! bg-primary/10! text-foreground! hover:bg-primary/15!"
+                    )}
                     aria-pressed={display.image}
                     onClick={() => setImageDefault(!display.image)}>
                     <span className="truncate">{t("settings.sessionDisplay.image")}</span>
@@ -105,4 +105,3 @@ export function SessionDisplaySettingsForm() {
         </div>
     );
 }
-

@@ -1,7 +1,11 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Package, SessionMode, SessionDisplaySettings, VocabEntry } from "@/types/global.d.ts";
-import { DEFAULT_SESSION_DISPLAY_STATE, DEFAULT_SESSION_DISPLAY_SETTINGS, type SessionDisplayState } from "@/features/session/display";
+import {
+    DEFAULT_SESSION_DISPLAY_STATE,
+    DEFAULT_SESSION_DISPLAY_SETTINGS,
+    type SessionDisplayState,
+} from "@/features/session/display";
 
 type SessionState =
     | { status: "idle" }

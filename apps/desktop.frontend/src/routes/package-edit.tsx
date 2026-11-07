@@ -357,7 +357,7 @@ export function PackageEdit() {
                                                 {excel.sheetData.slice(0, 5).map((row, ri) => {
                                                     const isHeaderRow = ri === excel.headerRowIndex;
                                                     return (
-                                                        <tr key={ri} className={cn("border-b h-10", isHeaderRow && "bg-muted")}>
+                                                        <tr key={ri} className={cn("h-10 border-b", isHeaderRow && "bg-muted")}>
                                                             <td
                                                                 className={cn(
                                                                     "border-r px-2 py-1 text-xs text-muted-foreground",
@@ -408,14 +408,18 @@ export function PackageEdit() {
                                                                                     ? mergeSpan.colspan
                                                                                     : undefined
                                                                             }>
-                                                                            <div className="block w-full max-w-full min-w-0 truncate">{content}</div>
+                                                                            <div className="block w-full max-w-full min-w-0 truncate">
+                                                                                {content}
+                                                                            </div>
                                                                         </td>
                                                                     );
                                                                 }
 
                                                                 return (
                                                                     <td key={ci} className={cellClass}>
-                                                                        <div className="block w-full max-w-full min-w-0 truncate">{content}</div>
+                                                                        <div className="block w-full max-w-full min-w-0 truncate">
+                                                                            {content}
+                                                                        </div>
                                                                     </td>
                                                                 );
                                                             })}

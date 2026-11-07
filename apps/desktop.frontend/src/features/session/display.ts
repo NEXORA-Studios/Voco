@@ -14,7 +14,7 @@ export const DEFAULT_SESSION_DISPLAY_SETTINGS: SessionDisplaySettings = {
 export type SessionDisplayState = SessionDisplaySettings & {
     original: boolean;
     translation: boolean;
-}
+};
 
 export const DEFAULT_SESSION_DISPLAY_STATE: SessionDisplayState = {
     ...DEFAULT_SESSION_DISPLAY_SETTINGS,

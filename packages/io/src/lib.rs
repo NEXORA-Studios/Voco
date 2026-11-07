@@ -479,7 +479,9 @@ impl VocoStore {
         if !valid_path {
             return Err(Error::InvalidData("Invalid package image path".into()));
         }
-        Ok(std::fs::read(self.packages_dir().join(slug).join(relative))?)
+        Ok(std::fs::read(
+            self.packages_dir().join(slug).join(relative),
+        )?)
     }
 
     pub fn write_package(&self, p: &Package) -> Result<(), Error> {

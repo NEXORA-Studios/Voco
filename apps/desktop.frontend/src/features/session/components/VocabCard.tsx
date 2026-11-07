@@ -110,9 +110,8 @@ export function VocabCard() {
                     onOpenChange={(open) => {
                         setImageDialogOpen(open);
                         if (!open) setDisplay({ image: false });
-                    }}
-                >
-                    <DialogContent className="w-[96vw] max-h-[96svh] overflow-auto sm:max-w-7xl">
+                    }}>
+                    <DialogContent className="max-h-[96svh] w-[96vw] overflow-auto sm:max-w-7xl">
                         <DialogHeader>
                             <DialogTitle>{entry.source.word}</DialogTitle>
                         </DialogHeader>

@@ -79,4 +79,3 @@ export function SessionSetupDialog({ open, onOpenChange, onConfirm }: Props) {
         </Dialog>
     );
 }
-
