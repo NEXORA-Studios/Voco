@@ -42,6 +42,22 @@ async fn read_package(store: tauri::State<'_, VocoStore>, slug: String) -> Resul
 }
 
 #[tauri::command]
+async fn read_package_image(
+    store: tauri::State<'_, VocoStore>,
+    slug: String,
+    entry_id: String,
+) -> Result<Vec<u8>, String> {
+    let store = store.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        store
+            .read_package_image(&slug, &entry_id)
+            .map_err(|e| e.to_string())
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
 async fn write_package(store: tauri::State<'_, VocoStore>, package: Package) -> Result<(), String> {
     let store = store.inner().clone();
     tauri::async_runtime::spawn_blocking(move || {
@@ -245,6 +261,7 @@ pub fn run() {
             write_settings,
             list_packages,
             read_package,
+            read_package_image,
             write_package,
             delete_package,
             list_presets,

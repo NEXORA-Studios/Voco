@@ -12,7 +12,7 @@ export function bytesToBase64(bytes: Uint8Array): Promise<string> {
         const reader = new FileReader();
         reader.onload = () => resolve(String(reader.result).split(",", 2)[1] ?? "");
         reader.onerror = () => reject(reader.error);
-        reader.readAsDataURL(new Blob([bytes]));
+        reader.readAsDataURL(new Blob([bytes.slice().buffer as ArrayBuffer]));
     });
 }
 
@@ -24,6 +24,7 @@ export const Bridge = {
     packages: {
         list: () => invoke<Package[]>("list_packages"),
         read: (slug: string) => invoke<Package>("read_package", { slug }),
+        readImage: (slug: string, entryId: string) => invoke<number[]>("read_package_image", { slug, entryId }),
         write: (p: Package) => invoke<void>("write_package", { package: p }),
         delete: (slug: string) => invoke<void>("delete_package", { slug }),
     },

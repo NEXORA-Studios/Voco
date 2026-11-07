@@ -97,6 +97,8 @@
         }
     },
     "session": {
+        "confirmDisplayTitle": "确认本轮显示内容",
+        "confirmDisplayDescription": "以下为默认显示选项，可在本轮挑战中临时调整。",
         "title": "挑战模式",
         "start": "开始",
         "continue": "继续",
@@ -106,6 +108,11 @@
         "showTranslation": "显示译文",
         "showOriginal": "显示原文",
         "hideAlternative": "隐藏",
+        "display": {
+            "originalDescription": "原文简介",
+            "translationDescription": "译文简介",
+            "image": "图片"
+        },
         "remaining": "剩余 {{current}} / {{total}}",
         "done": "挑战完成！",
         "restart": "重新开始",
@@ -137,6 +144,21 @@
         "language": "语言",
         "languageSaved": "语言已保存",
         "languageSaveError": "语言保存失败",
+        "yes": "是",
+        "no": "否",
+        "sessionDisplay": {
+            "title": "挑战默认显示",
+            "original": "默认显示原文",
+            "translation": "默认显示译文",
+            "originalDescription": "默认显示原文简介",
+            "translationDescription": "默认显示译文简介",
+            "originalDescriptionFollows": "原文简介随原文一起显示",
+            "translationDescriptionFollows": "译文简介随译文一起显示",
+            "image": "默认显示图片",
+            "imageMethod": "默认图片展示方式",
+            "right": "右侧展示",
+            "dialog": "弹窗展示"
+        },
         "about": "关于",
         "version": "版本",
         "checkUpdate": "检查更新",

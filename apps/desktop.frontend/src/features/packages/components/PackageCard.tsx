@@ -9,7 +9,8 @@ import { usePackagesStore } from "@/store/packages.store";
 import { useSessionStore } from "@/store/session.store";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { SelectDialog } from "@/components/SelectDialog";
-import type { Package } from "@/types/global.d.ts";
+import { SessionSetupDialog } from "@/features/session/components/SessionSetupDialog";
+import type { Package, SessionDisplaySettings } from "@/types/global.d.ts";
 
 interface Props {
     pkg: Package;
@@ -31,8 +32,9 @@ export function PackageCard({ pkg }: Props) {
         setShowModeDialog(true);
     };
 
-    const handleModeConfirm = (mode: string) => {
-        navigate(`/session/${pkg.slug || pkg.id}?mode=${mode}`);
+    const handleDisplayConfirm = (display: SessionDisplaySettings) => {
+        setShowModeDialog(false);
+        navigate(`/session/${pkg.slug || pkg.id}`, { state: { sessionDisplayOverride: display } });
     };
 
     const handleDelete = async () => {
@@ -45,11 +47,7 @@ export function PackageCard({ pkg }: Props) {
         setShowSortDialog(false);
     };
 
-    const modeOptions = [
-        { value: "both", label: t("session.mode.both") },
-        { value: "original_only", label: t("session.mode.original_only") },
-        { value: "translation_only", label: t("session.mode.translation_only") },
-    ];
+
 
     const sortOptions = [
         { value: "shuffle", label: t("packages.sort_shuffle") },
@@ -104,18 +102,10 @@ export function PackageCard({ pkg }: Props) {
                 onConfirm={handleDelete}
             />
 
-            <SelectDialog
+            <SessionSetupDialog
                 open={showModeDialog}
                 onOpenChange={setShowModeDialog}
-                title={t("session.selectMode")}
-                description={t("session.title")}
-                options={modeOptions}
-                confirmLabel={t("session.start")}
-                cancelLabel={t("packages.form.cancel")}
-                onConfirm={(value) => {
-                    setShowModeDialog(false);
-                    handleModeConfirm(value);
-                }}
+                onConfirm={handleDisplayConfirm}
             />
 
             <SelectDialog

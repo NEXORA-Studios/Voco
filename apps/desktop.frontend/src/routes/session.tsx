@@ -1,11 +1,14 @@
 import { useEffect } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@workspace/shadcn-ui/components/button";
 import { useSessionStore } from "@/store/session.store";
 import { usePackagesStore } from "@/store/packages.store";
+import { useSettingsStore } from "@/store/settings.store";
+import { DEFAULT_SESSION_DISPLAY_SETTINGS } from "@/features/session/display";
+import type { SessionDisplaySettings } from "@/types/global.d.ts";
 import { VocabRoulette } from "@/features/session/components/VocabRoulette";
 import { VocabCard } from "@/features/session/components/VocabCard";
 import { SessionControls } from "@/features/session/components/SessionControls";
@@ -18,29 +21,45 @@ export function Session() {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const { packages, loaded, load } = usePackagesStore();
-    const [searchParams] = useSearchParams();
-    const { pkg, state, init, setMode, stop } = useSessionStore();
+    const { settings, loaded: settingsLoaded, load: loadSettings } = useSettingsStore();
+    const location = useLocation();
+    const displayOverride = (location.state as { sessionDisplayOverride?: SessionDisplaySettings } | null)?.sessionDisplayOverride;
+    const launchId = location.key;
+    const { pkg, state, display, displayDefaults, sessionLaunchId, init, setMode, setDisplay, applyDisplayOverride, stop } = useSessionStore();
+    const isSameActiveSession = pkg?.slug === slug && state.status !== "done";
+    const sessionDisplay =
+        displayOverride ??
+        (isSameActiveSession ? displayDefaults : settings?.session_display ?? DEFAULT_SESSION_DISPLAY_SETTINGS);
 
     useEffect(() => {
         if (!loaded) load();
     }, [loaded, load]);
 
     useEffect(() => {
-        if (loaded && slug) {
+        if (!settingsLoaded) void loadSettings();
+    }, [settingsLoaded, loadSettings]);
+
+    useEffect(() => {
+        if (loaded && settingsLoaded && slug) {
             const found = packages.find((p) => p.slug === slug || p.id === slug);
             if (!found) return;
 
-            const mode = (searchParams.get("mode") as "both" | "original_only" | "translation_only") || "both";
+            const mode = "both" as const;
 
-            // Resume if same package and not done; otherwise init fresh
             if (!pkg || pkg.slug !== found.slug || pkg.id !== found.id || state.status === "done") {
-                init(found, mode);
+                init(found, mode, sessionDisplay, displayOverride ? launchId : null);
             } else {
-                // Same package: update mode from URL to respect user's choice
                 setMode(mode);
+                if (displayOverride && sessionLaunchId !== launchId) {
+                    applyDisplayOverride(sessionDisplay, launchId);
+                }
+                const imageMethod = displayDefaults.image ? "right" : displayDefaults.image_method;
+                if (display.image_method !== imageMethod) {
+                    setDisplay({ image_method: imageMethod });
+                }
             }
         }
-    }, [loaded, slug, packages, pkg, init, setMode, searchParams, state.status]);
+    }, [loaded, settingsLoaded, slug, packages, pkg, display.image_method, displayDefaults, sessionLaunchId, init, setMode, setDisplay, applyDisplayOverride, state.status, sessionDisplay, launchId, displayOverride]);
 
     // Auto-stop spinner after 5 seconds
     useEffect(() => {

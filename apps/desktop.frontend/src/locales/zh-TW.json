@@ -97,7 +97,8 @@
         }
     },
     "session": {
-        "title": "挑戰模式",
+        "confirmDisplayTitle": "確認本輪顯示內容",
+        "confirmDisplayDescription": "以下為預設顯示選項，可在本輪挑戰中暫時調整。",
         "start": "開始",
         "continue": "繼續",
         "spinning": "抽取中...",
@@ -106,6 +107,11 @@
         "showTranslation": "顯示譯文",
         "showOriginal": "顯示原文",
         "hideAlternative": "隱藏",
+        "display": {
+            "originalDescription": "原文簡介",
+            "translationDescription": "譯文簡介",
+            "image": "圖片"
+        },
         "remaining": "剩餘 {{current}} / {{total}}",
         "done": "挑戰完成！",
         "restart": "重新開始",
@@ -137,6 +143,21 @@
         "language": "語言",
         "languageSaved": "語言已儲存",
         "languageSaveError": "語言儲存失敗",
+        "yes": "是",
+        "no": "否",
+        "sessionDisplay": {
+            "title": "挑戰預設顯示",
+            "original": "預設顯示原文",
+            "translation": "預設顯示譯文",
+            "originalDescription": "預設顯示原文簡介",
+            "translationDescription": "預設顯示譯文簡介",
+            "originalDescriptionFollows": "原文簡介隨原文一起顯示",
+            "translationDescriptionFollows": "譯文簡介隨譯文一起顯示",
+            "image": "預設顯示圖片",
+            "imageMethod": "預設圖片展示方式",
+            "right": "右側展示",
+            "dialog": "彈窗展示"
+        },
         "about": "關於",
         "version": "版本",
         "checkUpdate": "檢查更新",

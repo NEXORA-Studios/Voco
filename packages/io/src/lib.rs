@@ -459,6 +459,29 @@ impl VocoStore {
         repos::package_repo::read(self.packages_dir(), slug)
     }
 
+    pub fn read_package_image(&self, slug: &str, entry_id: &str) -> Result<Vec<u8>, Error> {
+        self.ensure_ready()?;
+        let package = repos::package_repo::read(self.packages_dir(), slug)?;
+        let entry = package
+            .entries
+            .iter()
+            .find(|entry| entry.id == entry_id)
+            .ok_or_else(|| Error::NotFound(format!("entry {entry_id}")))?;
+        let image = entry
+            .image
+            .as_deref()
+            .ok_or_else(|| Error::NotFound(format!("image for entry {entry_id}")))?;
+        let relative = std::path::Path::new(image);
+        let mut components = relative.components();
+        let valid_path = matches!(components.next(), Some(std::path::Component::Normal(part)) if part == "images")
+            && matches!(components.next(), Some(std::path::Component::Normal(_)))
+            && components.next().is_none();
+        if !valid_path {
+            return Err(Error::InvalidData("Invalid package image path".into()));
+        }
+        Ok(std::fs::read(self.packages_dir().join(slug).join(relative))?)
+    }
+
     pub fn write_package(&self, p: &Package) -> Result<(), Error> {
         self.ensure_ready()?;
         repos::package_repo::write(self.packages_dir(), p)

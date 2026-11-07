@@ -45,10 +45,22 @@ export interface Preset {
     created_at: string;
     updated_at: string;
 }
+export type ImageDisplayMethod = "right" | "dialog";
+export interface SessionDisplaySettings {
+    original: boolean;
+    translation: boolean;
+    original_description: boolean;
+    translation_description: boolean;
+    original_description_follows_word: boolean;
+    translation_description_follows_word: boolean;
+    image: boolean;
+    image_method: ImageDisplayMethod;
+}
 export interface Settings {
     version: number;
     language: string;
     tags: Record<string, TagDefinition>;
+    session_display: SessionDisplaySettings;
 }
 export type SortMethod = Package["sort_method"];
 export type SessionMode = "both" | "original_only" | "translation_only";

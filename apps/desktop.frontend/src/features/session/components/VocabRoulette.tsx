@@ -20,7 +20,7 @@ export function VocabRoulette() {
 
     return (
         <div className="flex flex-col items-center gap-4">
-            <div className="text-[5vw] font-bold tracking-tight">{display}</div>
+            <div className="font-mono text-8xl font-bold tracking-tight max-w-[32em]">{display}</div>
             <p className="text-[2vw] text-muted-foreground">{t("session.spinning")}</p>
         </div>
     );

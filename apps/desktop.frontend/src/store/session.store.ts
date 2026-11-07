@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { Package, SessionMode, VocabEntry } from "@/types/global.d.ts";
+import type { Package, SessionMode, SessionDisplaySettings, VocabEntry } from "@/types/global.d.ts";
+import { DEFAULT_SESSION_DISPLAY_STATE, DEFAULT_SESSION_DISPLAY_SETTINGS, type SessionDisplayState } from "@/features/session/display";
 
 type SessionState =
     | { status: "idle" }
@@ -14,8 +15,16 @@ interface SessionStore {
     mode: SessionMode;
     remaining: number[];
     state: SessionState;
-    init: (pkg: Package, mode: SessionMode) => void;
+    display: SessionDisplayState;
+    displayDefaults: SessionDisplaySettings;
+    imageDialogOpen: boolean;
+    sessionLaunchId: string | null;
+    init: (pkg: Package, mode: SessionMode, display?: SessionDisplaySettings, launchId?: string | null) => void;
     setMode: (mode: SessionMode) => void;
+    setDisplay: (display: Partial<SessionDisplayState>) => void;
+    setDisplayDefaults: (display: SessionDisplaySettings) => void;
+    applyDisplayOverride: (display: SessionDisplaySettings, launchId: string) => void;
+    setImageDialogOpen: (open: boolean) => void;
     spin: () => void;
     stop: () => void;
     reveal: () => void;
@@ -30,20 +39,59 @@ export const useSessionStore = create<SessionStore>()(
             mode: "both",
             remaining: [],
             state: { status: "idle" },
+            display: DEFAULT_SESSION_DISPLAY_STATE,
+            displayDefaults: DEFAULT_SESSION_DISPLAY_SETTINGS,
+            imageDialogOpen: false,
+            sessionLaunchId: null,
 
-            init(pkg, mode) {
+            init(pkg, mode, display = DEFAULT_SESSION_DISPLAY_SETTINGS, launchId = null) {
                 const validEntries = pkg.entries.filter((entry) => Boolean(entry?.source?.word && entry?.translation?.word));
                 const sessionPackage = validEntries.length === pkg.entries.length ? pkg : { ...pkg, entries: validEntries };
                 const remaining = sessionPackage.entries.map((_, i) => i);
-                set({ pkg: sessionPackage, mode, remaining, state: { status: "idle" } });
+                set({
+                    pkg: sessionPackage,
+                    mode,
+                    displayDefaults: { ...DEFAULT_SESSION_DISPLAY_SETTINGS, ...display },
+                    display: { ...DEFAULT_SESSION_DISPLAY_STATE, ...display },
+                    imageDialogOpen: false,
+                    sessionLaunchId: launchId,
+                    remaining,
+                    state: { status: "idle" },
+                });
             },
 
             setMode(mode) {
                 set({ mode });
             },
 
+            setDisplay(display) {
+                set((current) => ({ display: { ...current.display, ...display } }));
+            },
+
+            setDisplayDefaults(displayDefaults) {
+                set({ displayDefaults });
+            },
+
+            applyDisplayOverride(display, launchId) {
+                const current = get();
+                set({
+                    sessionLaunchId: launchId,
+                    displayDefaults: { ...DEFAULT_SESSION_DISPLAY_SETTINGS, ...display },
+                    display: { ...current.display, ...display },
+                    imageDialogOpen: false,
+                });
+            },
+
+            setImageDialogOpen(open) {
+                set({ imageDialogOpen: open });
+            },
+
             spin() {
-                set({ state: { status: "spinning" } });
+                const { display, displayDefaults } = get();
+                set({
+                    state: { status: "spinning" },
+                    display: { ...display, ...displayDefaults, original: true, translation: true },
+                });
             },
 
             stop() {
@@ -76,17 +124,33 @@ export const useSessionStore = create<SessionStore>()(
                     set({ remaining: nextRemaining, state: { status: "done" } });
                     return;
                 }
-                set({ remaining: nextRemaining, state: { status: "spinning" } });
+                set({
+                    remaining: nextRemaining,
+                    state: { status: "spinning" },
+                    display: { ...get().display, ...get().displayDefaults, original: true, translation: true },
+                    imageDialogOpen: false,
+                });
             },
 
             reset() {
-                set({ pkg: null, mode: "both", remaining: [], state: { status: "idle" } });
+                set({
+                    pkg: null,
+                    mode: "both",
+                    display: DEFAULT_SESSION_DISPLAY_STATE,
+                    displayDefaults: DEFAULT_SESSION_DISPLAY_SETTINGS,
+                    imageDialogOpen: false,
+                    sessionLaunchId: null,
+                    remaining: [],
+                    state: { status: "idle" },
+                });
             },
         }),
         {
             name: "voco-session",
             onRehydrateStorage: () => (state) => {
                 if (!state?.pkg) return;
+                state.display = { ...DEFAULT_SESSION_DISPLAY_STATE, ...state.display };
+                state.imageDialogOpen = false;
                 const entry =
                     state.state.status === "paused" || state.state.status === "revealed" ? state.state.entry : undefined;
                 const hasValidEntry = !entry || Boolean(entry?.source?.word && entry?.translation?.word);
@@ -100,6 +164,9 @@ export const useSessionStore = create<SessionStore>()(
             partialize: (state) => ({
                 pkg: state.pkg,
                 mode: state.mode,
+                sessionLaunchId: state.sessionLaunchId ?? null,
+                displayDefaults: state.displayDefaults ?? DEFAULT_SESSION_DISPLAY_SETTINGS,
+                display: state.display,
                 remaining: state.remaining,
                 state: state.state,
             }),

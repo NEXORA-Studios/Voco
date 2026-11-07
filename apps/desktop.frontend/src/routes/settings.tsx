@@ -5,6 +5,7 @@ import { useSettingsStore } from "@/store/settings.store";
 import { LanguageSelect } from "@/features/settings/components/LanguageSelect";
 import { TagsSettings } from "@/features/settings/components/TagsSettings";
 import { UpdateChecker } from "@/features/settings/components/UpdateChecker";
+import { SessionDisplaySettingsForm } from "@/features/settings/components/SessionDisplaySettings";
 
 export function SettingsPage() {
     const { t } = useTranslation();
@@ -28,6 +29,9 @@ export function SettingsPage() {
                     <TabsContent value="general" className="flex flex-col gap-4">
                         <div className="rounded-lg border p-4">
                             <LanguageSelect />
+                        </div>
+                        <div className="rounded-lg border p-4">
+                            <SessionDisplaySettingsForm />
                         </div>
                         <div className="rounded-lg border p-4">
                             <UpdateChecker />

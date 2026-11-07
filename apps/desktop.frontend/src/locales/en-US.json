@@ -97,7 +97,8 @@
         }
     },
     "session": {
-        "title": "Challenge",
+        "confirmDisplayTitle": "Confirm display for this round",
+        "confirmDisplayDescription": "These defaults will be used for the new challenge. You can override them for this round.",
         "start": "Start",
         "continue": "Continue",
         "spinning": "Picking...",
@@ -106,6 +107,11 @@
         "showTranslation": "Show Translation",
         "showOriginal": "Show Original",
         "hideAlternative": "Hide",
+        "display": {
+            "originalDescription": "Original description",
+            "translationDescription": "Translation description",
+            "image": "Image"
+        },
         "remaining": "{{current}} / {{total}} remaining",
         "done": "Challenge complete!",
         "restart": "Restart",
@@ -137,6 +143,21 @@
         "language": "Language",
         "languageSaved": "Language saved",
         "languageSaveError": "Failed to save language",
+        "yes": "Yes",
+        "no": "No",
+        "sessionDisplay": {
+            "title": "Default challenge display",
+            "original": "Show original by default",
+            "translation": "Show translation by default",
+            "originalDescription": "Show original description by default",
+            "translationDescription": "Show translation description by default",
+            "originalDescriptionFollows": "Show original description with original",
+            "translationDescriptionFollows": "Show translation description with translation",
+            "image": "Show image by default",
+            "imageMethod": "Default image display",
+            "right": "Right Side",
+            "dialog": "Dialog"
+        },
         "about": "About",
         "version": "Version",
         "checkUpdate": "Check for Updates",
