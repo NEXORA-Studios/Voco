@@ -12,11 +12,20 @@
         "@vercel/analytics": "^2.0.1",
         "@workspace/shadcn-ui": "workspace:*",
         "framer-motion": "^14.10.1",
+        "github-slugger": "^2.0.0",
+        "gray-matter": "^4.0.3",
         "lucide-react": "^1.70.0",
+        "mdast-util-to-string": "^4.0.0",
         "next": "16.4.5",
         "next-intl": "^4.14.9",
+        "next-mdx-remote": "^6.0.0",
         "react": "19.3.1",
-        "react-dom": "19.3.1"
+        "react-dom": "19.3.1",
+        "remark-gfm": "^4.0.1",
+        "remark-mdx": "^3.1.1",
+        "remark-parse": "^11.0.0",
+        "unified": "^11.0.5",
+        "unist-util-visit": "^5.2.0"
     },
     "devDependencies": {
         "@tailwindcss/postcss": "^4.3.5",

@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { DownloadIcon, HomeIcon } from "lucide-react";
+import { DownloadIcon, HomeIcon, BookOpenIcon } from "lucide-react";
 import { Button } from "@workspace/shadcn-ui/components/button";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -22,6 +22,12 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
                             <Button variant="ghost" size="sm">
                                 <HomeIcon className="mr-2 h-4 w-4" />
                                 {t("nav.home")}
+                            </Button>
+                        </Link>
+                        <Link href="/docs">
+                            <Button variant="ghost" size="sm">
+                                <BookOpenIcon className="mr-2 h-4 w-4" />
+                                {t("nav.docs")}
                             </Button>
                         </Link>
                         <Link href="/downloads">

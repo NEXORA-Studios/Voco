@@ -1,7 +1,8 @@
 {
     "nav": {
         "home": "Home",
-        "downloads": "Downloads"
+        "downloads": "Downloads",
+        "docs": "Docs"
     },
     "footer": {
         "copyright": "© 2025-Present NEXORA Studios. All rights reserved."
@@ -141,6 +142,14 @@
             "description": "Download now and experience a more efficient way of vocabulary teaching.",
             "button": "Download Now"
         }
+    },
+    "docs": {
+        "badge": "Documentation",
+        "contents": "On this page",
+        "previous": "Previous",
+        "next": "Next",
+        "tipTitle": "Keep exploring",
+        "tip": "Voco works offline, so your lesson materials are always close at hand."
     },
     "language": {
         "zh-CN": "简体中文",

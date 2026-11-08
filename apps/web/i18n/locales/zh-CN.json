@@ -1,7 +1,8 @@
 {
     "nav": {
         "home": "首页",
-        "downloads": "下载"
+        "downloads": "下载",
+        "docs": "文档"
     },
     "footer": {
         "copyright": "© 2025-至今 NEXORA Studios. 保留所有权利。"
@@ -141,6 +142,14 @@
             "description": "立即下载，体验更高效的词汇教学方式。",
             "button": "立即下载"
         }
+    },
+    "docs": {
+        "badge": "文档",
+        "contents": "目录",
+        "previous": "上一篇",
+        "next": "下一篇",
+        "tipTitle": "继续探索",
+        "tip": "Voco 支持离线使用，让课堂资料始终触手可得。"
     },
     "language": {
         "zh-CN": "简体中文",
