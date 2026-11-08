@@ -50,7 +50,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
             language,
         };
         await Bridge.settings.write(settings);
-        i18n.changeLanguage(language);
+        await i18n.changeLanguage(language);
         set({ settings, error: null });
     },
 

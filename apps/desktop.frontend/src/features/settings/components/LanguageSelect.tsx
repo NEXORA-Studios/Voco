@@ -3,6 +3,7 @@ import { toast } from "@workspace/shadcn-ui/components/sonner";
 import { useSettingsStore } from "@/store/settings.store";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/shadcn-ui/components/select";
 import type { Language } from "@/types/global.d.ts";
+import i18n from "@/lib/i18n";
 
 export function LanguageSelect() {
     const { t } = useTranslation();
@@ -17,8 +18,9 @@ export function LanguageSelect() {
 
     const handleLanguageChange = async (value: string) => {
         try {
-            await setLanguage(value as Language);
-            toast.success(t("settings.languageSaved"));
+            const language = value as Language;
+            await setLanguage(language);
+            toast.success(i18n.getFixedT(language)("settings.languageSaved"));
         } catch (error) {
             console.error("Failed to save language:", error);
             toast.error(t("settings.languageSaveError"));
