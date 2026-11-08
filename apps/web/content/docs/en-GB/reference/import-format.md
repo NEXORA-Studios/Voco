@@ -13,9 +13,9 @@ Choose a workbook through the file picker or drag and drop it into the import ar
 
 ## Row and column mapping
 
-The wizard offers candidate header rows detected among the first five rows, a no-header option that starts at the first row, and a custom starting row. Select the columns for source word and translation. Source description, translation description, and image columns are optional mappings.
+The wizard offers candidate header rows detected among the first five rows, a no-header option that starts at the first row, and a custom starting row. Select **Original Vocabulary** and **Translated Vocabulary** as the required columns. **Original Description**, **Translated Description**, and **Example Image** are optional mappings.
 
-Only rows with non-empty source word and translation values are added. Values are trimmed. Descriptions are read from the mapped cells; the image column is read as a string value and may be used to match an associated image asset.
+Only rows with non-empty **Original Vocabulary** and **Translated Vocabulary** values are added. Values are trimmed. The two Description fields are read from their mapped cells; **Example Image** can be used to match an associated image asset.
 
 ## Images
 

@@ -47,7 +47,7 @@ export function SessionDisplayControls() {
 
     return (
         <div className="w-full">
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+            <div className="grid grid-cols-2 gap-2 lg:grid-cols-5">
                 {controls.map(({ key, label, checked, disabled, shortcut }) => (
                     <Button
                         key={key}
@@ -55,13 +55,13 @@ export function SessionDisplayControls() {
                         variant="outline"
                         size="sm"
                         className={cn(
-                            "h-9 min-w-0 justify-between gap-2 px-2 text-xs",
+                            "h-auto min-h-9 min-w-0 items-center justify-between gap-2 px-2 py-2 text-xs",
                             checked && "border-primary! bg-primary/10! text-foreground! hover:bg-primary/15!"
                         )}
                         aria-pressed={checked}
                         disabled={disabled}
                         onClick={() => setDisplay({ [key]: !checked })}>
-                        <span className="truncate">{label}</span>
+                        <span className="min-w-0 whitespace-normal text-left leading-tight">{label}</span>
                         {shortcut && <Kbd className="shrink-0 rounded border px-1 font-mono text-[10px]">{shortcut}</Kbd>}
                     </Button>
                 ))}

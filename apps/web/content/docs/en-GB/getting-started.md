@@ -13,13 +13,13 @@ From the Vocabulary Packages screen, choose **New Package**. Enter a package nam
 
 ## 2. Map the workbook
 
-Choose a worksheet if the workbook has multiple sheets. Select a header row or starting row, then map the source-word and translation columns. Description and image columns are optional. Review the preview and image assignments, then save the package.
+Choose a worksheet if the workbook has multiple sheets. Select a header row or starting row, then map **Original Vocabulary** and **Translated Vocabulary**. **Original Description**, **Translated Description**, and **Example Image** are optional mappings. Review the preview and image assignments, then save the package.
 
-Rows without both a source word and a translation are skipped. Voco creates package data locally; it does not offer package export in the current interface.
+Rows without both **Original Vocabulary** and **Translated Vocabulary** are skipped. Voco creates package data locally; it does not offer package export in the current interface.
 
 ## 3. Run a vocabulary session
 
-Start the package from its card. The session advances through the package order, showing an animated transition before each entry. Use the display controls to show or hide source words, translations, descriptions, and images. Press **Space** to start or advance.
+Start the package from its card. The session advances through the package order, showing an animated transition before each entry. Use the display controls to show or hide **Original Vocabulary**, **Original Description**, **Translated Vocabulary**, **Translated Description**, and **Example Image**. Press **Space** to start or advance.
 
 The order comes from the package sorting method: Shuffle, Alphabetical, or Original. Shuffle randomizes the order when the package order is reset. It does not choose a fresh random entry on each advance.
 

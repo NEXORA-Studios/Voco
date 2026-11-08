@@ -90,7 +90,7 @@ export function SessionControls() {
     return (
         <>
             <div className="pointer-events-none absolute inset-x-0 bottom-14 z-20 flex justify-center px-4">
-                <div className="pointer-events-auto flex w-full max-w-4xl flex-col items-center gap-3 rounded-lg border bg-background/95 p-4 shadow-lg backdrop-blur-sm">
+                <div className="pointer-events-auto flex w-full max-w-6xl flex-col items-center gap-3 rounded-lg border bg-background/95 p-4 shadow-lg backdrop-blur-sm">
                     {state.status !== "done" && (
                         <>
                             <SessionDisplayControls />

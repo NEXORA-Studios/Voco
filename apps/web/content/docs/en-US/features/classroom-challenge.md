@@ -15,17 +15,17 @@ Start a session from a package card. Voco uses that package's configured entry o
 4. Advance to the next entry with **Space** or the next button.
 5. At the end, choose whether to restart with a sorting method or return to the package list.
 
-The session shows a remaining-entry count. Entries missing either the source word or translation are excluded when the session starts.
+The session shows a remaining-entry count. Entries missing either Original Vocabulary or Translated Vocabulary are excluded when the session starts.
 
 ## Display controls
 
-The session controls can show or hide the source word, source description, translation, translation description, and image. Images can appear to the right of the text or in a dialog, depending on the saved display settings. The keyboard shortcuts are **C** for source, **V** for source description, **B** for translation, **N** for translation description, and **M** for image. **Space** starts or advances the session.
+The session controls can show or hide **Original Vocabulary**, **Original Description**, **Translated Vocabulary**, **Translated Description**, and **Example Image**. Images can appear to the right of the text or in a dialog, depending on the saved display settings. The keyboard shortcuts are **C** for Original Vocabulary, **V** for Original Description, **B** for Translated Vocabulary, **N** for Translated Description, and **M** for Example Image. **Space** starts or advances the session.
 
 The session setup lets you choose the initial display settings for a launch. Display defaults are also part of application settings. Keyboard controls are ignored while focus is in an input control.
 
 ## Session order
 
-The package order is established by its selected sorting method. **Shuffle** randomizes the package when its order is reset; **Alphabetical** uses the source word; **Original** uses the imported order. The session then advances through that sequence. Choosing a different order at completion resets the package order and returns to the package list.
+The package order is established by its selected sorting method. **Shuffle** randomizes the package when its order is reset; **Alphabetical** uses Original Vocabulary; **Original** uses the imported order. The session then advances through that sequence. Choosing a different order at completion resets the package order and returns to the package list.
 
 ## Session persistence
 
