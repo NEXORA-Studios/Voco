@@ -73,11 +73,24 @@ export const useSessionStore = create<SessionStore>()(
             },
 
             setDisplay(display) {
-                set((current) => ({ display: { ...current.display, ...display } }));
+                set((current) => {
+                    const nextDisplay = { ...current.display, ...display };
+                    if (display.original !== undefined && current.displayDefaults.original_description_follows_word) {
+                        nextDisplay.original_description = display.original;
+                    }
+                    if (display.translation !== undefined && current.displayDefaults.translation_description_follows_word) {
+                        nextDisplay.translation_description = display.translation;
+                    }
+                    return { display: nextDisplay };
+                });
             },
 
             setDisplayDefaults(displayDefaults) {
-                set({ displayDefaults });
+                set((current) => {
+                    const keys = Object.keys(displayDefaults) as (keyof SessionDisplaySettings)[];
+                    const unchanged = keys.every((key) => current.displayDefaults[key] === displayDefaults[key]);
+                    return unchanged ? current : { displayDefaults };
+                });
             },
 
             applyDisplayOverride(display, launchId) {
@@ -99,11 +112,7 @@ export const useSessionStore = create<SessionStore>()(
             },
 
             spin() {
-                const { display, displayDefaults } = get();
-                set({
-                    state: { status: "spinning" },
-                    display: { ...display, ...displayDefaults, original: true, translation: true },
-                });
+                set({ state: { status: "spinning" } });
             },
 
             stop() {
@@ -118,7 +127,14 @@ export const useSessionStore = create<SessionStore>()(
                     set({ remaining: remaining.slice(1), state: { status: "spinning" } });
                     return;
                 }
-                set({ state: { status: "paused", entry } });
+                set({
+                    state: { status: "paused", entry },
+                    display: {
+                        ...get().display,
+                        ...get().displayDefaults,
+                    },
+                    imageDialogOpen: false,
+                });
             },
 
             reveal() {
@@ -139,7 +155,6 @@ export const useSessionStore = create<SessionStore>()(
                 set({
                     remaining: nextRemaining,
                     state: { status: "spinning" },
-                    display: { ...get().display, ...get().displayDefaults, original: true, translation: true },
                     imageDialogOpen: false,
                 });
             },

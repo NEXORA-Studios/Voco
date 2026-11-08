@@ -36,13 +36,11 @@ export function Session() {
         init,
         setMode,
         setDisplay,
+        setDisplayDefaults,
         applyDisplayOverride,
         stop,
     } = useSessionStore();
-    const isSameActiveSession = pkg?.slug === slug && state.status !== "done";
-    const sessionDisplay =
-        displayOverride ??
-        (isSameActiveSession ? displayDefaults : (settings?.session_display ?? DEFAULT_SESSION_DISPLAY_SETTINGS));
+    const sessionDisplay = displayOverride ?? settings?.session_display ?? DEFAULT_SESSION_DISPLAY_SETTINGS;
 
     useEffect(() => {
         if (!loaded) load();
@@ -63,10 +61,11 @@ export function Session() {
                 init(found, mode, sessionDisplay, displayOverride ? launchId : null);
             } else {
                 setMode(mode);
+                setDisplayDefaults(sessionDisplay);
                 if (displayOverride && sessionLaunchId !== launchId) {
                     applyDisplayOverride(sessionDisplay, launchId);
                 }
-                const imageMethod = displayDefaults.image ? "right" : displayDefaults.image_method;
+                const imageMethod = sessionDisplay.image ? "right" : sessionDisplay.image_method;
                 if (display.image_method !== imageMethod) {
                     setDisplay({ image_method: imageMethod });
                 }
@@ -85,6 +84,7 @@ export function Session() {
         init,
         setMode,
         setDisplay,
+        setDisplayDefaults,
         applyDisplayOverride,
         state.status,
         sessionDisplay,

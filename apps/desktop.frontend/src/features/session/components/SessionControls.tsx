@@ -31,22 +31,27 @@ export function SessionControls() {
                 return;
 
             const session = useSessionStore.getState();
-            if (
-                session.imageDialogOpen &&
-                (event.code === "Space" || ["c", "v", "b", "n", "m"].includes(event.key.toLowerCase()))
-            ) {
-                return;
+            const key = event.key.toLowerCase();
+            if (session.imageDialogOpen) {
+                if (key === "m") {
+                    event.preventDefault();
+                    session.setImageDialogOpen(false);
+                    session.setDisplay({ image: false });
+                }
+                if (event.code === "Space" || ["c", "v", "b", "n"].includes(key)) {
+                    return;
+                }
+                if (key === "m") return;
             }
 
-            const key = event.key.toLowerCase();
             if (["c", "v", "b", "n", "m"].includes(key)) {
                 if (session.state.status === "done") return;
                 event.preventDefault();
                 const field = (
                     {
                         c: "original",
-                        v: "translation",
-                        b: "original_description",
+                        v: "original_description",
+                        b: "translation",
                         n: "translation_description",
                         m: "image",
                     } as const

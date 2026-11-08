@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@workspace/shadcn-ui/components/button";
 import { useSessionStore } from "@/store/session.store";
 import { Kbd } from "@workspace/shadcn-ui/components/kbd";
+import { cn } from "@workspace/shadcn-ui/lib/utils";
 
 export function SessionDisplayControls() {
     const { t } = useTranslation();
@@ -19,14 +20,14 @@ export function SessionDisplayControls() {
             label: t("session.display.originalDescription"),
             checked: display.original_description,
             disabled: false,
-            shortcut: "B",
+            shortcut: "V",
         },
         {
             key: "translation" as const,
             label: t("session.showTranslation"),
             checked: mode === "translation_only" || display.translation,
             disabled: mode === "translation_only",
-            shortcut: "V",
+            shortcut: "B",
         },
         {
             key: "translation_description" as const,
@@ -53,9 +54,10 @@ export function SessionDisplayControls() {
                         type="button"
                         variant="outline"
                         size="sm"
-                        className={`h-9 min-w-0 justify-between gap-2 px-2 text-xs ${
-                            checked ? "border-primary! bg-primary/10! text-foreground! hover:bg-primary/15!" : ""
-                        }`}
+                        className={cn(
+                            "h-9 min-w-0 justify-between gap-2 px-2 text-xs",
+                            checked && "border-primary! bg-primary/10! text-foreground! hover:bg-primary/15!"
+                        )}
                         aria-pressed={checked}
                         disabled={disabled}
                         onClick={() => setDisplay({ [key]: !checked })}>
