@@ -26,7 +26,6 @@
             "dependsOn": ["^typecheck"]
         },
         "dev": {
-            "dependsOn": ["^dev"],
             "inputs": ["$TURBO_DEFAULT$", ".env*", "target/**"],
             "cache": false,
             "persistent": true
