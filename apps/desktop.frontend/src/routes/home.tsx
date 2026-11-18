@@ -6,6 +6,7 @@ import { Button } from "@workspace/shadcn-ui/components/button";
 import { usePackagesStore } from "@/store/packages.store";
 import { useSettingsStore } from "@/store/settings.store";
 import { PackageCard } from "@/features/packages/components/PackageCard";
+import { PickerButton } from "@/components/PickerButton";
 import { Empty, EmptyHeader, EmptyTitle } from "@workspace/shadcn-ui/components/empty";
 
 const UNCATEGORIZED_TAG = "__uncategorized__";
@@ -98,6 +99,7 @@ export function Home() {
                     </div>
                 </Tabs>
             )}
+            <PickerButton />
         </div>
     );
 }
